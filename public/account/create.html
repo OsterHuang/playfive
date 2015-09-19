@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="../stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    
+    <script src="../javascripts/jquery.min.js"></script>
+    <script src="../javascripts/bootstrap.min.js"></script>
+    <script src="../javascripts/angular.min.js"></script>
+    
+    <script src="../javascripts/pages/account.js"></script>
+</head>
+
+<body>
+    <div ng-app="account" ng-controller="accountController" class="container">
+        <div class="container" style="text-align:center">
+            申請帳號 / Create a New Account
+            <div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
+                <button type="button" class="close-message" ng-click="hideMessage()">x</button>
+                <strong>{{messageTitle}}</strong>
+                {{messageContent}}
+            </div>
+        </div>
+        
+        <div class="container">
+            <form novalidate class="form-horizontal">
+                <span class="form-group">
+                    <label class="col-sm-2 control-label">帳號 / Account</label>
+                    <span class="col-sm-10">
+                        <input type="text" ng-model="username" class="form-control" placeholder="Account" required/> 
+                    </span>
+                </span>
+                <span class="form-group">
+                    <label class="col-sm-2 control-label">暱稱 / Nickname</label>
+                    <span class="col-sm-10">
+                        <input type="text" ng-model="nickname" class="form-control" placeholder="Nickname" required/> 
+                    </span>
+                </span>
+                <span class="form-group">
+                    <label class="col-sm-2 control-label">密碼 / Password</label>
+                    <span class="col-sm-10">
+                        <input type="text" ng-model="password" class="form-control" placeholder="Password" required/> 
+                    </span>
+                </span>
+                <span class="form-group">
+                    <label class="col-sm-2 control-label">信箱 / email</label>
+                    <span class="col-sm-10">
+                        <input type="text" ng-model="email" class="form-control" placeholder="email" required/> 
+                    </span>
+                </span>
+            
+                <div class="container" style="text-align:center">
+                    <button class="btn" ng-click="create()">                    
+                        申請 / Apply
+                        <span class="glyphicon glyphicon-plus"></span>
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</body>
+    
+</html>

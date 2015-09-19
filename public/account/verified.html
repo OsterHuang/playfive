@@ -1,0 +1,21 @@
+<html>
+<head>
+</head>
+<body>
+<script>
+var result = document.location.hash;
+var msg = '';
+if(result=='#noaccount' || result=='#noaccount2')
+	msg = '帳號不存在或認證錯誤，請重新申請。';
+else if(result=='#verified')
+	msg = '恭喜你！認證已通過，請回到首頁登入。';
+else if(result=='#notverified')
+	msg = '認證碼錯誤。請回信箱確認連結無誤。';
+else if(result=='#newcode')
+	msg = '認證錯誤，系統已經重新寄出認證信';
+else msg = '我不理解您的要求。';
+document.write(msg);
+</script>
+</body>
+</html>
+

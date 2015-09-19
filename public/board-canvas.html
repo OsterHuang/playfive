@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" href="stylesheets/pages/game.css">
+    
+    <script src="javascripts/jquery.min.js"></script>
+    <script src="javascripts/angular.min.js"></script>
+    
+    <script src="javascripts/pages/game.js"></script>
+    <script src="javascripts/tools.js"></script>
+    
+    <script>        
+        var gridSize;
+        var moves;
+        var context2D;
+        
+        function paintBoard(pBoardSize, pMoves) {
+            moves = pMoves;
+            var canvasBoard = document.getElementById("canvasBoard");
+            gridSize = (canvasBoard.clientHeight > canvasBoard.clientWidth ? canvasBoard.clientHeight : canvasBoard.clientWidth ) /pBoardSize;
+            
+            context2D = canvasBoard.getContext("2d");
+            
+            for (var i = 0; i < pBoardSize; i++) {
+                //Draw x-line
+                context2D.moveTo(0 + gridSize / 2, i * gridSize + gridSize / 2);
+                context2D.lineTo(pBoardSize * gridSize - gridSize / 2, i * gridSize + gridSize / 2);
+                context2D.stroke();
+                
+                //Draw y-line
+                context2D.moveTo(i * gridSize + gridSize / 2, 0 + gridSize / 2);
+                context2D.lineTo(i * gridSize + gridSize / 2, pBoardSize * gridSize - gridSize / 2);
+                context2D.stroke();
+            }
+            
+            //Draw moves
+            for (var i in pMoves) {
+                var centerX = (pMoves[i].ordinate.x * gridSize) + gridSize / 2 ;
+                var centerY = (pMoves[i].ordinate.y * gridSize) + gridSize / 2 ;
+                var radius = gridSize * 0.45;
+
+                context2D.beginPath();
+                context2D.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+                if (pMoves[i].seq % 2 == 1)
+                    context2D.fillStyle = 'black';
+                else
+                    context2D.fillStyle = 'white';
+                context2D.fill();
+
+                context2D.lineWidth = 1;
+                context2D.strokeStyle = '#333333';
+                context2D.stroke();
+
+            }
+            
+            //Draw Bold Point
+            
+        }
+              
+        function mouseoverOnBoard(e) {
+//            console.log(e);
+            var ordinate = calGridOrdinate(e.clientX, e.clientY);
+            console.log(calGridOrdinate(e.clientX, e.clientY));
+            //Paint Preview Stone
+            paintStone(ordinate, (moves[moves.length - 1].seq % 2 == 0 ? 'black' : 'white'));
+        }
+        
+        function paintStone(pOrdinate, pColor) {
+            var centerX = (pOrdinate.x * gridSize) + gridSize / 2 ;
+            var centerY = (pOrdinate.y * gridSize) + gridSize / 2 ;
+            var radius = gridSize * 0.45;
+
+            context2D.beginPath();
+            context2D.arc(centerX, centerY, radius, 0, 2 * Math.PI, false);
+//                if (pMoves[i].seq % 2 == 1)
+//                    pContext.fillStyle = pColor;
+//                else
+            context2D.fillStyle = pColor;
+            context2D.fill();
+
+            context2D.lineWidth = 1;
+            context2D.strokeStyle = '#333333';
+            context2D.stroke();
+        }
+        
+        function calGridOrdinate(x, y) {
+        return {x: Math.floor(x / gridSize), y: Math.floor(y / gridSize)};
+    }
+        
+        $( document ).ready(function() {
+            var testMoves = [
+                {seq:1, ordinate: {x:8, y:8}},
+                {seq:2, ordinate: {x:8, y:9}},
+                {seq:3, ordinate: {x:8, y:6}},
+                {seq:4, ordinate: {x:9, y:10}},
+                {seq:5, ordinate: {x:9, y:6}},
+                {seq:6, ordinate: {x:9, y:9}},
+                {seq:7, ordinate: {x:7, y:9}},
+                {seq:8, ordinate: {x:7, y:8}},
+                {seq:9, ordinate: {x:10, y:11}}
+            ];
+            
+            var canvasBoard = document.getElementById("canvasBoard");
+            paintBoard(15, testMoves);
+            
+            canvasBoard.addEventListener('mousemove', mouseoverOnBoard, false);
+        });
+        
+        
+    </script>
+    
+
+</head>
+
+<body>
+    <canvas id="canvasBoard" width="460" height="460" style="border:1px solid #d3d3d3;">
+Your browser does not support the HTML5 canvas tag.</canvas>
+    
+</body>
+    
+</html>

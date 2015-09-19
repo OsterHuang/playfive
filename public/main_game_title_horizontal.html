@@ -1,0 +1,104 @@
+
+<!-- [[[ game ]]] -->
+<div class="row  full-height" style="margin: auto;">
+
+    <div class="col-sm-9">
+        <div id="divGameInfo" class="panel panel-default full-height">
+            <div class="panel-body" style="padding:6px">
+                <div class="container-fluid" style="text-align:center">
+                    <div class="row">
+                        <span style="float:left">
+                            <span>Rating Game.</span>
+                            <span>Renju Rule.</span>
+                        </span>
+                        <span style="float:right">
+                            Move {{user.myProgressingGame.moves.length + 1}}   
+                            <span class="btn btn-default" ng-click="isShowNumber = (isShowNumber ? false : true)" style="padding:4px 2px; color:grey; font-size:10px">
+                                <span class="glyphicon glyphicon-check" ng-show="isShowNumber"></span>
+                                <span class="glyphicon glyphicon-unchecked" ng-show="!isShowNumber"></span>
+                                show number
+                            </span>
+                        </span>
+                    </div>
+                    <div class="row" style="border-top:1px solid #ddd; margin-top: 6px; padding:6px">
+                        <span style="font-size:16px; font-weight:bold; float:left; width:70%">
+                            <span style="width:45%; float:left">
+                                <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
+                                {{user.myProgressingGame.black.nickname}}
+                            </span>
+                            <span style="font-size:10px;"> VS </span>
+                            <span style="width:45%; float:right">
+                                <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
+                                {{user.myProgressingGame.white.nickname}}
+                            </span> 
+                        </span>
+                        <span style="float:right; border-left:1px solid #ddd; padding-left:6px; ">
+                            <span class="badge"><img src="./images/board/black.png" style="width:20px;">Win. Black resigns</span>
+                            
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div id="divGameBoard">
+            
+            <table style="margin-left:auto; margin-right:auto">
+                <tr>
+                    <td></td>
+                    <td ng-repeat="x in board.xAxis">
+                        {{x}}
+                    </td>
+                    <td></td>
+                </tr>
+
+                <tr ng-repeat="row in board.grids">
+                    <td>
+                        {{transOrigToReadableY(row.y, board.size)}}
+                    </td>
+                    <td ng-repeat="grid in row" ng-style="grid.style" ng-mousemove="mouseOnBoard(grid)" ng-mouseleave="mouseOutBoard(grid)">
+                        <div ng-show="!grid.move" >
+                            <img src="./images/board/black.png" ng-show="grid.previewMove && moves.length % 2 == 0" style="width:95%; height:95%" />
+                            <img src="./images/board/white.png" ng-show="grid.previewMove && moves.length % 2 == 1" style="width:95%; height:95%" />
+                        </div>
+                        <div ng-show="grid.move && grid.move.seq % 2 == 1" class="stone black">
+                            <span ng-show="isShowNumber">{{grid.move.seq}}</span>
+                        </div>
+                        <div ng-show="grid.move && grid.move.seq % 2 == 0" class="stone white">
+                            <span ng-show="isShowNumber">{{grid.move.seq}}</span>
+                        </div>
+                    </td>
+                    <td>
+                        {{transOrigToReadableY(row.y, board.size)}}
+                    </td>
+                </tr>
+
+                <tr>
+                    <td></td>
+                    <td ng-repeat="x in board.xAxis">
+                        {{x}}
+                    </td>
+                    <td></td>
+                </tr>
+            </table>
+            
+        </div>
+    </div>
+    
+    <div class="col-sm-3  full-height">
+        <div class="panel panel-default full-height">
+            <div class="panel-body full-height">
+                <div style="width:100%; height:90%;">
+                    <pre style="height: 100%">{{lobbyChat}}</pre>
+                </div>
+                <div class="input-group" style="margin-top:5%">
+                    <input type="text" class="form-control" placeholder="Your message" ng-model="chatContent">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="chatInGame()">Send</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+</div>

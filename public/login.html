@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" href="stylesheets/style.css">
+    
+    <script src="javascripts/jquery.min.js"></script>
+    <script src="javascripts/bootstrap.min.js"></script>
+    <script src="javascripts/angular.min.js"></script>
+    <script src="javascripts/ngStorage.min.js"></script>
+    
+    <script src="javascripts/pages/login.js"></script>
+    
+</head>
+
+<body>
+    <div ng-app="loginPage" ng-controller="loginController" class="container">
+        <div class="alert alert-success" id="message" style="position:absolute; z-index:99; margin-top:10px">
+            <button type="button" class="close-message" ng-click="hideMessage()">x</button>
+            {{message}}
+        </div>
+        
+        <form novalidate class="form-horizontal">
+                <span class="form-group">
+                    <label class="col-sm-2 control-label">Your username</label>
+                    <span class="col-sm-10">
+                        <input type="text" ng-model="username" class="form-control" placeholder="Your username" required/> 
+                    </span>
+                </span>
+                <span class="form-group">
+                    <label class="col-sm-2 control-label">Password</label>
+                    <span class="col-sm-10">
+                        <input type="text" ng-model="password" class="form-control" placeholder="Password" required/> 
+                    </span>
+                </span>
+            
+            <div class="container" style="text-align:center">
+                <button class="btn" ng-click="login()"> 
+                    <span class="glyphicon glyphicon-log-in"></span>                   
+                    Login
+                </button>
+            </div>
+        </form>
+        
+    </div>
+</body>
+    
+</html>

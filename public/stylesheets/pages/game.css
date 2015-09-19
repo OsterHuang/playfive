@@ -1,0 +1,36 @@
+
+.game-info > div {
+    margin-top:0px;
+    margin-left: 16px;
+    margin-right: 16px;
+    margin-bottom: 16px;
+}
+
+
+.boardLine {
+    fill:none; stroke:black; stroke-width:1
+}
+
+div .board th, td {
+    text-align:center
+}
+
+.stone {
+    background-size: 95%;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background-repeat: no-repeat;
+}
+
+.stone.white {
+    background-image: url(../../images/board/white.png);
+    color:black;
+}
+
+.stone.black {
+    background-image: url(../../images/board/black.png);
+    color:white;
+}

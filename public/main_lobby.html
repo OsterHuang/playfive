@@ -1,0 +1,207 @@
+
+<!-- [[[ Lobby ]]] -->
+<div class="row  full-height" style="margin: auto;">
+
+    <div class="col-sm-9">
+    
+        <ul class="nav nav-tabs">
+            <li class="active"><a data-toggle="tab" href="#userList">Users Online</a></li>
+            <li><a data-toggle="tab" href="#awaitingGames">Awaiting Game</a></li>
+            <li><a data-toggle="tab" href="#progressingGames">Progressing Game</a></li>
+            <li><a data-toggle="tab" href="#annoucement">Annoucement</a></li>
+        </ul>
+
+        <div class="tab-content">
+            <div id="userList" class="tab-pane fade in active">
+                <table class="table table-striped" style="margin-top:10px" >
+                    <tr>
+                        <th class="text-center">Nickname</th><th class="text-center">Rank</th><th class="text-center">In Game</th>
+                    </tr>
+                    <tr ng-repeat="u in onlineUsers">
+                        <td>{{u.nickname}}<span ng-show="u.username == user.username">(Me)</span></td>
+                        <td>
+                        </td>
+                        <td>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+
+            <div id="awaitingGames" class="tab-pane fade">
+                <div class="container-fluid" style="padding-top:10px">
+                    <button class="btn btn-primary" ng-click="openGreateGameModal()" ng-hide="user.myCreatedGame">
+                        <span class="glyphicon glyphicon-plus-sign"></span>  
+                        Create Game
+                    </button>
+                    <button class="btn btn-default" ng-click="cancelMyCreatedGame()" ng-show="user.myCreatedGame">
+                        <span class="glyphicon glyphicon-minus-sign"></span>  
+                        Cancel Game
+                    </button>
+                    
+                    <table class="table table-striped" style="margin-top:10px" >
+                        <tr>
+                            <th class="text-center">Creator</th><th class="text-center">Rule</th><th class="text-center">Time rule</th>
+                            <th class="text-center">Rating</th><th class="text-center">Opener</th><th class="text-center">Action</th>
+                        </tr>
+                        <tr ng-repeat="g in createdGames">
+                            <td>{{g.creator.nickname}}<span ng-show="g.creator.username == user.username">(Me)</span></td>
+                            <td>
+                                {{g.rule}}
+                            </td>
+                            <td>
+                                {{g.timeRule}}
+                            </td>
+                            <td>
+                                <span class="glyphicon glyphicon-ok" ng-show="g.isRating"></span>
+                                <span class="glyphicon glyphicon-remove" ng-show="!g.isRating"></span>
+                            </td>
+                            <td>
+                                <span ng-show="g.isTempBlack">{{g.creator}}</span>
+                                <span ng-show="!g.isTempBlack">Participant</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-info" ng-click="joinGame(g)" ng-hide="g.creator.username == user.username">
+                                    <span class="glyphicon glyphicon-road"></span>  
+                                    Join
+                                </button>
+                            </td>
+                        </tr>
+                    </table>
+                </div>
+            </div>
+
+            <div id="progressingGames" class="tab-pane fade">
+                <table class="table table-striped" style="margin-top:10px" >
+                    <tr>
+                        <th class="text-center">Creator</th><th class="text-center">Rule</th><th class="text-center">Time rule</th>
+                        <th class="text-center">Rating</th><th class="text-center">Opener</th><th class="text-center">Action</th>
+                    </tr>
+                    <tr ng-repeat="g in progressingGames">
+                        <td>{{g.creator.nickname}}<span ng-show="g.creator.username == user.username">(Me)</span></td>
+                        <td>
+                            {{g.rule}}
+                        </td>
+                        <td>
+                            {{g.timeRule}}
+                        </td>
+                        <td>
+                            <span class="glyphicon glyphicon-ok" ng-show="g.isRating"></span>
+                            <span class="glyphicon glyphicon-remove" ng-show="!g.isRating"></span>
+                        </td>
+                        <td>
+                            <span ng-show="g.isTempBlack">{{g.creator}}</span>
+                            <span ng-show="!g.isTempBlack">Participant</span>
+                        </td>
+                        <td>
+                            <button class="btn btn-info" ng-click="watchGame(g)" ng-hide="g.creator.username == user.username">
+                                <span class="glyphicon glyphicon-road"></span>  
+                                Watch
+                            </button>
+                        </td>
+                    </tr>
+                </table>
+            </div>
+            
+            <div id="annoucement" class="tab-pane fade">
+                <p>Annoucement</p>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-sm-3  full-height">
+        <div class="panel panel-default full-height">
+            <div class="panel-body full-height">
+                <div style="width:100%; height:90%;">
+                    <pre style="height: 100%">{{lobbyChat}}</pre>
+                </div>
+                <div class="input-group" style="margin-top:5%">
+                    <input type="text" class="form-control" placeholder="Your message" ng-model="chatContent">
+                    <span class="input-group-btn">
+                        <button class="btn btn-default" type="button" ng-click="chat()">Send</button>
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="modal fade" id="createGameDialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    <h4 class="modal-title" id="modalLabel">Create a game</h4>
+                </div>
+                
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <label>Opponent:</label>
+                            <span> </span>
+                        </div>
+                        <div class="row">
+                            <label >Rule:</label>
+                            <span style="width:100%">
+                                    <input type="radio" ng-model="newGame.rule" value="gomoku"/>Gomoku
+                                    <input type="radio" ng-model="newGame.rule" value="renju"/>Renju
+                                    <input type="radio" ng-model="newGame.rule" value="classic"/>Classic Rule
+                                    <input type="radio" ng-model="newGame.rule" value="yamaguchi"/>Yamaguchi
+                            </span>
+                        </div>
+                        <div class="row" style="border-top:1px solid #ddd; border-bottom:1px solid #ddd">
+                                <label>Time Rule:</label>
+                                <span>
+
+                                    <div class="container-fluid" style="padding-left:30px">
+                                        <div class="row">
+                                            <label><input type="checkbox" ng-model="newGame.hasBasicTime" />Basic Time</label>
+                                            <span>
+                                                <input type="text" ng-model="newGame.basicTime" ng-disabled="!newGame.hasBasicTime" 
+                                                       class="form-control time-limit" size="5"/>
+                                                min
+                                            </span>
+                                        </div>
+                                        <div class="row">
+                                            <label><input type="checkbox" ng-model="newGame.hasPerMoveTime" />Time per Move</label>
+                                            <span>
+                                                <input type="text" ng-model="newGame.perMoveTime" ng-disabled="!newGame.hasPerMoveTime" 
+                                                       class="form-control time-limit" size="5"></input>
+                                                seconds
+                                            </span>
+                                        </div>
+                                        <div class="row">
+                                            <label><input type="checkbox" ng-model="newGame.hasPlusTime" />Plus Time per Move</label>
+                                            <span>
+                                                <input type="text" ng-model="newGame.perMovePlusTime" ng-disabled="!newGame.hasPlusTime" 
+                                                       class="form-control time-limit" size="5" style="text-align:right;"></input>
+                                                seconds
+                                            </span>
+                                        </div>
+                                    </div>
+                                </span>
+                        </div>
+                        <div class="row">
+                            <lable>
+                                <input type="checkbox" ng-model="newGame.isTentitiveBlack" />
+                                Tentitive black?
+                            </lable>
+                        </div>
+                        <div class="row">
+                            <span><input type="checkbox" ng-model="newGame.isRating" />Rating game?</span>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-primary"  data-dismiss="modal" ng-click="confirmCreteGame()">
+                        <span class="glyphicon glyphicon-ok"></span>
+                        Create
+                    </button>
+                    <button type="button" class="btn btn-default" data-dismiss="modal"  ng-click="cancelCreateGame()">
+                        <span class="glyphicon glyphicon-remove"></span>
+                        Cancel
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
