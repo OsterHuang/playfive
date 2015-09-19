@@ -122,6 +122,40 @@ router.get('/verify', function(req, res){
 	
 });
 
+router.get('/reset', function(req, res){
+    console.log("Verified parameters:" + req.query.code + " " + req.query.account);
+	var url = 'mongodb://localhost:27017/playfive';
+    MongoClient.connect(url, function(err, db) {
+        // -Oster- If can not connect to database.....
+        if (err) {
+            res.status(500).json({error:err.message});
+            return;
+        }
+		
+		db.collection('user').update({username: req.query.account, verifycode: req.query.code}, {$set:{password: req.query.code}},function(err, result) {
+			// -dogswang- If cannot connect to db
+			if (err) {
+				res.status(500).json({error:err.message});
+				return;
+			}
+			console.log('Query result:' + util.inspect(result, {showHidden:false, depth:null}));
+			// -dogswang- If cannot find this data
+			if (!result){
+				console.log("帳號或密碼錯誤。");
+				return;
+			}
+			
+			res.redirect('reset_done.html');
+		});
+	});
+/* 
+	res.json({
+		messageTitle:'Success',
+		messageContent:'xxxxx'
+	}); */
+	
+});
+
 router.post('/reverify', function(req, res) {
     // -Oster- Should check request parameters....
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
@@ -222,7 +256,7 @@ router.post('/reset', function(req, res) {
 							return;
 						}
 						// -dogswang- 寄送認證信
-						send_verify_code(doc.email, doc.username, randomcode);
+						send_reset_code(doc.email, doc.username, randomcode);
 					}
 				);
 			}
@@ -301,6 +335,26 @@ function send_verify_code(address, username, randomcode){
 	   to:      address,
 	   cc:      "",
 	   subject: "play5 認證信 (verification mail from play5)"
+	}, function(err, message) { console.log(err || message); });
+	// -dogswang- End of 寄送確認信
+}
+function send_reset_code(address, username, randomcode){
+	// -dogswang- 寄送確認信
+	var mailsender   = require("emailjs/email");
+	var server  = mailsender.server.connect({
+	   user:    "play5-admin@renju.org.tw", 
+	   password:"koko0206", 
+	   host:    "sp21.g-dns.com", 
+	   ssl:     true
+	});
+	// send the message and get a callback with an error or details of the message that was sent
+	var verifyurl = "http://localhost:3000/account/reset?account="+ username +"&code="+ randomcode;
+	server.send({
+	   text:    "我們收到您重設密碼的要求，如果您確定要修改您在play5的密碼，\n請點 "+ verifyurl + " ，謝謝。",
+	   from:    "you <play5-admin@renju.org.tw>", 
+	   to:      address,
+	   cc:      "",
+	   subject: "play5 請確認是否重設密碼 (Do you really want to reset your password in play5?)"
 	}, function(err, message) { console.log(err || message); });
 	// -dogswang- End of 寄送確認信
 }
