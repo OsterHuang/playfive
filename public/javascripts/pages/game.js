@@ -1,119 +1,119 @@
-//(function() {
+
 gamePage = angular.module('gamePage', []);
 
 gamePage.controller('gameController', function ($rootScope, $scope, $http, $window, $interval) {
     $scope.isShowNumber = false;
     
     $scope.moves = [
-                {seq:1, ordinate: {x:8, y:8}},
-                {seq:2, ordinate: {x:8, y:9}},
-                {seq:3, ordinate: {x:8, y:6}},
-                {seq:4, ordinate: {x:9, y:10}},
-                {seq:5, ordinate: {x:9, y:6}},
-                {seq:6, ordinate: {x:9, y:9}},
-                {seq:7, ordinate: {x:7, y:9}},
-                {seq:8, ordinate: {x:7, y:8}},
-                {seq:9, ordinate: {x:10, y:11}},
-                {seq:10, ordinate: {x:11, y:13}}
-            ];
-            
-            // ----
-            // Util
-            // ----
-            
-            $scope.transOrigToReadableX = function(pX) {
-                return String.fromCharCode(97 + pX);
-            }
-            
-            $scope.transOrigToReadableY = function(pY, boardSize) {
-                return '' + (boardSize - pY);
-            }
-            
-            // ----
-            // Data Model
-            // ----
-            $scope.board = {};
-            
-            $scope.board.size = 15;
-            $scope.board.width = 480;
-            $scope.board.height = 480;
-            $scope.board.gridWidth = $scope.board.width / $scope.board.size;
-            $scope.board.gridHeight = $scope.board.height / $scope.board.size;
-            
-            $scope.board.grids = [$scope.board.size];
-            $scope.board.xAxis = [$scope.board.size];
+        {seq:1, ordinate: {x:8, y:8}},
+        {seq:2, ordinate: {x:8, y:9}},
+        {seq:3, ordinate: {x:8, y:6}},
+        {seq:4, ordinate: {x:9, y:10}},
+        {seq:5, ordinate: {x:9, y:6}},
+        {seq:6, ordinate: {x:9, y:9}},
+        {seq:7, ordinate: {x:7, y:9}},
+        {seq:8, ordinate: {x:7, y:8}},
+        {seq:9, ordinate: {x:10, y:11}},
+        {seq:10, ordinate: {x:11, y:13}}
+    ];
 
-            //Board Background
-            for (var y = 0; y < $scope.board.size; y++) {
-                $scope.board.grids[y] = [$scope.board.size];
-                $scope.board.grids[y].y = y;
-                for (var x = 0; x < $scope.board.size; x++) {
-                    $scope.board.grids[y][x] = {
-                        ordinate:{x:x, y:y}
-                    };
-                        
-                    $scope.board.grids[y][x].style = {
-                        width:  $scope.board.gridWidth,
-                        height: $scope.board.gridHeight,
+    // ----
+    // Util
+    // ----
+
+    $scope.transOrigToReadableX = function(pX) {
+        return String.fromCharCode(97 + pX);
+    }
+
+    $scope.transOrigToReadableY = function(pY, boardSize) {
+        return '' + (boardSize - pY);
+    }
+
+    // ----
+    // Data Model
+    // ----
+    $scope.board = {};
+
+    $scope.board.size = 15;
+    $scope.board.width = 480;
+    $scope.board.height = 480;
+    $scope.board.gridWidth = $scope.board.width / $scope.board.size;
+    $scope.board.gridHeight = $scope.board.height / $scope.board.size;
+
+    $scope.board.grids = [$scope.board.size];
+    $scope.board.xAxis = [$scope.board.size];
+
+    //Board Background
+    for (var y = 0; y < $scope.board.size; y++) {
+        $scope.board.grids[y] = [$scope.board.size];
+        $scope.board.grids[y].y = y;
+        for (var x = 0; x < $scope.board.size; x++) {
+            $scope.board.grids[y][x] = {
+                ordinate:{x:x, y:y}
+            };
+
+            $scope.board.grids[y][x].style = {
+                width:  $scope.board.gridWidth,
+                height: $scope.board.gridHeight,
 //                        position: 'relative',
-                        backgroundSize:'100%',
-                        backgroundImage: '',
-                    };
-                    
-                    //Decide background-image
-                    var xChar = 'c';
-                    var yChar = 'c';
-                    
-                    if (y == 0) {
-                        yChar = 't';
-                    } else if (y == $scope.board.size - 1) {
-                        yChar = 'b';
-                    }
-                    if (x == 0) {
-                        xChar = 'l';
-                    } else if (x == $scope.board.size - 1) {
-                        xChar = 'r';
-                    }
-                    
-                    if ((x == 3 || x == $scope.board.size - 4) && 
-                       (y == 3 || y == $scope.board.size - 4)) {
-                        xChar = 's'; yChar = 'p';
-                    } else if (x == Math.floor($scope.board.size / 2) &&
-                              y == Math.floor($scope.board.size / 2)) {
-                        xChar = 's'; yChar = 'p';
-                    }
-                    var imgName = 'e' + xChar + yChar;
-                    
-                    $scope.board.grids[y][x].style.backgroundImage = 'url(./images/board/' + imgName + '.gif)';
-                }
+                backgroundSize:'100%',
+                backgroundImage: '',
+            };
+
+            //Decide background-image
+            var xChar = 'c';
+            var yChar = 'c';
+
+            if (y == 0) {
+                yChar = 't';
+            } else if (y == $scope.board.size - 1) {
+                yChar = 'b';
             }
-            
-            // x-axis, y-axis
-            for (var i = 0; i < $scope.board.size; i++) {
-                $scope.board.xAxis[i] = $scope.transOrigToReadableX(i);
+            if (x == 0) {
+                xChar = 'l';
+            } else if (x == $scope.board.size - 1) {
+                xChar = 'r';
             }
-            
-            //
-            for (var i in $scope.moves) {
-                $scope.board.grids[$scope.moves[i].ordinate.y][
-                $scope.moves[i].ordinate.x].move = $scope.moves[i];
+
+            if ((x == 3 || x == $scope.board.size - 4) && 
+               (y == 3 || y == $scope.board.size - 4)) {
+                xChar = 's'; yChar = 'p';
+            } else if (x == Math.floor($scope.board.size / 2) &&
+                      y == Math.floor($scope.board.size / 2)) {
+                xChar = 's'; yChar = 'p';
             }
-            
-            //　----
-            //  User Interaction
-            //  ----
-            $scope.mouseOnBoard = function(grid) {
-                console.log('mouseMove on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
+            var imgName = 'e' + xChar + yChar;
+
+            $scope.board.grids[y][x].style.backgroundImage = 'url(./images/board/' + imgName + '.gif)';
+        }
+    }
+
+    // x-axis, y-axis
+    for (var i = 0; i < $scope.board.size; i++) {
+        $scope.board.xAxis[i] = $scope.transOrigToReadableX(i);
+    }
+
+    //
+    for (var i in $scope.moves) {
+        $scope.board.grids[$scope.moves[i].ordinate.y][
+        $scope.moves[i].ordinate.x].move = $scope.moves[i];
+    }
+
+    //　----
+    //  User Interaction
+    //  ----
+    $scope.mouseOnBoard = function(grid) {
+        console.log('mouseMove on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
 //                console.log('previewStoneWidth:' + $scope.board.moveStyle.width);
-                //Preview stone
-                $scope.board.grids[grid.ordinate.y][grid.ordinate.x].previewMove = true;
-            }
-            
-            $scope.mouseOutBoard = function(grid) {
-                console.log('mouseOut on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
-                //Preview stone
-                $scope.board.grids[grid.ordinate.y][grid.ordinate.x].previewMove = false;
-            }
+        //Preview stone
+        $scope.board.grids[grid.ordinate.y][grid.ordinate.x].previewMove = true;
+    }
+
+    $scope.mouseOutBoard = function(grid) {
+        console.log('mouseOut on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
+        //Preview stone
+        $scope.board.grids[grid.ordinate.y][grid.ordinate.x].previewMove = false;
+    }
 //    $scope.isMyGame = false;
 //    
 //    //Board

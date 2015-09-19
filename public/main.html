@@ -25,18 +25,8 @@
 
 <body class="full-height">
     <div ng-app="playfiveApp" ng-controller="playfiveController" class="container-fluid full-height">
-        <div class="row full-height" style="background-color:#337ab7; height:60px" ng-hide="user.myProgressingGame">
-            <div class="col-sm-9">
-                <div style="color:white; font-size:28px; font-weight:bold; margin-top:10px">Renju Online</div>
-            </div>
-            
-            <div class="col-sm-3" style="text-align:right">
-                <div style="color:white; font-size:16px; margin-top:20px; margin-right:10px; display:inline-block;">{{user.nickname}}</div>
-                <button class="btn" style="margin-top:0px" ng-click="logout()">
-                    <span class="glyphicon glyphicon-log-out"></span>
-                </button>
-            </div>
-            
+        <div ng-hide="user.myProgressingGame">
+            <div ng-include="./header.html">
         </div>
         
         <div class="alert alert-info" role="alert" id="message" style="position:absolute; z-index:99; margin-top:5px">
