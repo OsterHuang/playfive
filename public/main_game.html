@@ -6,25 +6,18 @@
         <div id="divGameInfo" class="panel panel-default">
             <div class="panel-heading" style="text-align:center">
                 <h3 class="panel-title">No.0000001</h3>
-<!--
-                <div class="badge" style="margin-top:5px;width:90%; height:30px">
-                    No.0001
-                    
-                </div>
--->
                 <span class="btn btn-default" ng-click="isShowNumber = (isShowNumber ? false : true)"
                           style="padding:4px 2px; color:grey; font-size:10px; float:right;">
-                        <span class="glyphicon glyphicon-check" ng-show="isShowNumber"></span>
-                        <span class="glyphicon glyphicon-unchecked" ng-show="!isShowNumber"></span>
-                        show number
-                    </span>
+                    <span class="glyphicon glyphicon-check" ng-show="isShowNumber"></span>
+                    <span class="glyphicon glyphicon-unchecked" ng-show="!isShowNumber"></span>
+                    show number
+                </span>
             </div>
             <div class="panel-body" >
                     <div class="game-info row">
                         
                         <div>
-                            Move {{user.myProgressingGame.moves.length + 1}}   
-                            
+                            Move {{user.myProgressingGame.moves.length + 1}}  
                         </div>
                         
                         <div>
@@ -38,7 +31,8 @@
                         </div> 
                         
                         <div>
-                            <span>Rating Game.</span>
+                            <span>Rating.<span class="glyphicon glyphicon-ok"></span></span>
+                            <span>Not Rating. <span class="glyphicon glyphicon-remove"></span> </span>
                         </div>
                         
                         <div>
@@ -58,6 +52,14 @@
     </div>
 
     <div class="col-sm-7">
+        <div id="divGameAction">
+            <button class="" ng-show="game && isMyGame && (game.status != 'finished') && !isMyTurn() && moves.length >=10 " ng-click="confirmDrawRequest()">Draw</button>
+            <button class="" ng-show="game && isMyGame && (game.status != 'finished')&& moves.length >=10" ng-click="confirmResign()" >Resign</button>
+            <button class="" ng-show="game && isMyGame && (game.status != 'finished')&& isMyTurn()" ng-click="confirmPass()" >Pass</button>
+            <button class="" ng-show="game && isMyGame && (game.status != 'finished')&& !isMyTurn() && moves.length >=10" >Undo</button>
+            <button class="" ng-show="game && !isMyGame || (game.status == 'finished')" ng-click="quitGame()">Quit</button>
+        </div>
+        
         <div id="divGameBoard">
             
             <table style="margin-left:auto; margin-right:auto">
