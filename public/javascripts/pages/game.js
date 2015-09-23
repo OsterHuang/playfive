@@ -1,32 +1,77 @@
 
 gamePage = angular.module('gamePage', []);
 
-gamePage.controller('gameController', function ($rootScope, $scope, $http, $window, $interval) {
+gamePage.controller('gameController', function ($rootScope, $scope, $http, $window, $interval, socket) {
+    $scope.isLocked = false;
     $scope.isShowNumber = false;
+    $scope.chatOut = 'abc';
+    $scope.gameRootChat = '';
+//    $scope.game.moves = [];
+//    $scope.game.moves = $scope.game.moves;
     
-    $scope.moves = [
-        {seq:1, ordinate: {x:8, y:8}},
-        {seq:2, ordinate: {x:8, y:9}},
-        {seq:3, ordinate: {x:8, y:6}},
-        {seq:4, ordinate: {x:9, y:10}},
-        {seq:5, ordinate: {x:9, y:6}},
-        {seq:6, ordinate: {x:9, y:9}},
-        {seq:7, ordinate: {x:7, y:9}},
-        {seq:8, ordinate: {x:7, y:8}},
-        {seq:9, ordinate: {x:10, y:11}},
-        {seq:10, ordinate: {x:11, y:13}}
-    ];
+//    $scope.game.moves = [
+//        {seq:1, ordinate: {x:8, y:8}},
+//        {seq:2, ordinate: {x:8, y:9}},
+//        {seq:3, ordinate: {x:8, y:6}},
+//        {seq:4, ordinate: {x:9, y:10}},
+//        {seq:5, ordinate: {x:9, y:6}},
+//        {seq:6, ordinate: {x:9, y:9}},
+//        {seq:7, ordinate: {x:7, y:9}},
+//        {seq:8, ordinate: {x:7, y:8}},
+//        {seq:9, ordinate: {x:10, y:11}},
+//        {seq:10, ordinate: {x:11, y:13}}
+//    ];
 
     // ----
     // Util
     // ----
-
+    $scope.isMyGame = function() {
+        if (!$rootScope.user || !$scope.game)
+            return false;
+        
+        if ($scope.game.black.username === $rootScope.user.username || $scope.game.white.username === $rootScope.user.username) {
+            return true;
+        }
+        
+        return false;
+    }
+    
+    $scope.isMyTurn = function() {
+        if (!$rootScope.user || !$scope.game)
+            return false;
+        
+        if ($scope.game.moves.length %2 == 0 && $scope.game.black.username === $rootScope.user.username)
+            return true;
+        if ($scope.game.moves.length %2 == 1 && $scope.game.white.username === $rootScope.user.username)
+            return true;
+        return false;
+    }
+    
+    $scope.isBlackTurn = function() {
+        if ($scope.game.moves.length %2 == 0)
+            return true;
+        return false;
+    }
+    
+    $scope.isWhiteTurn = function() {
+        if ($scope.game.moves.length %2 == 1)
+            return true;
+        return false;
+    }
+    
     $scope.transOrigToReadableX = function(pX) {
         return String.fromCharCode(97 + pX);
     }
 
     $scope.transOrigToReadableY = function(pY, boardSize) {
         return '' + (boardSize - pY);
+    }
+    
+    $scope.arrangeMoves = function() {
+        for (var i in $scope.game.moves) {
+            $scope.board.grids[$scope.game.moves[i].ordinate.y][
+                $scope.game.moves[i].ordinate.x].move = $scope.game.moves[i];
+        }
     }
 
     // ----
@@ -94,31 +139,116 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     }
 
     //
-    for (var i in $scope.moves) {
-        $scope.board.grids[$scope.moves[i].ordinate.y][
-        $scope.moves[i].ordinate.x].move = $scope.moves[i];
-    }
+//    arrangeMoves();
 
     //　----
     //  User Interaction
     //  ----
     $scope.mouseOnBoard = function(grid) {
-        console.log('mouseMove on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
+//        console.log('mouseMove on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
 //                console.log('previewStoneWidth:' + $scope.board.moveStyle.width);
         //Preview stone
-        $scope.board.grids[grid.ordinate.y][grid.ordinate.x].previewMove = true;
+        $scope.board.previewMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
     }
 
     $scope.mouseOutBoard = function(grid) {
-        console.log('mouseOut on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
+//        console.log('mouseOut on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
         //Preview stone
-        $scope.board.grids[grid.ordinate.y][grid.ordinate.x].previewMove = false;
+        $scope.board.grids.previewMove = null;
+//        $scope.board.grids[grid.ordinate.y][grid.ordinate.x].firstClickMove = false;
     }
+    
+    $scope.clickOnBoard = function(grid) {
+        console.log('click on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
+        
+        if (!$scope.isMyTurn()) {
+            console.log(' Not your game or your turn.');
+            return;
+        }
+        
+        //Preview stone
+        if (grid.move != null)
+            return;
+        if ($scope.isLocked == false)
+            $scope.board.firstClickMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
+    }
+    
+    $scope.confirmNextMove = function() {
+        var newMove = $scope.board.firstClickMove;
+        $scope.board.firstClickMove = null;
+        
+//        $scope.game.moves.push(newMove);
+//        $scope.board.grids[newMove.ordinate.y][newMove.ordinate.x].move = newMove;
+        
+        socket.emit('game-going', {
+            uid:$scope.game.uid,
+            seq:$scope.game.moves.length + 1,
+            ordinate:{x:newMove.ordinate.x, y:newMove.ordinate.y}
+        });
+    }
+    
+    $scope.chatInGame = function() {
+        socket.emit('game-room-chat-send', {from:$rootScope.user.username, gameSeq:$scope.game.seq, content:$scope.chatOut});
+    }
+    
+    // ----
+    // Socket receiver
+    // ----
+    socket.on('game-join', function(game) {
+        console.log('game-join - ' + game.seq, game);
+        $rootScope.message = 'Join Game No.' + game.seq;
+        $("#message").alert();
+        $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+                
+        $scope.game = game;
+        $rootScope.user.myProgressingGame = game; // --> For the main.html show, hide div
+        $scope.arrangeMoves();
+    });
+    
+    socket.on('game-drawAccepted', function(game) {
+        $rootScope.message = 'Game draw.';
+        $("#message").alert();
+        $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+    });
+    
+    socket.on('game-drawReject', function(username) {
+        $rootScope.message = 'Draw request is rejected by ' + username;
+        $interval(function () {$scope.message = null;}, 3000, 1);
+    });
+    
+    socket.on('game-not-exists', function() {
+        console.log('On game-not-exists');
+        $rootScope.message = 'Game not exists.';
+        $interval(function () {$scope.message = null;}, 3000, 1);
+        $rootScope.game = null;
+        setCookie('processing-game', null);
+    });
+    
+    socket.on('game-going-receive', function(moves) {
+        console.log('On going', moves);
+        $scope.isLocked = false;
+        $scope.game.moves = moves;
+        $scope.arrangeMoves();
+    });
+    
+    socket.on('game-finished', function(game) {
+        console.log('On finished', game);
+        $scope.game.moves = game.moves;
+        $scope.game = game;
+        $rootScope.message = game.result;
+    });
+    
+    socket.on('game-room-chat-receive', function(message) {
+        console.log('On game-root-chat-receive', message);
+        $scope.gameRootChat = $scope.gameRootChat + message.from + ':' + message.content + '\n';
+    });
+    
+    
 //    $scope.isMyGame = false;
 //    
 //    //Board
 //    $scope.moveOnOrdinate = {x:-1, y:-1};
-//    $scope.moves = [];
+//    $scope.game.moves = [];
 //    
 //    $scope.board = {
 //    };
@@ -145,8 +275,8 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 ////            $scope.goMove($scope.calGridOrdinate($event.offsetX, $event.offsetY));
 //        var clickOrdinate = $scope.calGridOrdinate($event.offsetX, $event.offsetY);
 //        //Collision detect to other moves.
-//        for (var i in $scope.moves) {
-//            var move = $scope.moves[i];
+//        for (var i in $scope.game.moves) {
+//            var move = $scope.game.moves[i];
 //            
 //            if (!move.ordiante)
 //                continue;
@@ -159,7 +289,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 //        if ($scope.isMyTurn()) {
 //            gameSocket.emit('going', {
 //                game_id:$rootScope.game.uid,
-//                seq:$scope.moves.length + 1,
+//                seq:$scope.game.moves.length + 1,
 //                ordinate:$scope.calGridOrdinate($event.offsetX, $event.offsetY)
 //            });
 //        } else {
@@ -175,7 +305,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 //        $rootScope.modal.clickButton1 = function() {
 //            gameSocket.emit('going', {
 //                game_id:$rootScope.game.uid,
-//                seq:$scope.moves.length + 1,
+//                seq:$scope.game.moves.length + 1,
 //                ordinate:null
 //            });
 //        }
@@ -254,7 +384,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 //    gameSocket.on('join', function(game) {
 //        console.log('On join game:' + game);
 //        $rootScope.game = game;
-//        $scope.moves = game.moves;
+//        $scope.game.moves = game.moves;
 //        $scope.board.size = game.boardSize;
 //        if (game.black == $rootScope.username || game.white == $rootScope.username) {
 //            $scope.isMyGame = true;
@@ -281,12 +411,12 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 //    
 //    gameSocket.on('going', function(moves) {
 //        console.log('On going', moves);
-//        $scope.moves = moves;
+//        $scope.game.moves = moves;
 //    });
 //    
 //    gameSocket.on('finished', function(game) {
 //        console.log('On finished', game);
-//        $scope.moves = game.moves;
+//        $scope.game.moves = game.moves;
 //        $rootScope.game = game;
 //        $rootScope.message = game.result;
 //    });
@@ -296,10 +426,10 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 //    // ----
 //    $scope.goMove =  function(pOrdinate) {
 //        var newMove = {
-//            seq:$scope.moves.length + 1,
+//            seq:$scope.game.moves.length + 1,
 //            ordinate:pOrdinate
 //        };
-//        $scope.moves.push(newMove);
+//        $scope.game.moves.push(newMove);
 //        return newMove;
 //    }
 //    
@@ -309,9 +439,9 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 //    }
 //    
 //    $scope.isMyTurn = function() {
-//        if ($scope.moves.length %2 == 0 && getCookie('username') == $scope.game.black)
+//        if ($scope.game.moves.length %2 == 0 && getCookie('username') == $scope.game.black)
 //            return true;
-//        if ($scope.moves.length %2 == 1 && getCookie('username') == $scope.game.white)
+//        if ($scope.game.moves.length %2 == 1 && getCookie('username') == $scope.game.white)
 //            return true;
 //        return false;
 //    }

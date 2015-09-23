@@ -46,7 +46,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     };
     
     $scope.joinGame = function(game) {
-        socket.emit('lobby-join-game', {joinGame:game, participant:$rootScope.user.username}, null);
+        socket.emit('lobby-start-game', {joinGame:game, participant:$rootScope.user.username}, null);
     }
     
     $scope.cancelCreateGame = function() {
@@ -68,9 +68,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         $scope.progressingGames = data.progressingGames;
         $scope.hasMyCreatedGame();
         $scope.hasMyProgressingGame();
-    });
-    
-    
+    });    
     
     // ---- U ----
     $scope.hasMyCreatedGame = function() {
@@ -87,8 +85,9 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     $scope.hasMyProgressingGame = function() {
         for (var i = 0; i < $scope.progressingGames.length; i++) {
             if ($scope.progressingGames[i].black.username == $rootScope.user.username ||
-               $scope.progressingGames[i].white.username == $rootScope.user.username) {
-                $rootScope.user.myProgressingGame = $scope.progressingGames[i];
+                $scope.progressingGames[i].white.username == $rootScope.user.username) {
+                //$rootScope.user.myProgressingGame = $scope.progressingGames[i];
+                socket.emit('lobby-join-game', {joinGame:$scope.progressingGames[i]});
                 return;
             }
         }

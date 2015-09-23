@@ -104,12 +104,12 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
         ).success(function(response) {
             console.log(response);
             if (response.result != 'success') {
-                $scope.message = response.message;
+                $rootScope.message = response.message;
                 $("#message").alert();
                 $("#message").fadeTo(5000, 500).slideUp(500, function() {});
                 //$window.location = '/login.html'
             } else {
-                $scope.message = 'Welcome ' + response.user.nickname;
+                $rootScope.message = 'Welcome ' + response.user.nickname;
                 $("#message").alert();
                 $("#message").fadeTo(5000, 500).slideUp(500, function() {});
                 
@@ -120,17 +120,20 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
         }).error(function(data, status) {
             console.log('Error ' + status + '. ' + data);
             $scope.result = 'Error.';
-            $scope.message = data.error;
+            $rootScope.message = data.error;
             $("#message").alert();
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
         });
         
     });
     
-    socket.on('message', function(message) {
-        console.log('On receive message - ' + message); 
-        $rootScope.lobbyChat = $rootScope.lobbyChat + message.from + ':' + message.content + '\n';
-        console.log(' Final lobbyChat:' + $rootScope.lobbyChat);
+    socket.on('message', function(data) {
+        $rootScope.message = data.message;
+        $("#message").alert();
+        $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+//        console.log('On receive message - ' + message); 
+//        $rootScope.lobbyChat = $rootScope.lobbyChat + message.from + ':' + message.content + '\n';
+//        console.log(' Final lobbyChat:' + $rootScope.lobbyChat);
     });
     
     socket.on('reconnect', function() {
