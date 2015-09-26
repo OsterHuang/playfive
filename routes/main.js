@@ -56,18 +56,19 @@ io.on('connection', function (socket) {
             }
             alreadyInUser.socketId = socket.id;
         }
+        socket.username = user.username;
         
         io.emit('lobby-user-list', { onlineUsers: m_onlineUsers.listUsers() });
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
     });
     
     socket.on('lobby-create-game', function(data) {
-        console.log('On lobby-game-created: ' + util.inspect(data, {showHidden: false, depth:null}));
+        console.log("On lobby-game-created: (" + socket.username + ", " + socket.room + ")", data);
         
         MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
             if (err) {
                 console.log(' Can not connect db.');
-                io.emit('message', {message:err.message})
+                socket.emit('message', {message:err.message})
                 return;
             }
             
@@ -79,7 +80,7 @@ io.on('connection', function (socket) {
                 function(err, doc) {
                     if (err) {
                         console.log(' Find and upsert counter error - ' + err.message);
-                        io.emit('message', {message:err.message})
+                        socket.emit('message', {message:err.message});
                         return;
                     }
                     
@@ -116,13 +117,13 @@ io.on('connection', function (socket) {
     });
     
     socket.on('lobby-cancel-game', function(data) {
-        console.log('On lobby-cancel-game: ' + util.inspect(data, {showHidden: false, depth:null}));
+        console.log("On lobby-cancel-game: (" + socket.username + ", " + socket.room + ")", data);
         m_processingGames.removeGame(data.uid);
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
     });
     
     socket.on('lobby-start-game', function(data) {
-        console.log('On lobby-start-game: ' + util.inspect(data, {showHidden: false, depth:null}));
+        console.log("On lobby-start-game: (" + socket.username + ", " + socket.room + ")", data);
         
         var joinGame = m_processingGames.findGame(data.joinGame.uid); 
         console.log('Start-game: ' + util.inspect(joinGame, {showHidden: false, depth:null}));
@@ -144,41 +145,48 @@ io.on('connection', function (socket) {
     });
     
     socket.on('lobby-join-game', function(data) {
-        console.log('On lobby-join-game: ' + util.inspect(data, {showHidden: false, depth:null}));
+        console.log("On lobby-join-game: (" + socket.username + ", " + socket.room + ")", data);
         var joinGame = m_processingGames.findGame(data.joinGame.uid); 
-        socket.join('room_' + joinGame.seq);
-        io.emit('game-join', joinGame);
+        socket.room = 'room_' + joinGame.seq;
+        socket.join(socket.room);
+        socket.emit('game-join', joinGame);
     });
     
     socket.on('lobby-watch-game', function(data) {
-        console.log('On lobby-watch-game: ' + util.inspect(data, {showHidden: false, depth:null}));
+        console.log("On lobby-watch-game: (" + socket.username + ", " + socket.room + ")", data);
         
         var watchGame = m_processingGames.findGame(data.watchGame.uid); 
         console.log('Watch-game: ' + util.inspect(watchGame, {showHidden: false, depth:null}));
         
-        socket.join('room_' + watchGame.seq);
+        socket.room = 'room_' + watchGame.seq;
+        socket.join(socket.room);
         
-        io.emit('lobby-watched-game', watchGame);
+        socket.emit('lobby-watched-game', watchGame);
     });
     
-    socket.on('lobby-chat', function(message) {
-        console.log('On message: ' + util.inspect(message, {showHidden: false, depth:null}));
-        io.sockets.emit('lobby-chat-receive', message);
+    socket.on('lobby-chat-send', function(data) {
+        console.log("On lobby-chat-send: (" + socket.username + ", " + socket.room + ")" + util.inspect(data, {showHidden: false, depth:null}));
+        io.sockets.emit('lobby-chat-receive', data);
     });
     
     socket.on('game-room-chat-send', function(data) {
-        console.log('On game-room-chat-send: ' + util.inspect(data, {showHidden: false, depth:null}));
+        console.log("On game-room-chat-send: (" + socket.username + ", " + socket.room + ")", data);
         //io.to('room_' + data.gameSeq).emit('game-room-chat-receive', data);
         io.sockets["in"]('room_' + data.gameSeq).emit('game-room-chat-receive', data);
     });
     
     socket.on('game-going', function(data) {
-        console.log("On going: " + util.inspect(data, {showHidden: false, depth: null}));
+        console.log("On going: (" + socket.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
         
         //Only active game could go next move.
         if (game.status != 'started') {
+            return;
+        }
+        if (game.black.username != socket.username && game.white.username != socket.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
             return;
         }
         
@@ -193,48 +201,62 @@ io.on('connection', function (socket) {
             game.result = game.moves.length % 2 == 1 ? 'Black wins' : 'White win';
             io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
         } else {
-//            console.log(' Send game-going to room -  ' + ('room_' + game.seq));
-
             io.sockets["in"]('room_' + game.seq).emit('game-going-receive', game.moves);
         }
     });
     
-    socket.on('game-drawRequest', function(data) {
-        console.log("On drawRequest: " + util.inspect(data, {showHidden: false, depth: null}));
+    socket.on('game-undo', function(data) {
+        console.log("On undo: (" + socket.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.game_id);
+        console.log(" Game undo: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        //Only active game could go next move.
+        if (game.status != 'started') {
+            return;
+        }
+        if (game.black.username != socket.username && game.white.username != socket.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        
+        var undoMove = game.moves.pop();
+        
+        io.sockets["in"]('room_' + game.seq).emit('game-undo-receive', undoMove);
+    });
+    
+    socket.on('game-draw-request', function(data) {
+        console.log("On draw-request: (" + socket.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
-        console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
-        var blackUser = m_onlineUsers.findUser(game.black);
-        var whiteUser = m_onlineUsers.findUser(game.white);
+        console.log(" game-draw-request: ", game);
+        var blackUser = m_onlineUsers.findUser(game.black.username);
+        var whiteUser = m_onlineUsers.findUser(game.white.username);
                 
         if (blackUser.username == me.username) {
-            gameIo.to(whiteUser.socketId).emit('drawRequest', whiteUser.username);
+            io.to(whiteUser.socketId).emit('game-draw-request-receive', whiteUser.username);
         } else if (whiteUser.username == me.username) {
-            gameIo.to(blackUser.socketId).emit('drawRequest', blackUser.username);
+            io.to(blackUser.socketId).emit('game-draw-request-receive', blackUser.username);
         }
     });
               
-    socket.on('game-drawAccept', function(data) {
-        console.log("On drawAccept: " + util.inspect(data, {showHidden: false, depth: null}));
+    socket.on('game-draw-accept', function(data) {
+        console.log("On drawAccept: (" + socket.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
-        console.log(" Game: " + util.inspect(game, {showHidden: false, depth: null}));
-        var blackUser = m_onlineUsers.findUser(game.black);
-        var whiteUser = m_onlineUsers.findUser(game.white);
+//        var blackUser = m_onlineUsers.findUser(game.black);
+//        var whiteUser = m_onlineUsers.findUser(game.white);
         
         game.status = 'finished';
-        game.result = 'draw';
+        game.result = 'Draw';
+        
+        console.log(' Change game status to draw:', game);
                 
-        if (blackUser) {
-            gameIo.to(blackUser.socketId).emit('finished', game);
-        } 
-        if (whiteUser) {
-            gameIo.to(whiteUser.socketId).emit('finished', game);
-        }
+        io.sockets["in"](socket.room).emit('game-finished', game);
     });
         
-    socket.on('game-drawReject', function(data) {
-        console.log("On drawReject: " + util.inspect(data, {showHidden: false, depth: null}));
+    socket.on('game-draw-reject', function(data) {
+        console.log("On drawReject: (" + socket.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(move.game_id);
         console.log(" Game: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -242,34 +264,33 @@ io.on('connection', function (socket) {
         var whiteUser = m_onlineUsers.findUser(game.white);
                 
         if (blackUser.username == me.username) {
-            gameIo.to(whiteUser.socketId).emit('drawReject', whiteUser.username);
+            io.to(whiteUser.socketId).emit('game-draw-rejected', whiteUser.username);
         } else if (whiteUser.username == me.username) {
-            gameIo.to(blackUser.socketId).emit('drawReject', blackUser.username);
+            io.to(blackUser.socketId).emit('game-draw-rejected', blackUser.username);
         }
     });
     
     socket.on('game-resign', function(data) {
-        console.log("On resign: " + util.inspect(data, {showHidden: false, depth: null}));
+        console.log("On resign: (" + socket.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
         console.log(" Game: " + util.inspect(game, {showHidden: false, depth: null}));
-        var blackUser = m_onlineUsers.findUser(game.black);
-        var whiteUser = m_onlineUsers.findUser(game.white);
         
-        game.winner = (data.username == game.black) ? game.white : game.black;
+        game.winner = (data.username == game.black) ? game.white.nickname : game.black.nickname;
         game.status = 'finished';
         game.result = data.username + ' resigned.';
                 
-        if (blackUser) {
-            gameIo.to(blackUser.socketId).emit('finished', game);
-        } 
-        if (whiteUser) {
-            gameIo.to(whiteUser.socketId).emit('finished', game);
-        }
+        io.sockets["in"](socket.room).emit('game-finished', game);
+    });
+    
+    socket.on('game-leave', function(data) {
+        console.log("On game-leave: (" + socket.username + ", " + socket.room + ")", data);
+        socket.leave(socket.room); //Leave game room
+        socket.emit('game-leaved');
     });
     
     socket.on('disconnect', function() {
-        console.log('On disconnect: where connection socket.id = ' + socket.id);
+        console.log("On disconnect: where connection socket.id = (" + socket.username + ")" + socket.id);
         console.log(' Online users: ' + util.inspect(m_onlineUsers.listUsers(), {showHidden: false, depth: null}));
         
         var me;
@@ -281,9 +302,13 @@ io.on('connection', function (socket) {
             }
         }
         
-        console.log(" Leave lobby: " + util.inspect(me, {showHidden: false, depth: null}));
+        console.log(" Leave lobby: ", me);
         if (me && me.username)
             m_onlineUsers.removeUser(me.username);
+        
+        socket.leave(socket.room);
+        socket.room = null;
+        
         io.sockets.emit('lobby-user-list', { onlineUsers: m_onlineUsers.listUsers() });
     });
 });

@@ -77,24 +77,27 @@
             <div id="progressingGames" class="tab-pane fade">
                 <table class="table table-striped" style="margin-top:10px" >
                     <tr>
+                        <th class="text-center">NO</th>
                         <th class="text-center">Creator</th><th class="text-center">Rule</th><th class="text-center">Time rule</th>
                         <th class="text-center">Rating</th><th class="text-center">Opener</th><th class="text-center">Action</th>
                     </tr>
                     <tr ng-repeat="g in progressingGames">
+                        <td>{{g.seq}}</td>
                         <td>{{g.creator.nickname}}<span ng-show="g.creator.username == user.username">(Me)</span></td>
                         <td>
                             {{g.rule}}
                         </td>
                         <td>
-                            {{g.timeRule}}
+                            <span ng-show="g.timeRule.perBasicTime">Basic Time {{g.timeRule.perBasicTime}} mins.</span>
+                            <span ng-show="g.timeRule.perMoveTime">Per Move {{g.timeRule.perMoveTime}} secs.</span>
+                            <span ng-show="g.timeRule.perMovePlusTime">Plus Per Move {{g.timeRule.perMovePlusTime}} secs.</span>
                         </td>
                         <td>
                             <span class="glyphicon glyphicon-ok" ng-show="g.isRating"></span>
                             <span class="glyphicon glyphicon-remove" ng-show="!g.isRating"></span>
                         </td>
                         <td>
-                            <span ng-show="g.isTempBlack">{{g.creator}}</span>
-                            <span ng-show="!g.isTempBlack">Participant</span>
+                            <span>{{g.tempBlack.nickname}}</span>
                         </td>
                         <td>
                             <button class="btn btn-info" ng-click="watchGame(g)" ng-hide="g.creator.username == user.username">
@@ -118,12 +121,14 @@
                 <div style="width:100%; height:90%;">
                     <pre style="height: 100%">{{lobbyChat}}</pre>
                 </div>
-                <div class="input-group" style="margin-top:5%">
-                    <input type="text" class="form-control" placeholder="Your message" ng-model="chatContent">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" type="button" ng-click="chat()">Send</button>
-                    </span>
-                </div>
+                <form role="form">
+                    <div class="input-group" style="margin-top:5%">
+                        <input type="text" class="form-control" placeholder="Your message" ng-model="lobbyChatOut.content">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" ng-click="chatInLobby()">Send</button>
+                        </span>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

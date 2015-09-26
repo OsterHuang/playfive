@@ -3,6 +3,9 @@ lobbyPage = angular.module('lobbyPage', []);
 
 lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $window, $localStorage, socket) {
     
+    $scope.lobbyChat = '';
+    $scope.lobbyChatOut = {content:''};
+    
     $scope.newGame = {
         rule:'gomoku',
         isTentitiveBlack:true,
@@ -49,8 +52,13 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         socket.emit('lobby-start-game', {joinGame:game, participant:$rootScope.user.username}, null);
     }
     
-    $scope.cancelCreateGame = function() {
-    };
+    $scope.watchGame = function(game) {
+        socket.emit('lobby-watch-game', {watchGame:game, participant:$rootScope.user.username}, null);
+    }
+    
+    $scope.chatInLobby = function() {
+        socket.emit('lobby-chat-send', {from:$rootScope.user.username, content:$scope.lobbyChatOut.content});
+    }
     
     
     // ----
@@ -68,7 +76,18 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         $scope.progressingGames = data.progressingGames;
         $scope.hasMyCreatedGame();
         $scope.hasMyProgressingGame();
-    });    
+    });  
+    
+    socket.on('lobby-watched-game', function (data) {
+        console.log(data);
+        socket.emit('lobby-join-game', {joinGame:data});
+    });  
+    
+    socket.on('lobby-chat-receive', function(message) {
+        console.log('On lobby-chat-receive', message);
+        $scope.lobbyChat = $scope.lobbyChat + message.from + ':' + message.content + '\n';
+        $scope.lobbyChatOut.content = '';
+    });
     
     // ---- U ----
     $scope.hasMyCreatedGame = function() {
@@ -84,13 +103,16 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     
     $scope.hasMyProgressingGame = function() {
         for (var i = 0; i < $scope.progressingGames.length; i++) {
-            if ($scope.progressingGames[i].black.username == $rootScope.user.username ||
-                $scope.progressingGames[i].white.username == $rootScope.user.username) {
-                //$rootScope.user.myProgressingGame = $scope.progressingGames[i];
-                socket.emit('lobby-join-game', {joinGame:$scope.progressingGames[i]});
-                return;
+            if ($scope.progressingGames[i].black.username === $rootScope.user.username ||
+                $scope.progressingGames[i].white.username === $rootScope.user.username) {
+                if (!$rootScope.user.myProgressingGame) {
+                    console.log('emit join game', $rootScope.user);
+                    socket.emit('lobby-join-game', {joinGame:$scope.progressingGames[i]});
+                    return;
+                }
             }
         }
+        console.log('No my game here.', $rootScope.user);
     }
     
 });

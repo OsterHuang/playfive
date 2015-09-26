@@ -4,8 +4,10 @@ gamePage = angular.module('gamePage', []);
 gamePage.controller('gameController', function ($rootScope, $scope, $http, $window, $interval, socket) {
     $scope.isLocked = false;
     $scope.isShowNumber = false;
-    $scope.chatOut = 'abc';
-    $scope.gameRootChat = '';
+    $scope.gameRoomChatOut = {content:''};
+    $scope.gameRoomChat = '';
+    
+    $scope.game = {moves:[], black:{}, white:{}};
 //    $scope.game.moves = [];
 //    $scope.game.moves = $scope.game.moves;
     
@@ -48,13 +50,19 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     }
     
     $scope.isBlackTurn = function() {
-        if ($scope.game.moves.length %2 == 0)
+        if (!$rootScope.user || !$scope.game)
+            return false;
+        
+        if ($scope.game.moves.length %2 == 0 && $scope.game.status === 'started')
             return true;
         return false;
     }
     
     $scope.isWhiteTurn = function() {
-        if ($scope.game.moves.length %2 == 1)
+        if (!$rootScope.user || !$scope.game)
+            return false;
+        
+        if ($scope.game.moves.length %2 == 1 && $scope.game.status === 'started')
             return true;
         return false;
     }
@@ -65,6 +73,15 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 
     $scope.transOrigToReadableY = function(pY, boardSize) {
         return '' + (boardSize - pY);
+    }
+    
+    $scope.clearGridMoves = function() {
+        //Board Background
+        for (var y = 0; y < $scope.board.size; y++) {
+            for (var x = 0; x < $scope.board.size; x++) {
+                $scope.board.grids[y][x].move = null;
+            }
+        }
     }
     
     $scope.arrangeMoves = function() {
@@ -129,7 +146,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             }
             var imgName = 'e' + xChar + yChar;
 
-            $scope.board.grids[y][x].style.backgroundImage = 'url(./images/board/' + imgName + '.gif)';
+            $scope.board.grids[y][x].style.backgroundImage = 'url(./images/board/' + imgName + '.png)';
         }
     }
 
@@ -149,6 +166,11 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 //                console.log('previewStoneWidth:' + $scope.board.moveStyle.width);
         //Preview stone
         $scope.board.previewMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
+        if ($scope.isMyTurn()) {
+            $scope.board.previewMove.class = "preview-enabled";
+        } else {
+            $scope.board.previewMove.class = "preview-disabled";
+        }
     }
 
     $scope.mouseOutBoard = function(grid) {
@@ -166,9 +188,15 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             return;
         }
         
+        if ($scope.game.status != 'started') {
+            console.log(' The game is not in active status...');
+            return;
+        }
+        
         //Preview stone
         if (grid.move != null)
             return;
+        
         if ($scope.isLocked == false)
             $scope.board.firstClickMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
     }
@@ -188,7 +216,93 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     }
     
     $scope.chatInGame = function() {
-        socket.emit('game-room-chat-send', {from:$rootScope.user.username, gameSeq:$scope.game.seq, content:$scope.chatOut});
+        socket.emit('game-room-chat-send', {from:$rootScope.user.username, gameSeq:$scope.game.seq, content:$scope.gameRoomChatOut.content});
+    }
+    
+    // ---- Game Action ---- Draw, Resign, Undo, Quit
+    
+    $scope.confirmPass = function() {
+        $rootScope.modal.title = 'Pass Confirm';
+        $rootScope.modal.message = 'Want to pass this move?';
+        $rootScope.modal.button1Label = 'Yes';
+        $rootScope.modal.button2Label = 'No';
+        $rootScope.modal.clickButton1 = function() {
+            socket.emit('game-going', {
+                game_id:$rootScope.game.uid,
+                seq:$scope.game.moves.length + 1,
+                ordinate:null
+            });
+        }
+        $rootScope.modal.clickButton2 = function() {
+            //Nothing here
+        }
+        $('#modalDialog').modal({
+            keyboard: true
+        });
+    }
+    
+    $scope.confirmDrawRequest = function() {
+        $rootScope.modal.title = 'Draw';
+        $rootScope.modal.message = 'Send Out Draw Request?';
+        $rootScope.modal.button1Label = 'Yes';
+        $rootScope.modal.button2Label = 'No';
+        $rootScope.modal.clickButton1 = function() {
+            socket.emit('game-draw-request', {
+                username:$rootScope.user.username,
+                game_id:$scope.game.uid
+            });
+        }
+        $rootScope.modal.clickButton2 = function() {
+            //Nothing here
+        }
+        $('#modalDialog').modal({
+            keyboard: true
+        });
+    }
+    
+    $scope.confirmResign = function() {
+        $rootScope.modal.title = 'Resign Confirm';
+        $rootScope.modal.message = 'Do you want to resign?';
+        $rootScope.modal.button1Label = 'Yes';
+        $rootScope.modal.button2Label = 'No';
+        $rootScope.modal.clickButton1 = function() {
+            socket.emit('game-resign', {
+                username:$rootScope.user.username,
+                game_id:$scope.game.uid
+            });
+        }
+        $rootScope.modal.clickButton2 = function() {
+            //Nothing here
+        }
+        $('#modalDialog').modal({
+            keyboard: true
+        });
+    }
+    
+    $scope.confirmUndo = function() {
+        $rootScope.modal.title = 'Pass Confirm';
+        $rootScope.modal.message = "Want to undo opponent's move?";
+        $rootScope.modal.button1Label = 'Yes';
+        $rootScope.modal.button2Label = 'No';
+        $rootScope.modal.clickButton1 = function() {
+            socket.emit('game-undo', {
+                game_id:$scope.game.uid
+            });
+        }
+        $rootScope.modal.clickButton2 = function() {
+            //Nothing here
+        }
+        $('#modalDialog').modal({
+            keyboard: true
+        });
+    }
+    
+    $scope.quitGame = function() {
+        socket.emit('game-leave', {joinGame:$scope.game});
+    }
+    
+    $scope.quitWatchedGame = function() {
+        socket.emit('game-leave', {joinGame:$scope.game});
     }
     
     // ----
@@ -202,18 +316,45 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
                 
         $scope.game = game;
         $rootScope.user.myProgressingGame = game; // --> For the main.html show, hide div
+        $scope.clearGridMoves();
         $scope.arrangeMoves();
     });
     
-    socket.on('game-drawAccepted', function(game) {
-        $rootScope.message = 'Game draw.';
+    socket.on('game-draw-request-receive', function(game) {
+        console.log('On game-draw-request-receive', game);
+        $rootScope.modal.title = 'Draw';
+        $rootScope.modal.message = 'Accept Draw Request?';
+        $rootScope.modal.button1Label = 'Accept';
+        $rootScope.modal.button2Label = 'Reject';
+        $rootScope.modal.clickButton1 = function() {
+            console.log('emit game-draw-accept', game);
+            socket.emit('game-draw-accept', {
+                username:$rootScope.user.username,
+                game_id:$scope.game.uid
+            });
+        }
+        $rootScope.modal.clickButton2 = function() {
+            console.log('emit game-draw-reject', game);
+            socket.emit('game-draw-reject', {
+                username:$rootScope.user.username,
+                game_id:$scope.game.uid
+            });
+        }
+        $('#modalDialog').modal({
+            keyboard: true
+        });
+    });
+//    
+//    socket.on('game-draw-accepted', function(game) {
+//        $rootScope.message = 'Game draw.';
+//        $("#message").alert();
+//        $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+//    });
+    
+    socket.on('game-draw-rejected', function(username) {
+        $rootScope.message = 'Draw request is rejected by ' + username;
         $("#message").alert();
         $("#message").fadeTo(5000, 500).slideUp(500, function() {});
-    });
-    
-    socket.on('game-drawReject', function(username) {
-        $rootScope.message = 'Draw request is rejected by ' + username;
-        $interval(function () {$scope.message = null;}, 3000, 1);
     });
     
     socket.on('game-not-exists', function() {
@@ -225,233 +366,44 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     });
     
     socket.on('game-going-receive', function(moves) {
-        console.log('On going', moves);
+        console.log('On going', moves, $scope.game.moves);
         $scope.isLocked = false;
+//        if (moves.length > $scope.game.moves.length) { //Undo
+//            var lastMove = $scope.game.moves.pop();
+//            console.log(' Undo move: ', lastMove);
+//            $scope.board.grids[lastMove.ordinate.y][lastMove.ordinate.x].move = null;
+//        }
         $scope.game.moves = moves;
         $scope.arrangeMoves();
     });
     
+    socket.on('game-undo-receive', function(undoMove) {
+        console.log('On undo', undoMove);
+        $scope.board.grids[undoMove.ordinate.y][undoMove.ordinate.x].move = null;
+        console.log(' pop moves', $scope.game.moves.pop());
+//        $scope.arrangeMoves();
+    });
+    
     socket.on('game-finished', function(game) {
         console.log('On finished', game);
-        $scope.game.moves = game.moves;
         $scope.game = game;
+        $scope.arrangeMoves();
+        
         $rootScope.message = game.result;
+        $("#message").alert();
+        $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+    });
+    
+    socket.on('game-leaved', function() {
+        console.log('On leaved');
+        $rootScope.user.myProgressingGame = null;
     });
     
     socket.on('game-room-chat-receive', function(message) {
-        console.log('On game-root-chat-receive', message);
-        $scope.gameRootChat = $scope.gameRootChat + message.from + ':' + message.content + '\n';
+        console.log('On game-room-chat-receive', message);
+        $scope.gameRoomChat = $scope.gameRoomChat + message.from + ':' + message.content + '\n';
+        $scope.gameRoomChatOut.content = '';
     });
-    
-    
-//    $scope.isMyGame = false;
-//    
-//    //Board
-//    $scope.moveOnOrdinate = {x:-1, y:-1};
-//    $scope.game.moves = [];
-//    
-//    $scope.board = {
-//    };
-//    $scope.board.size = 15;
-//    $scope.board.width = 480;
-//    $scope.board.height = 480;
-//    $scope.board.gridWidth = $scope.board.width / $scope.board.size;
-//    $scope.board.gridHeight = $scope.board.height / $scope.board.size;
-//    
-//    $scope.board.boldPoints = [
-//        {x:3, y:3}, 
-//        {x:3, y:$scope.board.size - 1 - 3}, 
-//        {x:$scope.board.size - 1 - 3, y:3}, 
-//        {x:$scope.board.size - 1 - 3, y:$scope.board.size - 1 - 3},
-//        {x:Math.floor($scope.board.size / 2), y:Math.floor($scope.board.size / 2)}
-//    ];//console.log($scope.board.boldPoints);
-//    
-//    $scope.getNumber = function(num) {
-//        return new Array(num);   
-//    }
-//    
-//    $scope.clickOnBoard = function($event) {
-//        
-////            $scope.goMove($scope.calGridOrdinate($event.offsetX, $event.offsetY));
-//        var clickOrdinate = $scope.calGridOrdinate($event.offsetX, $event.offsetY);
-//        //Collision detect to other moves.
-//        for (var i in $scope.game.moves) {
-//            var move = $scope.game.moves[i];
-//            
-//            if (!move.ordiante)
-//                continue;
-//            if (move.ordinate.x == clickOrdinate.x && move.ordinate.y == clickOrdinate.y) {
-//                console.log('Stone already on.');
-//                return;
-//            }
-//        }
-//        
-//        if ($scope.isMyTurn()) {
-//            gameSocket.emit('going', {
-//                game_id:$rootScope.game.uid,
-//                seq:$scope.game.moves.length + 1,
-//                ordinate:$scope.calGridOrdinate($event.offsetX, $event.offsetY)
-//            });
-//        } else {
-//            console.log('Not my turn / my game');
-//        }
-//    }
-//    
-//    $scope.confirmPass = function() {
-//        $rootScope.modal.title = 'Pass Confirm';
-//        $rootScope.modal.message = 'Want to pass this move?';
-//        $rootScope.modal.button1Label = 'Yes';
-//        $rootScope.modal.button2Label = 'No';
-//        $rootScope.modal.clickButton1 = function() {
-//            gameSocket.emit('going', {
-//                game_id:$rootScope.game.uid,
-//                seq:$scope.game.moves.length + 1,
-//                ordinate:null
-//            });
-//        }
-//        $rootScope.modal.clickButton2 = function() {
-//            //Nothing here
-//        }
-//        $('#modalDialog').modal({
-//            keyboard: true
-//        });
-//    }
-//    
-//    $scope.confirmDrawRequest = function() {
-//        $rootScope.modal.title = 'Draw';
-//        $rootScope.modal.message = 'Send Draw Request?';
-//        $rootScope.modal.button1Label = 'Yes';
-//        $rootScope.modal.button2Label = 'No';
-//        $rootScope.modal.clickButton1 = function() {
-//            gameSocket.emit('drawRequest', {
-//                username:$rootScope.username,
-//                game_id:$rootScope.game.uid
-//            });
-//        }
-//        $rootScope.modal.clickButton2 = function() {
-//            //Nothing here
-//        }
-//        $('#modalDialog').modal({
-//            keyboard: true
-//        });
-//    }
-//    
-//    $scope.confirmResign = function() {
-//        $rootScope.modal.title = 'Resign Confirm';
-//        $rootScope.modal.message = 'Do you want to resign?';
-//        $rootScope.modal.button1Label = 'Yes';
-//        $rootScope.modal.button2Label = 'No';
-//        $rootScope.modal.clickButton1 = function() {
-//            gameSocket.emit('resign', {
-//                username:$rootScope.username,
-//                game_id:$rootScope.game.uid
-//            });
-//        }
-//        $rootScope.modal.clickButton2 = function() {
-//            //Nothing here
-//        }
-//        $('#modalDialog').modal({
-//            keyboard: true
-//        });
-//    }
-//    
-//    $scope.mouseOnBoard = function($event) {
-////        console.log('(' + $event.offsetX + ', ' + $event.offsetY + ')');
-//        $scope.moveOnOrdinate = $scope.calGridOrdinate($event.offsetX, $event.offsetY);
-//    }
-//    
-//    $scope.mouseOutBoard = function() {
-//        $scope.moveOnOrdinate = {x:-1, y:-1};
-//    }
-//    
-//    $scope.quitGame = function() {
-//        $rootScope.game = null;
-//        setCookie('processing-game', null);
-//    }
-//    
-//    // ----
-//    // Socket receiver
-//    // ----
-//    
-//    gameSocket.on('connected', function() {
-//        console.log('GameSocket connected');
-//        gameSocket.emit('join', {
-//            username:getCookie('username'),
-//            game_id:getCookie('processing-game')
-//        });
-//    });
-//    
-//    gameSocket.on('join', function(game) {
-//        console.log('On join game:' + game);
-//        $rootScope.game = game;
-//        $scope.game.moves = game.moves;
-//        $scope.board.size = game.boardSize;
-//        if (game.black == $rootScope.username || game.white == $rootScope.username) {
-//            $scope.isMyGame = true;
-//        }
-//    });
-//    
-//    gameSocket.on('drawAccept', function(game) {
-//        $rootScope.message = 'Game draw.';
-//        $interval(function () {$scope.message = null;}, 3000, 1);
-//    });
-//    
-//    gameSocket.on('drawReject', function(username) {
-//        $rootScope.message = 'Draw request is rejected by ' + username;
-//        $interval(function () {$scope.message = null;}, 3000, 1);
-//    });
-//    
-//    gameSocket.on('game-not-exists', function() {
-//        console.log('On game-not-exists');
-//        $rootScope.message = 'Game not exists.';
-//        $interval(function () {$scope.message = null;}, 3000, 1);
-//        $rootScope.game = null;
-//        setCookie('processing-game', null);
-//    });
-//    
-//    gameSocket.on('going', function(moves) {
-//        console.log('On going', moves);
-//        $scope.game.moves = moves;
-//    });
-//    
-//    gameSocket.on('finished', function(game) {
-//        console.log('On finished', game);
-//        $scope.game.moves = game.moves;
-//        $rootScope.game = game;
-//        $rootScope.message = game.result;
-//    });
-//    
-//    // ----
-//    //
-//    // ----
-//    $scope.goMove =  function(pOrdinate) {
-//        var newMove = {
-//            seq:$scope.game.moves.length + 1,
-//            ordinate:pOrdinate
-//        };
-//        $scope.game.moves.push(newMove);
-//        return newMove;
-//    }
-//    
-//    $scope.calGridOrdinate = function(x, y) {
-////        console.log(x + ' ' + x / $scope.board.gridWidth + ' ' + Math.floor(x / $scope.board.gridWidth) + ' ' + Math.ceil(x / $scope.board.gridWidth))
-//        return {x: Math.floor(x / $scope.board.gridWidth), y: Math.floor(y / $scope.board.gridHeight)};
-//    }
-//    
-//    $scope.isMyTurn = function() {
-//        if ($scope.game.moves.length %2 == 0 && getCookie('username') == $scope.game.black)
-//            return true;
-//        if ($scope.game.moves.length %2 == 1 && getCookie('username') == $scope.game.white)
-//            return true;
-//        return false;
-//    }
-//    
-//    $scope.filterNullOrdinate = function(move) {
-//        if (move.ordinate === null) {
-//            return false;
-//        }
-//        return true;
-//    }
     
 });
 

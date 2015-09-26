@@ -144,8 +144,9 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
     });
     
     socket.on('disconnect', function (data) {
-        console.log(data);
+        console.log('Disconnect from server' + data);
         $rootScope.message = 'Disconnect from server.';
+        $rootScope.user.myProgressingGame = null;
     });
     
 });

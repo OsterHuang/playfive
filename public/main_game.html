@@ -41,6 +41,11 @@
                             <span class="glyphicon glyphicon-blackboard"></span><span>Renju Rule</span>
                         </div>
                         
+                        <div ng-show="game.status === 'finished'">
+                            <span>The game is finished.</span>
+                            <span>{{game.result}}</span>
+                        </div>
+                        
                         
                     </div>
                     <div>
@@ -53,17 +58,24 @@
     </div>
 
     <div class="col-sm-7">
-        <div id="divGameAction" ng-show="game && isMyGame() && game.status != 'finished'">
-            <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">Draw</button>
-            <button class="" ng-show="true" ng-click="confirmResign()" >Resign</button>
-            <button class="" ng-show="isMyTurn()" ng-click="confirmPass()" >Pass</button>
-            <button class="" ng-show="!isMyTurn() && game.moves.length >=10" >Undo</button>
-            <button class="" ng-show="game && !isMyGame || (game.status == 'finished')" ng-click="quitGame()">Quit</button>
+        <div style="text-align:center; padding-bottom:6px; ">
+            <div id="divGameAction" ng-show="game && isMyGame()" >
+                <div ng-show="game.status === 'started'">
+                    <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">Draw</button>
+                    <button class="" ng-show="true" ng-click="confirmResign()" >Resign</button>
+                    <button class="" ng-show="isMyTurn()" ng-click="confirmPass()" >Pass</button>
+                    <button class="" ng-show="isMyTurn() && game.moves.length >= 1" ng-click="confirmUndo()">Undo</button>
+                </div>
+                <button class="" ng-show="game.status === 'finished'" ng-click="quitGame()">Quit</button>
+            </div>
+            <div id="divWatchAction" ng-show="game && !isMyGame()">
+                <button class="" ng-click="quitWatchedGame()">Quit</button>
+            </div>
         </div>
         
-        <div id="divGameBoard" style="text-align:center">
+        <div id="divGameBoard" style="text-align:center; ">
             
-            <table style="margin-left:auto; margin-right:auto">
+            <table style="margin-left:auto; margin-right:auto; background-image:url(./images/board/wood_board.png) ">
                 <tr>
                     <td></td>
                     <td ng-repeat="x in board.xAxis">
@@ -79,13 +91,15 @@
                     <td ng-repeat="grid in row" ng-style="grid.style" 
                         ng-click="clickOnBoard(grid)"
                         ng-mousemove="mouseOnBoard(grid)" ng-mouseleave="mouseOutBoard(grid)">
-                        <div ng-show="!grid.move && !board.firstClickMove && (grid.ordinate.x == board.previewMove.ordinate.x && grid.ordinate.y == board.previewMove.ordinate.y)" >
+                        <!-- Cursor preview -->
+                        <div ng-show="!grid.move && !board.firstClickMove && (grid.ordinate.x == board.previewMove.ordinate.x && grid.ordinate.y == board.previewMove.ordinate.y)" ng-class="board.previewMove.class" >
                             <img src="./images/board/black.png" ng-show="game.moves.length % 2 == 0" 
                                  style="opacity: 0.4; width:95%; height:95%" />
                             <img src="./images/board/white.png" ng-show="game.moves.length % 2 == 1" 
-                                 style="opacity: 0.4; width:95%; height:95%" />
+                                 style="opacity: 0.4; width:95%; height:95%"/>
                         </div>
                         
+                        <!-- Click comfirm -->
                         <div ng-show="board.firstClickMove && game.moves.length % 2 == 0 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
                              class="stone black" style="opacity: 0.80">
                             <span data-toggle="tooltip" data-placement="right" title="Tooltip on right">Ok?</span>
@@ -94,6 +108,7 @@
                             <span data-toggle="tooltip" data-placement="right" title="Tooltip on right">Ok?</span>
                         </div>
                         
+                        <!-- Real Stone  -->
                         <div ng-show="grid.move && grid.move.seq % 2 == 1" class="stone black">
                             <span ng-show="isShowNumber">{{grid.move.seq}}</span>
                         </div>
@@ -129,14 +144,16 @@
             <h4 class="panel-title">Game No.{{game.seq}} Channel</h4>
             <div class="panel-body full-height">
                 <div style="width:100%; height:90%;">
-                    <pre style="height: 100%">{{gameRootChat}}</pre>
+                    <pre style="height: 100%">{{gameRoomChat}}</pre>
                 </div>
-                <div class="input-group" style="margin-top:5%">
-                    <input type="text" class="form-control" placeholder="Your message" ng-model="chatOut">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" type="button" ng-click="chatInGame()">Send</button>
-                    </span>
-                </div>
+                <form role="form">
+                    <div class="input-group" style="margin-top:5%">
+                        <input type="text" class="form-control" placeholder="Your message" ng-model="gameRoomChatOut.content">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" ng-click="chatInGame()">Send</button>
+                        </span>
+                    </div>
+                </form>
             </div>
         </div>
     </div>
