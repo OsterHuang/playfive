@@ -1,0 +1,25 @@
+<!doctype html>
+<html>
+    
+<head>
+    <meta charset="utf-8">
+    <title>Analysis Board</title>
+    <script src="./javascripts/jquery.min.js"></script>
+    <script src="./javascripts/play5board.js"></script>
+    
+    <script>
+        $(document).ready(function() {
+            var play5board = document.getElementById('divGameBoardAnalysis').play5board;
+            var rawString = location.search.split('moves=')[1];
+            play5board.setMoves(toMovesObj(rawString, play5board.getBoardSize()));
+            play5board.reloadMoves();
+        });
+    </script>
+</head>
+    
+<body>
+        <div id="divGameBoardAnalysis" class="play5board" pb-width="400" pb-editable="true">
+        </div>
+</body>
+    
+</html>

@@ -78,8 +78,8 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
     }
     
     $rootScope.logout = function() {
-        alert('Logout in Root-Scope');
-        setCookie('username', null);
+        alert('Logout');
+        $localStorage.token = null;
         $window.location = '/login.html';
     }
     

@@ -7,6 +7,8 @@ var m_onlineUsers = require('../my_modules/online-users');
 var m_processingGames = require('../my_modules/processing-games');
 var router = express.Router();
 
+var forbiddenFinder = new (require('../my_modules/forbidden-finder').ForbiddenFinder)(15);
+
 console.log('Insert one game counter...');
 MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
     if (err) {
@@ -139,7 +141,11 @@ io.on('connection', function (socket) {
             joinGame.black = {nickname:participant.nickname, username:participant.username};
             joinGame.white = {nickname:creator.nickname, username:creator.username};
         }
-        joinGame.status = "started";
+        
+        if (joinGame.rule === 'classic' || joinGame.rule === 'yamaguchi')
+            joinGame.status = "opening";
+        else 
+            joinGame.status = "started";
         
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
     });
@@ -195,10 +201,12 @@ io.on('connection', function (socket) {
             ordinate: data.ordinate
         });
         
-        if (m_processingGames.win(game.boardSize, game.moves)) {
+        var isRenju = (game.rule === 'gomoku' ? false : true);
+        var finishedResult = forbiddenFinder.isGameFinished(game.moves, game.boardSize, isRenju, false);
+        if (finishedResult.isFinished) {
             game.status = 'finished';
-            game.winner = game.moves.length % 2 == 1 ? game.black : game.white;
-            game.result = game.moves.length % 2 == 1 ? 'Black wins' : 'White win';
+            game.winner = finishedResult.winner === 'black' ? game.black : game.white;
+            game.result = finishedResult.reason;
             io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
         } else {
             io.sockets["in"]('room_' + game.seq).emit('game-going-receive', game.moves);
@@ -206,23 +214,23 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-undo', function(data) {
-        console.log("On undo: (" + socket.username + ", " + socket.room + ")", data);
-        var game = m_processingGames.findGame(data.game_id);
-        console.log(" Game undo: " + util.inspect(game, {showHidden: false, depth: null}));
-        
-        //Only active game could go next move.
-        if (game.status != 'started') {
-            return;
-        }
-        if (game.black.username != socket.username && game.white.username != socket.username) {
-            console.log(' Not the user game.');
-            socket.emit('message', {message:'This is not your game.'});
-            return;
-        }
-        
-        var undoMove = game.moves.pop();
-        
-        io.sockets["in"]('room_' + game.seq).emit('game-undo-receive', undoMove);
+//        console.log("On undo: (" + socket.username + ", " + socket.room + ")", data);
+//        var game = m_processingGames.findGame(data.game_id);
+//        console.log(" Game undo: " + util.inspect(game, {showHidden: false, depth: null}));
+//        
+//        //Only active game could go next move.
+//        if (game.status != 'started') {
+//            return;
+//        }
+//        if (game.black.username != socket.username && game.white.username != socket.username) {
+//            console.log(' Not the user game.');
+//            socket.emit('message', {message:'This is not your game.'});
+//            return;
+//        }
+//        
+//        var undoMove = game.moves.pop();
+//        
+//        io.sockets["in"]('room_' + game.seq).emit('game-undo-receive', undoMove);
     });
     
     socket.on('game-draw-request', function(data) {
@@ -310,6 +318,159 @@ io.on('connection', function (socket) {
         socket.room = null;
         
         io.sockets.emit('lobby-user-list', { onlineUsers: m_onlineUsers.listUsers() });
+    });
+    
+    /**
+      ---- Classic(rif rule), yamaguchi rule ----
+      Inverse flow of game-status / by event: / 
+        opening      / by lobby-game-start  / 
+        swaping      / by game-chosen-open  / 
+        swapped      / by game-swapped      /
+        alt-making   / by game-alt-making   /
+        alt-choosing / by game-alt-choosing /
+        started      / by game-alt-chosen   /
+        
+      ...Reverse flow of game-status by undo event at seq
+      ... opening / game-undo 
+    **/
+    socket.on('game-chosen-open', function(data) {
+        console.log("On game-chosen-open: (" + socket.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.uid);
+        console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        //Only active game could go next move.
+        if (game.status != 'opening') {
+            return;
+        }
+        if (game.black.username != socket.username && game.white.username != socket.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        if (game.tempBlack.username != socket.username) {
+            console.log(' Not the tentitive black.');
+            socket.emit('message', {message:'You can not decide the opening'});
+            return;
+        }
+        
+        Array.prototype.push.apply(game.moves, data.moves); // console.log(' After apply: ', game.moves);
+        game.status = 'swapping'
+        if (game.rule === 'classic')
+            game.altQty = 2;
+        else if (game.rule === 'yamaguchi')
+            game.altQty = data.altQty;
+        
+        io.sockets["in"]('room_' + game.seq).emit('game-chosen-open-receive', game);
+    });
+    
+    socket.on('game-swapped', function(data) {
+        console.log("On game-swapped: (" + socket.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.uid);
+        
+        //Validation
+        if (game.status != 'swapping') {
+            return;
+        }
+        if (game.black.username != socket.username && game.white.username != socket.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        if (game.white.username != socket.username) {
+            console.log(' Not the tentitive white.');
+            socket.emit('message', {message:'You can not do the swapping action.'});
+            return;
+        }
+        
+        //
+        game.status = 'swapped';
+        if (data.isSwapped) {
+            console.log('Before swap, black / white ', game.black, game.white);
+            var tempBlack = game.black;
+            game.black = game.white;
+            game.white = tempBlack;
+            
+            console.log('After swap, black / white ', game.black, game.white);
+        }
+        
+        io.sockets["in"]('room_' + game.seq).emit('game-swapped-receive', game);
+    });
+    
+    socket.on('game-alt-making', function(data) {
+        console.log("On game-alt-making: (" + socket.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.uid);
+        console.log(" game-alt-making: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        //Only active game could go next move.
+        if (game.status != 'swapped') {
+            return;
+        }
+        if (game.black.username != socket.username && game.white.username != socket.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        
+        game.moves.push({
+            seq: data.seq,
+            ordinate: data.ordinate
+        });
+        game.status = 'alt-making';
+        
+        io.sockets["in"]('room_' + game.seq).emit('game-alt-making-receive', game);
+    });
+    
+    socket.on('game-alt-choosing', function(data) {
+        console.log("On game-alt-choosing: (" + socket.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.uid);
+        console.log(" game-alt-choosing: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        //Only active game could go next move.
+        if (game.status != 'alt-making') {
+            return;
+        }
+        if (game.black.username != socket.username && game.white.username != socket.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        
+        game.alts = data.alts;
+        game.status = 'alt-choosing';
+        
+        io.sockets["in"]('room_' + game.seq).emit('game-alt-choosing-receive', game);
+    });
+    
+    socket.on('game-alt-chosen', function(data) {
+        console.log("On alt-chosen: (" + socket.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.uid);
+        console.log(" Game alt-chosen: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        //Only active game could go next move.
+        if (game.status != 'alt-choosing') {
+            return;
+        }
+        if (game.black.username != socket.username && game.white.username != socket.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        
+        game.moves.push({
+            seq: data.alt.seq,
+            ordinate: data.alt.ordinate
+        });
+        game.status = 'started';
+        
+        for (var i in game.atls) {
+            var alt = game.alts[i];
+            if (alt.seq == data.alt.seq && alt.ordinate.x == data.alt.ordinate.x && alt.ordinate.y == data.alt.ordinate.y) {
+                alt.chosen = true;
+                break;
+            }
+        }
+        
+        io.sockets["in"]('room_' + game.seq).emit('game-alt-chosen-receive', game);
     });
 });
 
