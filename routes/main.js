@@ -26,6 +26,17 @@ MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
             }
         }
     );
+    
+     db.collection('counter').insert(
+        { _id: 'announce', next: 1},
+        function(err, doc) {
+            if (err) {
+                console.log(' Insert game counter error - ' + err.message);
+            } else {
+                console.log(' Insert game counter success - seq value:' + doc.next);
+            }
+        }
+    );
 
 });
 

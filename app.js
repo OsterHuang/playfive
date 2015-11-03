@@ -9,6 +9,7 @@ var bodyParser = require('body-parser');
 //Our modules
 var routes = require('./routes/index');
 var account = require('./routes/account');
+var announce = require('./routes/announce');
 var users = require('./routes/users');
 var main = require('./routes/main');
 var lobby = require('./routes/lobby');
@@ -31,6 +32,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 app.use('/', routes);
 app.use('/account', account);
+app.use('/announce', announce);
 app.use('/users', users);
 app.use('/lobby', lobby);
 app.use('/main', main);

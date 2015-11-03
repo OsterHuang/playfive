@@ -44,11 +44,9 @@
                         <span class="glyphicon glyphicon-hand-right" ></span>
                         <span>
                             5th Quantity:{{game.altQty}}
-                            (
-                            <span ng-repeat="move5th in game.alts">
-                                {{toReadable(move5th.ordinate)}} &nbsp;
+                            <span class="badge" ng-repeat="move5th in game.alts" style="margin-left:4px">
+                                {{toReadable(move5th.ordinate)}}
                             </span>
-                            )
                         </span>
                         
                     </div>
