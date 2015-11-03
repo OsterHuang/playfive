@@ -14,9 +14,14 @@
 </head>
 
 <body>
-    <div ng-app="account" ng-controller="accountController" class="container">
+    <div ng-app="account" ng-controller="accountController" class="container-fluid">
+        
+        <div>
+            <div ng-include="'/header.html'"></div>
+        </div>
+        
         <div class="container" style="text-align:center">
-            申請帳號 / Create a New Account
+            <h4>申請帳號 / Create a New Account</h4>
             <div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
                 <button type="button" class="close-message" ng-click="hideMessage()">x</button>
                 <strong>{{messageTitle}}</strong>

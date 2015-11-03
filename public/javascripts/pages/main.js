@@ -1,6 +1,6 @@
 var server_host = 'localhost';
 
-playfiveApp = angular.module('playfiveApp', ['lobbyPage', 'gamePage', 'ngStorage']);
+playfiveApp = angular.module('playfiveApp', ['lobbyPage', 'gamePage', 'announce', 'ngStorage']);
 
 playfiveApp.factory('socket', function ($rootScope) {
   var socket = io.connect('http://' + server_host + ':3030/');

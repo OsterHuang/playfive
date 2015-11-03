@@ -15,60 +15,15 @@
 //-dogswang- check admin ID
 </script>
 <div ng-app="announce" ng-controller="announceController" class="container-fruid">
+    
+    <div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
+        <button type="button" class="close-message" ng-click="hideMessage()">x</button>
+        <strong>{{messageTitle}}</strong>
+        {{messageContent}}
+    </div>
+    
     <div ng-include="'../header.html'"></div>
-	<div class="container" style="text-align:center">
-		<h3>公告清單</h3>
-		<div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
-			<button type="button" class="close-message" ng-click="hideMessage()">x</button>
-			<strong>{{messageTitle}}</strong>
-			{{messageContent}}
-		</div>
-	</div>
-	
-	<div class="container">
-		<center>
-		<table class="table table-striped table-hover">
-			<tbody>
-			<tr>
-				<td align=center>編號 / number</td>
-				<td align=center>標題 / title</td>
-				<td align=center>日期 / date</td>
-			</tr>
-			</tbody>
-			<!--<tr ng-repeat="announce in displayList" style="cursor: pointer" ng-onclick="showDetail(announce.number)">-->
-			<tbody ng-repeat="announce in displayList">
-			<tr ng-click="getContent(announce)">
-				<td align="center">{{announce.number}}</td>
-				<td>{{announce.title}}</td>
-				<td align="center">{{announce.formatedCreatedDate}}</td>
-				<script>console.log(JSON.stringify(announce));</script>
-			</tr>
-			<tr ng-show="announce.expand">
-				<td colspan=3>
-					{{announce.content}}
-				</td>
-				<script>console.log('expand=:'+ typeof announce.formatedCreatedDate);</script>
-			</tr>
-			</tbody>
-		</table>
-		<div class="btn-group" role="group" aria-label="...">
-			<button type="button" ng-onclick="changePage(0)" ng-disable="page=10" class="btn btn-default">
-				<span class="glyphicon glyphicon-fast-backward" /> </button>
-			<button type="button" ng-onclick="changePage(-10)" ng-disable="page<=10" class="btn btn-default">
-				<span class="glyphicon glyphicon-backward" /> </button>
-			<button type="button" ng-onclick="changePage(-1)" ng-disable="page=1" class="btn btn-default">
-				<span class="glyphicon glyphicon-triangle-left" /> </button>
-			<button type="button" class="btn btn-default">{{page}}</button>
-			<button type="button" ng-onclick="changePage(1)" ng-disable="page=1" class="btn btn-default">
-				<span class="glyphicon glyphicon-triangle-right" /> </button>
-			<button type="button" ng-onclick="changePage(10)" ng-disable="page=1" class="btn btn-default">
-				<span class="glyphicon glyphicon-forward" />     </button>
-			<button type="button" ng-onclick="changePage(999)" ng-disable="page=1" class="btn btn-default">
-				<span class="glyphicon glyphicon-fast-forward" /></button>
-		</div>
-		
-		</center>
-	</div>
+    <div ng-include="'./_list.html'"></div>
 </div>
 
 </body>

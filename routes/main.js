@@ -9,7 +9,7 @@ var router = express.Router();
 
 var forbiddenFinder = new (require('../my_modules/forbidden-finder').ForbiddenFinder)(15);
 
-console.log('Insert one game counter...');
+console.log('Insert counters...');
 MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
     if (err) {
         console.log(' Can not connect db on route.main.js.');
