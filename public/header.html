@@ -5,7 +5,9 @@
     </div>
 
     <div style="float:right; text-align:right; margin-right:10px; " ng-show="user">
-        <div style="color:white; font-size:16px; margin-top:20px; display:inline-block;">{{user.nickname}}</div>
+        <div style="margin-top:20px; display:inline-block;">
+                <span style="color:white; font-size:16px; cursor:pointer" ng-click="showProfile()">{{user.nickname}}</span>
+        </div>
         <button class="btn" style="margin-top:0px" ng-click="logout()">
             <span class="glyphicon glyphicon-log-out"></span>
         </button>

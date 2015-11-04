@@ -144,13 +144,13 @@
                         if (!parentObj.editable)
                             return;
                         
-                        if (this.stone) {
+                        if (this.stone && (parentObj.showingSeq >= this.stone.move.seq)) {
                             parentObj.navigateToMove(this.stone.move.seq);
                             return;
                         }
                         
                         //No stone in or the stone is hidden 
-                        if (!target.stone && (parentObj.showingSeq == parentObj.moves.length)) {
+                        if (!this.stone && (parentObj.showingSeq == parentObj.moves.length)) {
                             //The move is new move. Add to the end of
                             parentObj.showingSeq++;
                             

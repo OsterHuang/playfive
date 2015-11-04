@@ -98,7 +98,7 @@
                 <span ng-show="game.status === 'started'">
                     <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">Draw</button>
                     <button class="" ng-show="isMyTurn()" ng-click="confirmPass()" >Pass</button>
-                    <button class="" ng-show="isMyTurn() && game.moves.length >= 1" ng-click="confirmUndo()">Undo</button>
+<!--                    <button class="" ng-show="isMyTurn() && game.moves.length >= 1" ng-click="confirmUndo()">Undo</button>-->
                 </span>
                 
                 <button class="" ng-show="game.status != 'finished'" ng-click="confirmResign()" >Resign</button>

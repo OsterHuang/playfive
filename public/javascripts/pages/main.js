@@ -1,6 +1,6 @@
 var server_host = 'localhost';
 
-playfiveApp = angular.module('playfiveApp', ['lobbyPage', 'gamePage', 'announce', 'ngStorage']);
+playfiveApp = angular.module('playfiveApp', ['lobbyPage', 'gamePage', 'announce', 'userProfilePage', 'ngStorage']);
 
 playfiveApp.factory('socket', function ($rootScope) {
   var socket = io.connect('http://' + server_host + ':3030/');
@@ -75,6 +75,13 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
     if (!$localStorage.token) {
         $window.location = '/login.html';
         return;
+    }
+    
+    $rootScope.showProfile = function() {
+        $('#profileDialog').modal({
+            keyboard: true
+        });
+        $rootScope.$broadcast('user-profile-refresh', $rootScope.user);
     }
     
     $rootScope.logout = function() {

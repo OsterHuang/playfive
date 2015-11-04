@@ -22,15 +22,14 @@
     <script src="javascripts/pages/lobby.js"></script>
     <script src="javascripts/pages/game.js"></script>
     <script src="javascripts/pages/announce_list.js"></script>
+    <script src="javascripts/pages/user-profile.js"></script>
     <script src="javascripts/play5board.js"></script>
-    <!--<script src="javascripts/tools.js"></script>-->
 
 </head>
 
 <body class="full-height">
     <div ng-app="playfiveApp" ng-controller="playfiveController" class="container-fluid full-height">
         
-<!--        <div ng-hide="user.myProgressingGame">-->
         <div>
             <div ng-include="'./header.html'"></div>
         </div>
@@ -43,12 +42,28 @@
         <div class="row  full-height" style="margin-top:20px; height:82%">
             <!-- [[[ Lobby ]]] -->
             <div id="divLobby" ng-app="lobbyPage" ng-controller="lobbyController" class=" full-height" ng-hide="user.myProgressingGame">
-                <div ng-include="'./main_lobby.html'" class="container-fluid  full-height"></div>
+                <div ng-include="'./main_lobby.html'" class="container-fluid full-height"></div>
             </div>
 
             <!-- [[[ Board ]]] -->
             <div id="divBoard" class="full-height" ng-show="user.myProgressingGame" ng-app="gamePage" ng-controller="gameController">
-                <div ng-include="'./main_game.html'" class="container-fluid  full-height"></div>
+                <div ng-include="'./main_game.html'" class="container-fluid full-height"></div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="profileDialog" tabindex="-1" role="dialog" 
+             aria-labelledby="myModalLabel" aria-hidden="true"
+             ng-app="userProfilePage" ng-controller="userProfileController">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header" style="padding:8px">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h3 class="modal-title" id="modalLabel">User Information</h3>
+                    </div>
+                    <div class="modal-body" style="padding:2px">
+                        <div ng-include="'./main_profile.html'" class="container-fluid full-height"></div>
+                    </div>
+                </div>
             </div>
         </div>
         

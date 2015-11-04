@@ -218,6 +218,9 @@ io.on('connection', function (socket) {
             game.status = 'finished';
             game.winner = finishedResult.winner === 'black' ? game.black : game.white;
             game.result = finishedResult.reason;
+            
+            saveGame(game);
+            
             io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
         } else {
             io.sockets["in"]('room_' + game.seq).emit('game-going-receive', game.moves);
@@ -269,6 +272,8 @@ io.on('connection', function (socket) {
         game.status = 'finished';
         game.result = 'Draw';
         
+        saveGame(game);
+        
         console.log(' Change game status to draw:', game);
                 
         io.sockets["in"](socket.room).emit('game-finished', game);
@@ -295,9 +300,11 @@ io.on('connection', function (socket) {
         var game = m_processingGames.findGame(data.game_id);
         console.log(" Game: " + util.inspect(game, {showHidden: false, depth: null}));
         
-        game.winner = (data.username == game.black) ? game.white.nickname : game.black.nickname;
+        game.winner = (data.username == game.black.username) ? game.white : game.black;
         game.status = 'finished';
-        game.result = data.username + ' resigned.';
+        game.result = ((data.username == game.black.username) ? 'white' : 'black') + ' resigned.';
+        
+        saveGame(game);
                 
         io.sockets["in"](socket.room).emit('game-finished', game);
     });
@@ -484,5 +491,28 @@ io.on('connection', function (socket) {
         io.sockets["in"]('room_' + game.seq).emit('game-alt-chosen-receive', game);
     });
 });
+
+function saveGame(pGame) {
+    console.log('saveGame seq:', pGame.seq);
+    
+    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
+        if (err) {
+            console.log(' Can not connect db on route.main.js to save game....');
+            return;
+        }
+
+        db.collection('game').insert(
+            pGame,
+            function(err, doc) {
+                if (err) {
+                    console.log(' Insert game error - ' + err.message);
+                } else {
+                    console.log(' Insert game success - seq value:' + doc.seq);
+                }
+            }
+        );
+
+    });
+}
 
 module.exports = router;

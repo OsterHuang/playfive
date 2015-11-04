@@ -140,6 +140,55 @@ router.post('/me', function(req, res, next) {
     });    
 });
 
+router.post('/user-info', function(req, res, next) {
+    console.log(req.body);
+    
+    //Check user name field
+    if (!req.body.token) {
+        res.status(401).json({
+            result:'error',
+            message:'Unauthorized'
+        });
+        
+        return;
+    }
+    
+    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
+        if (err) {
+            console.log('Unable to connect to the mongoDB server. Error:' + err);
+            res.status(500).json({error:err.message});
+            return; 
+        } else {
+            var collection = db.collection('user');
+            
+            collection.findOne({username:req.body.username}, ['username', 'nickname', 'email', 'rank', 'winningPercentage'], function(err, document) {
+                if (err) {
+                    console.log(err);
+                    res.status(500).json({error:err.message});
+                    return;
+                }
+                
+                console.log('Found document:' + util.inspect(document, {showHidden: false, depth: null}));
+                if (document) {
+
+                    //Check user login already or not
+                    res.status(200).json({
+                        result:'success',
+                        userInfo:document
+                    });
+                } else {
+                    res.status(200).json({
+                        result:'fail',
+                        message:'No such member',
+                    });
+                }
+                
+                db.close();
+            });
+        }
+    });    
+});
+
 router.post('/logout', function(req, res, next) {
     console.log(req.body);
     

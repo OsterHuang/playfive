@@ -1,0 +1,81 @@
+
+<!-- [[[ profile ]]] -->
+<div id="divUserInfo" >
+    <div class="container-fluid ">
+
+        <h4>Profile</h4>
+
+        <div class="row user-info-field">
+            <span class="col-sm-3" style="text-align:right">
+                <span class="glyphicon glyphicon-user" style="color:#337ab7">  Username: </span>
+            </span>
+            <span class="col-sm-3">
+                {{userInfo.username}}
+            </span>
+        </div>
+
+        <div class="row user-info-field">
+            <span class="col-sm-3" style="text-align:right">
+                <span class="glyphicon glyphicon-sunglasses" style="color:#337ab7">  Nickname: </span>
+            </span>
+            <span class="col-sm-3">
+                {{userInfo.nickname}}
+            </span>
+        </div>
+
+        <div class="row user-info-field">
+            <span class="col-sm-3" style="text-align:right">
+                <span class="glyphicon glyphicon-envelope" style="color:#337ab7">  Email: </span>
+            </span>
+            <span class="col-sm-3">
+                {{userInfo.email}}
+            </span>
+        </div>
+
+        <div class="row">
+            <span class="col-sm-3" style="text-align:right">
+                <span class="glyphicon glyphicon-signal" style="color:#337ab7">  Rank: </span>
+            </span>
+            <span class="col-sm-3">
+                {{userInfo.rank}} &nbsp;
+            </span>
+
+            <span class="col-sm-3" style="text-align:right">
+                <span class="glyphicon glyphicon-hand-up" style="color:#337ab7"> Wins:</span>
+            </span>
+            <span class="col-sm-3">
+                {{userInfo.winningPercentage}}%
+            </span>
+        </div>
+    </div>
+</div>
+
+<div id="divHistory" class="container-fluid" >
+    <h4>Latest 10 Games</h4>
+    <div class="row">
+        <table class="table table-striped" width="100%">
+            <tr>
+                <th class="text-center">NO.</th>
+                <th></th>
+                <th class="text-center">Black</th>
+                <th class="text-center">White</th>
+                <th class="text-center">Rule</th>
+                <th class="text-center">Nth</th>
+                <th class="text-center">Result</th>
+                <th class="text-center"></th>
+            </tr>
+            <tr ng-repeat="g in userLatestGames">
+                <td>{{g.seq}}</td>
+                <td><span ng-show="g.isRating" class="glyphicon glyphicon-signal" style="color:#337ab7"></span></td>
+                <td style="text-align:left">{{g.black.nickname}} <span class="badge" ng-show="g.winner.username === g.black.username">win</span></td>
+                <td style="text-align:left">{{g.white.nickname}} <span class="badge" ng-show="g.winner.username === g.white.username">win</span></td>
+                <td>{{g.rule}}</td>
+                <td style="text-align:right">{{g.moves.length}}</td>
+                <td style="text-align:left">{{g.result}}</td>
+                <td>
+                    <span class="glyphicon glyphicon-new-window" style="color:#C77C25; cursor:pointer" ng-click="showStudyBoard(g)"></span>
+                </td>
+            </tr>
+        </table>
+    </div>
+</div>
