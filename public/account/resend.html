@@ -14,16 +14,17 @@
 </head>
 
 <body>
-    <div ng-app="account" ng-controller="accountController" class="container">
-        <div class="container" style="text-align:center">
-            重寄認證信 / Resend Verification Mail || 重設密碼 / Reset Password
+    <div ng-app="account" ng-controller="accountController" class="container-fruid">
+        <div ng-include="'../header.html'"></div>
+		<div class="container" style="text-align:center">
+            <h3>重寄認證信 / Resend Verification Mail * 重設密碼 / Reset Password</h3>
             <div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
                 <button type="button" class="close-message" ng-click="hideMessage()">x</button>
                 <strong>{{messageTitle}}</strong>
                 {{messageContent}}
             </div>
         </div>
-        <center>提示字串 / Reminding Words</center>
+        <center>請輸入帳號 或 email / please provide your username or email</center>
         <div class="container">
             <form novalidate class="form-horizontal">
                 <span class="form-group">
@@ -35,7 +36,7 @@
                 <span class="form-group">
                     <label class="col-sm-2 control-label">信箱 / email</label>
                     <span class="col-sm-10">
-                        <input type="text" ng-model="email" class="form-control" placeholder="email" required/> 
+                        <input type="text" ng-model="email" class="form-control" placeholder="E-mail" required/> 
                     </span>
                 </span>
             
@@ -49,7 +50,7 @@
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
                 </div>
-				
+				<center><h3>更新密碼 / Renew Password</h3></center>
 				<span class="form-group">
                     <label class="col-sm-2 control-label">帳號 / Account</label>
                     <span class="col-sm-10">
@@ -57,9 +58,9 @@
                     </span>
                 </span>
                 <span class="form-group">
-                    <label class="col-sm-2 control-label">舊密碼 / Old Password</label>
+                    <label class="col-sm-2 control-label">舊密碼 / Original Password</label>
                     <span class="col-sm-10">
-                        <input type="text" ng-model="password" class="form-control" placeholder="E-mail" required/> 
+                        <input type="text" ng-model="password" class="form-control" placeholder="Original Password" required/> 
                     </span>
                 </span>
 				<span class="form-group">

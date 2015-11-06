@@ -302,7 +302,7 @@ io.on('connection', function (socket) {
         
         game.winner = (data.username == game.black.username) ? game.white : game.black;
         game.status = 'finished';
-        game.result = ((data.username == game.black.username) ? 'white' : 'black') + ' resigned.';
+        game.result = ((data.username == game.black.username) ? 'White' : 'Black') + ' resigned.';
         
         saveGame(game);
                 
@@ -500,6 +500,58 @@ function saveGame(pGame) {
             console.log(' Can not connect db on route.main.js to save game....');
             return;
         }
+
+        db.collection('game').insert(
+            pGame,
+            function(err, doc) {
+                if (err) {
+                    console.log(' Insert game error - ' + err.message);
+                } else {
+                    console.log(' Insert game success - seq value:' + doc.seq);
+                    if (doc.isRating) {
+                        summarizeRatingInfo(doc);
+                    }
+                }
+            }
+        );
+
+    });
+}
+
+function summarizeRatingInfo(pGame) {
+    console.log('summarizeRatingInfo()', pGame.seq);
+    
+    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
+        if (err) {
+            console.log(' Can not connect db on route.main.js to save game....');
+            return;
+        }
+        
+        var user_black;
+        var user_white;
+        function findBlack(err, pUserBlack) {
+            console.log('findBlack err: %o, pUserBlack %o', err, pUserBlack);
+            if (err) {
+                return;
+            }
+            user_black = pUserBlack;
+            db.collection('user').findOne({username:pGame.white.username}, findWhite(err, userWhite));
+        }
+        
+        function findWhite(err, pUserWhite) {
+            console.log('findWhite err: %o, pUserBlack %o', err, pUserWhite);
+            if (err) {
+                return;
+            }
+            user_white = pUserWhite;
+            caculateAndUpdate();
+        }
+        
+        function caculateAndUpdate() {
+            
+        }
+        
+        db.collection('user').findOne({username:pGame.black.username}, findBlack(err, userBlack));
 
         db.collection('game').insert(
             pGame,

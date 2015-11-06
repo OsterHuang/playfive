@@ -65,17 +65,17 @@ playfiveApp.factory('socket', function ($rootScope) {
 });*/
 
 
-playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http, $window, $localStorage, socket) {
+playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http, $window, $localStorage, socket) {    
+    if (!$localStorage.token) {
+        $window.location = '/login.html';
+        return;
+    }
+    
     $rootScope.message = null;
     $rootScope.lobbyChat = '';
     $rootScope.modal = {};
     $rootScope.mainArea = '';
     $scope.chatContent = '';
-    
-    if (!$localStorage.token) {
-        $window.location = '/login.html';
-        return;
-    }
     
     $rootScope.showProfile = function() {
         $('#profileDialog').modal({

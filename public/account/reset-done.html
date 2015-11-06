@@ -1,0 +1,16 @@
+<html>
+<head>
+</head>
+<body>
+<div ng-app="account" ng-controller="accountController" class="container-fruid">
+        <div ng-include="'../header.html'"></div>
+</div>
+您的密碼已經重新設定為 
+<script>
+msg = document.location.hash;
+msg = msg.substr(1);
+document.write(msg);
+</script>
+請以新密碼重新登入，或點我修改密碼，
+</body>
+</html>

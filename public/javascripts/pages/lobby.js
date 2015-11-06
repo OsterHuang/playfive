@@ -9,7 +9,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     $scope.newGame = {
         rule:'gomoku',
         isTentitiveBlack:true,
-        isRatingGame:false,
+        isRating:false,
         hasPerMoveTime:true,
         basicTime:0,
         perMoveTime:30,
@@ -32,7 +32,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
             creator:{nickname:$rootScope.user.nickname, username:$rootScope.user.username},
             rule:$scope.newGame.rule,
             isTentitiveBlack:$scope.newGame.isTentitiveBlack,
-            isRating:$scope.newGame.isRatingGame,
+            isRating:$scope.newGame.isRating,
             timeRule:{}
         };
         if ($scope.newGame.hasBasicTime) {
