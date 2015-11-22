@@ -13,15 +13,25 @@
                     <div>
                         Move {{game.moves.length + 1}}  
                     </div>
+                    
+<!--                    Current Time:{{timeLeft.currentTime}}-->
 
-                    <div>
+                    <div style="border-radius: 8px; padding: 4px;"
+                         ng-class="isFinalCountDown(timeLeft.black) ? 'final-count-down' : ''">
                         <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
                         {{game.black.nickname}}
+                        <span class="timer" ng-class="(isBlackTurn() ? 'timer myturn' : 'timer')">
+                            {{timeLeft.black.countDownString}}
+                        </span>
                     </div>
 
-                    <div>
+                    <div style="border-radius: 8px; padding: 4px;"
+                         ng-class="isFinalCountDown(timeLeft.white)  ? 'final-count-down' : ''">
                         <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
                         {{game.white.nickname}}
+                        <span class="timer" ng-class="(isWhiteTurn() ? 'timer myturn' : 'timer')">
+                            {{timeLeft.white.countDownString}}
+                        </span>
                     </div> 
 
                     <div>

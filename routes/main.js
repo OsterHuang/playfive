@@ -98,6 +98,16 @@ io.on('connection', function (socket) {
                     }
                     
                     console.log(' After got sequence - ' + util.inspect(doc, {showHidden: false, depth:null}));
+                    //Time from string to int (unit:seconds)
+                    if (data.newGame.timeRule.basicTime) {
+                        data.newGame.timeRule.basicTime = parseInt(data.newGame.timeRule.basicTime, 10);
+                    }
+                    if (data.newGame.timeRule.perMoveTime) {
+                        data.newGame.timeRule.perMoveTime = parseInt(data.newGame.timeRule.perMoveTime, 10);
+                    }
+                    if (data.newGame.timeRule.perMovePlusTime) {
+                        data.newGame.timeRule.perMovePlusTime = parseInt(data.newGame.timeRule.perMovePlusTime, 10);
+                    }
 
                     var newGame = {
                         seq:doc.value.next,
@@ -143,6 +153,7 @@ io.on('connection', function (socket) {
         
         var creator = m_onlineUsers.findUser(joinGame.creator.username);
         var participant = m_onlineUsers.findUser(data.participant);
+        //Determine who is black
         if (joinGame.isTempBlack) {
             joinGame.tempBlack = {nickname:creator.nickname, username:creator.username};
             joinGame.black = {nickname:creator.nickname, username:creator.username};
@@ -152,18 +163,33 @@ io.on('connection', function (socket) {
             joinGame.black = {nickname:participant.nickname, username:participant.username};
             joinGame.white = {nickname:creator.nickname, username:creator.username};
         }
+        // -- Determine timeLeft **** unit:second **** --
+        if (joinGame.timeRule.basicTime) {
+            joinGame.blackTimeLeft = joinGame.timeRule.basicTime * 60;
+            joinGame.whiteTimeLeft = joinGame.timeRule.basicTime * 60;
+        } else {
+            joinGame.blackTimeLeft = 0;
+            joinGame.whiteTimeLeft = 0;
+        }
+        
+        //
+        joinGame.startTime = new Date();
+        joinGame.lastActionTime = new Date();
         
         if (joinGame.rule === 'classic' || joinGame.rule === 'yamaguchi')
             joinGame.status = "opening";
         else 
             joinGame.status = "started";
         
+        console.log('After Start-game: ' + util.inspect(joinGame, {showHidden: false, depth:null}));
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
     });
     
     socket.on('lobby-join-game', function(data) {
         console.log("On lobby-join-game: (" + socket.username + ", " + socket.room + ")", data);
         var joinGame = m_processingGames.findGame(data.joinGame.uid); 
+        joinGame.responseTime = new Date();
+        
         socket.room = 'room_' + joinGame.seq;
         socket.join(socket.room);
         socket.emit('game-join', joinGame);
@@ -192,6 +218,10 @@ io.on('connection', function (socket) {
         io.sockets["in"]('room_' + data.gameSeq).emit('game-room-chat-receive', data);
     });
     
+    socket.on('game-fetch-time', function(data) {
+        socket.emit('game-fetch-time-receive', {currentTime:new Date()});
+    });
+    
     socket.on('game-going', function(data) {
         console.log("On going: (" + socket.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
@@ -206,6 +236,15 @@ io.on('connection', function (socket) {
             socket.emit('message', {message:'This is not your game.'});
             return;
         }
+        
+        //is timeout?
+        var uTime = calculateTimeLeft(game);
+        if (uTime.availableTimeLeft <= 0) {
+            gameTimeout(game, uTime);
+            io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
+            return;
+        }
+        gameContinue(game, uTime);
         
         game.moves.push({
             seq: data.seq,
@@ -223,7 +262,7 @@ io.on('connection', function (socket) {
             
             io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
         } else {
-            io.sockets["in"]('room_' + game.seq).emit('game-going-receive', game.moves);
+            io.sockets["in"]('room_' + game.seq).emit('game-going-receive', game);
         }
     });
     
@@ -302,7 +341,7 @@ io.on('connection', function (socket) {
         
         game.winner = (data.username == game.black.username) ? game.white : game.black;
         game.status = 'finished';
-        game.result = ((data.username == game.black.username) ? 'White' : 'Black') + ' resigned.';
+        game.result = ((data.username == game.black.username) ? 'Black' : 'White') + ' resigned.';
         
         saveGame(game);
                 
@@ -371,6 +410,15 @@ io.on('connection', function (socket) {
             return;
         }
         
+        //is timeout?
+        var uTime = calculateTimeLeft(game);
+        if (uTime.availableTimeLeft <= 0) {
+            gameTimeout(game, uTime);
+            io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
+            return;
+        }
+        gameContinue(game, uTime);
+        
         Array.prototype.push.apply(game.moves, data.moves); // console.log(' After apply: ', game.moves);
         game.status = 'swapping'
         if (game.rule === 'classic')
@@ -408,6 +456,15 @@ io.on('connection', function (socket) {
             game.black = game.white;
             game.white = tempBlack;
             
+            //is timeout?
+            var uTime = calculateTimeLeft(game);
+            if (uTime.availableTimeLeft <= 0) {
+                gameTimeout(game, uTime);
+                io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
+                return;
+            }
+        gameContinue(game, uTime);
+            
             console.log('After swap, black / white ', game.black, game.white);
         }
         
@@ -428,6 +485,15 @@ io.on('connection', function (socket) {
             socket.emit('message', {message:'This is not your game.'});
             return;
         }
+        
+        //is timeout?
+        var uTime = calculateTimeLeft(game);
+        if (uTime.availableTimeLeft <= 0) {
+            gameTimeout(game, uTime);
+            io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
+            return;
+        }
+        gameContinue(game, uTime);
         
         game.moves.push({
             seq: data.seq,
@@ -453,6 +519,15 @@ io.on('connection', function (socket) {
             return;
         }
         
+        //is timeout?
+        var uTime = calculateTimeLeft(game);
+        if (uTime.availableTimeLeft <= 0) {
+            gameTimeout(game, uTime);
+            io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
+            return;
+        }
+        gameContinue(game, uTime);
+        
         game.alts = data.alts;
         game.status = 'alt-choosing';
         
@@ -474,6 +549,15 @@ io.on('connection', function (socket) {
             return;
         }
         
+        //is timeout?
+        var uTime = calculateTimeLeft(game);
+        if (uTime.availableTimeLeft <= 0) {
+            gameTimeout(game, uTime);
+            io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
+            return;
+        }
+        gameContinue(game, uTime);
+        
         game.moves.push({
             seq: data.alt.seq,
             ordinate: data.alt.ordinate
@@ -490,6 +574,32 @@ io.on('connection', function (socket) {
         
         io.sockets["in"]('room_' + game.seq).emit('game-alt-chosen-receive', game);
     });
+    
+    // ---- Check timeout every 5 seconds ----
+    function tickTimeout() {
+        var progressingGames = m_processingGames.listProgressingGames();
+        var inGameList = [];
+        
+        for (var i in progressingGames) {
+            var timing = calculateTimeLeft(progressingGames[i])
+            if (timing.availableTimeLeft <= 0) {
+                gameTimeout(progressingGames[i], timing);
+                io.sockets["in"]('room_' + progressingGames[i].seq).emit('game-finished', progressingGames[i]);
+                
+                //Array.prototype.push.apply(inGameList, io.sockets.clients('room_' + progressingGames[i].seq))
+            }
+        }
+        
+        if (inGameList.length > 0) {
+            //clients = io.sockets.clients();
+            //console.log(' sockets', util.inspect(io.sockets, {showHidden: false, depth: null}));
+            //console.log(' inGameList', util.inspect(inGamesList, {showHidden: false, depth: null}));
+            io.emit('lobby-game-list-refresh', 
+                { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()}
+            );
+        }
+    }
+    setInterval(tickTimeout, 5000)
 });
 
 function saveGame(pGame) {
@@ -506,10 +616,10 @@ function saveGame(pGame) {
             function(err, doc) {
                 if (err) {
                     console.log(' Insert game error - ' + err.message);
-                } else {
-                    console.log(' Insert game success - seq value:' + doc.seq);
-                    if (doc.isRating) {
-                        summarizeRatingInfo(doc);
+                } else if (doc.result.ok == 1 && doc.result.n > 0) {
+                    console.log(' Insert game success - seq value:', doc.ops[0]);
+                    if (doc.ops[0].isRating) {
+                        summarizeRatingInfo(doc.ops[0]);
                     }
                 }
             }
@@ -527,44 +637,156 @@ function summarizeRatingInfo(pGame) {
             return;
         }
         
-        var user_black;
-        var user_white;
-        function findBlack(err, pUserBlack) {
-            console.log('findBlack err: %o, pUserBlack %o', err, pUserBlack);
-            if (err) {
-                return;
-            }
-            user_black = pUserBlack;
-            db.collection('user').findOne({username:pGame.white.username}, findWhite(err, userWhite));
-        }
+//        var user_black;
+//        var user_white;
+//        var findBlack = function (err, pUserBlack) {
+//            console.log('findBlack err: %o, pUserBlack %o', err, pUserBlack);
+//            if (err) {
+//                return;
+//            }
+//            user_black = pUserBlack;
+//            db.collection('user').findOne({username:pGame.white.username},findWhite);
+//        }
+//        
+//        var findWhite = function (err, pUserWhite) {
+//            console.log('findWhite err: %o, pUserBlack %o', err, pUserWhite);
+//            if (err) {
+//                return;
+//            }
+//            user_white = pUserWhite;
+//            caculateAndUpdate();
+//        }
         
-        function findWhite(err, pUserWhite) {
-            console.log('findWhite err: %o, pUserBlack %o', err, pUserWhite);
-            if (err) {
-                return;
+        var updateUserRateInfo = function(pUser, isWon, isLost, isDraw, pScoreUpDown) {
+            if (isWon) {
+                db.collection('user').update({username:pUser.username},  {$inc:{win:1, rating:10}});
+            } else if (isLost) {
+                db.collection('user').update({username:pUser.username},  {$inc:{loss:1, rating:-10}});
+            } else {
+                db.collection('user').update({username:pUser.username},  {$inc:{draw:1, rating:0}});
             }
-            user_white = pUserWhite;
-            caculateAndUpdate();
         }
         
         function caculateAndUpdate() {
+            //console.log(' caculateAndUpdate() --  \n Game: %j \n Black: %j \n White %j ', pGame, user_black, user_white);
+            console.log(' caculateAndUpdate() --  \n Game: %j  ', pGame);
+
+            if (!pGame.winner) {//Draw
+                console.log('  Draw');
+                updateUserRateInfo(pGame.black, false, false, true, 0);
+                updateUserRateInfo(pGame.white, false, false, true, 0);
+                
+            } else if (pGame.winner.username === pGame.black.username) {
+                console.log('  Black Win');
+                updateUserRateInfo(pGame.black, true, false, false, 0);
+                updateUserRateInfo(pGame.white, false, true, false, 0);
+
+            } else if (pGame.winner.username === pGame.white.username) {
+                console.log('  White Win');
+                updateUserRateInfo(pGame.black, false, true, false, 0);
+                updateUserRateInfo(pGame.white, true, false, false, 0);
+                
+            } else {
+                console.log('  No one win?')
+            }
             
         }
         
-        db.collection('user').findOne({username:pGame.black.username}, findBlack(err, userBlack));
-
-        db.collection('game').insert(
-            pGame,
-            function(err, doc) {
-                if (err) {
-                    console.log(' Insert game error - ' + err.message);
-                } else {
-                    console.log(' Insert game success - seq value:' + doc.seq);
-                }
-            }
-        );
+        caculateAndUpdate();
+        
+        //db.collection('user').findOne({username:pGame.black.username}, findBlack);
 
     });
+}
+
+// ------
+// Timeout/Remaining time relative methods
+// ------
+
+/**
+* Call it before the status change, lastActionTime update.
+* Ex: Before adding move, change status to [opening, swapping, alt-making, alt-choosing, finished].
+*
+* return {isBlacksTurn:boolean, basicTimeLeft:int, avaiableTimeLeft:determine timeup or not}
+*/
+function calculateTimeLeft(pGame) {
+    var isBlacksTurn = isBlackTurn(pGame);
+    
+    var currentActionTime = new Date();
+    var tokenTimeThisAction = (currentActionTime - pGame.lastActionTime) / 1000;
+    //availableTime unit is secondes
+    var basicTimeLeft = (isBlacksTurn ? pGame.blackTimeLeft : pGame.whiteTimeLeft) - tokenTimeThisAction;
+//    console.log(' tokenTimeThisAction:%s', tokenTimeThisAction);
+    var availableTimeLeft = basicTimeLeft;
+    if (basicTimeLeft < 0) {
+        if (pGame.timeRule.perMoveTime) {
+            availableTimeLeft = basicTimeLeft + pGame.timeRule.perMoveTime;
+            console.log(' tokenTimeThisAction:' + availableTimeLeft);
+            basicTimeLeft = 0;
+        } 
+    } 
+//    console.log(' {timeleft:{isBlacksTurn:%s, basicTimeLeft:%s, availableTimeLeft:%s}', isBlacksTurn, basicTimeLeft, availableTimeLeft);
+    return {isBlacksTurn:isBlacksTurn, basicTimeLeft:basicTimeLeft, availableTimeLeft:availableTimeLeft};
+}
+
+function gameTimeout(pGame, pTiming) {
+    pGame.status = 'finished';
+    pGame.winner = pTiming.isBlacksTurn ? pGame.white : pGame.black;
+    pGame.result = (pTiming.isBlacksTurn ? 'Black' : 'White') + ' time up.';
+    if (pTiming.isBlacksTurn) 
+        pGame.blackTimeLeft = 0;
+    else
+        pGame.whiteTimeLeft = 0;
+
+    saveGame(pGame);
+}
+
+function gameContinue(pGame, pTiming) {
+    if (pTiming.basicTimeLeft <= 0) { 
+        if (pTiming.isBlacksTurn)  
+            pGame.blackTimeLeft = 0;
+        else
+            pGame.whiteTimeLeft = 0;
+    } else {
+        if (pTiming.isBlacksTurn) {
+            pGame.blackTimeLeft = pTiming.availableTimeLeft;
+            if (pGame.timeRule.perMovePlusTime) pGame.blackTimeLeft += pGame.timeRule.perMovePlusTime;
+        } else {
+            pGame.whiteTimeLeft = pTiming.availableTimeLeft;
+            if (pGame.timeRule.perMovePlusTime) pGame.whiteTimeLeft += pGame.timeRule.perMovePlusTime;
+        }
+    }
+    
+    pGame.lastActionTime = new Date();
+    pGame.lastActionTime.setTime(pGame.lastActionTime.getTime() + 400);
+    pGame.responseTime = new Date();
+//    pGame.responseTime.setTime(pGame.responseTime.getTime());
+}
+
+function isBlackTurn(pGame) {
+    if (pGame.status === 'opening') {
+        return true;
+    }
+        
+    if (pGame.status === 'swapping') {
+        return true;
+    }
+
+    if (pGame.status === 'alt-making') {
+        return true;
+    }
+
+    if (pGame.status === 'alt-choosing') {
+        return true;
+    }
+
+    if (pGame.status === 'finished')
+        return false;
+
+    if (pGame.moves.length %2 == 0)
+        return true;
+
+    return false;
 }
 
 module.exports = router;

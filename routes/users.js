@@ -161,7 +161,7 @@ router.post('/user-info', function(req, res, next) {
         } else {
             var collection = db.collection('user');
             
-            collection.findOne({username:req.body.username}, ['username', 'nickname', 'email', 'rank', 'winningPercentage'], function(err, document) {
+            collection.findOne({username:req.body.username}, ['username', 'nickname', 'email', 'rating', 'win', 'loss', 'draw'], function(err, document) {
                 if (err) {
                     console.log(err);
                     res.status(500).json({error:err.message});

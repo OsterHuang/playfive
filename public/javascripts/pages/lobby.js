@@ -42,7 +42,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
             game.timeRule.perMoveTime = $scope.newGame.perMoveTime;
         }
         if ($scope.newGame.hasPlusTime) {
-            game.timeRule.perMoveTime = $scope.newGame.perMovePlusTime;
+            game.timeRule.perMovePlusTime = $scope.newGame.perMovePlusTime;
         }
         
         socket.emit('lobby-create-game', {newGame:game}, null);
@@ -78,6 +78,12 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         $scope.hasMyProgressingGame();
     });  
     
+    socket.on('lobby-game-list-refresh', function (data) {
+        console.log(data);
+        $scope.createdGames = data.createdGames;
+        $scope.progressingGames = data.progressingGames;
+    });  
+    
     socket.on('lobby-watched-game', function (data) {
         console.log(data);
         socket.emit('lobby-join-game', {joinGame:data});
@@ -86,7 +92,8 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     socket.on('lobby-chat-receive', function(message) {
         console.log('On lobby-chat-receive', message);
         $scope.lobbyChat = $scope.lobbyChat + message.from + ':' + message.content + '\n';
-        $scope.lobbyChatOut.content = '';
+        if (message.from === $rootScope.user.username)
+            $scope.lobbyChatOut.content = '';
     });
     
     // ---- U ----

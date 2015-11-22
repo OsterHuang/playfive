@@ -37,14 +37,15 @@
                 <span class="glyphicon glyphicon-signal" style="color:#337ab7">  Rank: </span>
             </span>
             <span class="col-sm-3">
-                {{userInfo.rank}} &nbsp;
+                {{userInfo.rating}} &nbsp;
             </span>
 
             <span class="col-sm-3" style="text-align:right">
                 <span class="glyphicon glyphicon-hand-up" style="color:#337ab7"> Wins:</span>
             </span>
             <span class="col-sm-3">
-                {{userInfo.winningPercentage}}%
+                {{userInfo.win}} / {{userInfo.loss}} / {{userInfo.draw}} 
+                ({{ration}}%)
             </span>
         </div>
     </div>

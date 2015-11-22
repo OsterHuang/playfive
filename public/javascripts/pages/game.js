@@ -28,7 +28,7 @@ gamePage.directive('focusOnShow', function($timeout) {
     };
 });
 
-gamePage.controller('gameController', function ($rootScope, $scope, $http, $window, $interval, socket) {
+gamePage.controller('gameController', function ($rootScope, $scope, $http, $window, $timeout, $interval, socket) {
     
 
     // ----
@@ -39,6 +39,8 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $scope.isShowNumber = false;
         $scope.gameRoomChatOut = {content:''};
         $scope.gameRoomChat = '';
+        $interval.cancel($scope.timeLeft.counting);
+        $interval.cancel($scope.timeLeft.syncing);
     }
     
     $scope.intialBoard = function() {
@@ -150,6 +152,14 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         if (!$rootScope.user || !$scope.game)
             return false;
         
+        if ($scope.game.status === 'opening') {
+            return true;
+        }
+        
+        if ($scope.game.status === 'alt-making') {
+            return true;
+        }
+        
         if ($scope.game.moves.length %2 == 0 && $scope.game.status === 'started')
             return true;
         return false;
@@ -158,6 +168,13 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     $scope.isWhiteTurn = function() {
         if (!$rootScope.user || !$scope.game)
             return false;
+        
+        if ($scope.game.status === 'swapping') {
+            return true;
+        }
+        if ($scope.game.status === 'alt-choosing') {
+            return true;
+        }
         
         if ($scope.game.moves.length %2 == 1 && ($scope.game.status === 'started' || $scope.game.status === 'swapped'))
             return true;
@@ -210,6 +227,89 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     }
     
     // ----
+    // Timer
+    // ----
+    $scope.countDownTimeLeft = function() {
+        $scope.timeLeft.currentTime.setTime($scope.timeLeft.currentTime.getTime() + 1000);
+        
+//        console.log($scope.game.rule.perMovePlusTime);
+        if ($scope.isBlackTurn()) {
+            $scope.calculateTimeLeft($scope.timeLeft.black);
+            if ($scope.game.timeRule.perMovePlusTime) {
+                console.log(' White left time:' + $scope.timeLeft.white.timeLeft);
+                $scope.timeLeft.white.countDownString = $scope.toTimeString(Math.round($scope.timeLeft.white.timeLeft));
+            }
+        } else {
+            $scope.calculateTimeLeft($scope.timeLeft.white);
+            if ($scope.game.timeRule.perMovePlusTime) {
+                console.log(' White left time:' + $scope.timeLeft.white.timeLeft);
+                $scope.timeLeft.black.countDownString = $scope.toTimeString(Math.round($scope.timeLeft.black.timeLeft));
+            }
+        }
+    }
+    
+    $scope.calculateBothTimeLeft = function() {
+        $scope.calculateTimeLeft($scope.timeLeft.black);
+        $scope.calculateTimeLeft($scope.timeLeft.white);
+    }
+    
+    $scope.calculateTimeLeft = function(whosTimeLeft) {
+//        console.log('before whosTimeLeft:', whosTimeLeft);
+        var usedTime = Math.floor($scope.timeLeft.currentTime - new Date($scope.game.lastActionTime)) / 1000 - 1;
+//        console.log('usedTime:', usedTime);
+        // -- 1. Has basic time
+        if (whosTimeLeft.timeLeft - usedTime >= 1) {
+            whosTimeLeft.countDown = whosTimeLeft.timeLeft - usedTime;
+        
+        // -- 2. Use up basic time
+        } else if (whosTimeLeft.timeLeft - usedTime < 1) {
+            // -- 2.1 has perMoveTime
+            if ($scope.game.timeRule.perMoveTime) {
+                //  -- 2.1.1 Not use up perMoveTime
+                if (whosTimeLeft.timeLeft - usedTime + $scope.game.timeRule.perMoveTime > 0) {
+                    whosTimeLeft.countDown = whosTimeLeft.timeLeft - usedTime + $scope.game.timeRule.perMoveTime;
+                //  -- 2.1.2 Use up perMoveTime
+                } else {
+                    whosTimeLeft.countDown = 0;
+                }
+            // -- 2.2 has no perMoveTime
+            } else {
+                 whosTimeLeft.countDown = 0;
+            }
+        }
+        
+//        console.log('after whosTimeLeft:', whosTimeLeft);
+        
+        whosTimeLeft.countDownString = $scope.toTimeString(Math.floor(whosTimeLeft.countDown));
+    }
+    
+    $scope.syncTimeLeft = function() {
+        socket.emit('game-fetch-time');
+    }
+    
+    $scope.toTimeString = function(pSecond) {
+        var remaingSecond = pSecond;
+        var h = Math.floor(remaingSecond / 3600); remaingSecond = remaingSecond % 3600;
+        var m = Math.floor(remaingSecond / 60);   remaingSecond = remaingSecond % 60;
+        var s = remaingSecond;
+        
+        return '' + (h > 0 ? h + 'h' : '') +  (m > 0 ? m + 'm' : '') + s + 's';
+    }
+    
+    $scope.resetTimeLeft = function(game) {
+        $scope.timeLeft.currentTime = new Date(game.responseTime); console.log(' Set current time to ' + $scope.timeLeft.currentTime);
+        $scope.timeLeft.black.timeLeft = game.blackTimeLeft;
+        $scope.timeLeft.white.timeLeft = game.whiteTimeLeft;
+        console.log(' New time left... ', $scope.timeLeft);
+    }
+    
+    $scope.isFinalCountDown = function(whosTimeLeft) {
+        if (whosTimeLeft.countDown < 6)
+            return true;
+        return false;
+    }
+    
+    // ----
     // Paint moves
     // ----
     $scope.clearGridMoves = function() {
@@ -257,6 +357,12 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     $scope.gameRoomChatOut = {content:''};
     $scope.gameRoomChat = '';
     $scope.game = {moves:[], black:{}, white:{}, boardSize:15, alts:[]};
+    
+    $scope.timeLeft = {
+        black:{role:'black', timeLeft:0, countDownString:''},
+        white:{role:'white', timeLeft:0, countDownString:''},
+        currentTime:new Date()
+    };
     
     $scope.gridAltChosen;
     
@@ -427,9 +533,14 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     }
     
     $scope.confirmAlternatives = function() {
+        var alts = [];
+        for (var i in $scope.game.alts) {
+            alts[i] = {seq:$scope.game.alts[i].seq, ordinate:$scope.game.alts[i].ordinate};
+        }
+        
         socket.emit('game-alt-choosing', {
             uid:$scope.game.uid,
-            alts:$scope.game.alts
+            alts:alts
         });
     }
     
@@ -571,12 +682,17 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
                 
         $scope.game = game;
         $rootScope.user.myProgressingGame = game; // --> For the main.html show, hide div
+        $scope.resetTimeLeft(game);
         
         //TODO It should initial all the things
         //$scope.clearGridMoves();
         $scope.intialPage();
         $scope.intialBoard();
         $scope.arrangeMoves();
+        
+        $scope.calculateBothTimeLeft();
+        $scope.timeLeft.counting = $interval($scope.countDownTimeLeft, 1000);
+        $scope.timeLeft.syncing  = $interval($scope.syncTimeLeft, 5000);
     });
     
     socket.on('game-draw-request-receive', function(game) {
@@ -624,15 +740,19 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         setCookie('processing-game', null);
     });
     
-    socket.on('game-going-receive', function(moves) {
-        console.log('On going', moves, $scope.game.moves);
+    socket.on('game-going-receive', function(game) {
+        console.log('On going');
         $scope.isLocked = false;
 //        if (moves.length > $scope.game.moves.length) { //Undo
 //            var lastMove = $scope.game.moves.pop();
 //            console.log(' Undo move: ', lastMove);
 //            $scope.board.grids[lastMove.ordinate.y][lastMove.ordinate.x].move = null;
 //        }
-        $scope.game.moves = moves;
+//        $scope.calculateBothTimeLeft();
+        $scope.game = game;
+        $scope.resetTimeLeft(game);
+//        $scope.calculateBothTimeLeft();
+//        $scope.timeLeft.basicTimeup = false;
         $scope.arrangeMoves();
     });
     
@@ -651,6 +771,14 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $rootScope.message = game.result;
         $("#message").alert();
         $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+        
+        //$scope.calculateBothTimeLeft();
+        $timeout(function() {
+                $interval.cancel($scope.timeLeft.counting);
+                $interval.cancel($scope.timeLeft.syncing);
+            },
+            5
+        );
     });
     
     socket.on('game-leaved', function() {
@@ -662,6 +790,12 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         console.log('On game-room-chat-receive', message);
         $scope.gameRoomChat = $scope.gameRoomChat + message.from + ':' + message.content + '\n';
         $scope.gameRoomChatOut.content = '';
+    });
+    
+    socket.on('game-fetch-time-receive', function(data) {
+//        console.log(' time diff:' + Math.abs($scope.timeLeft.currentTime - new Date(data.currentTime)));
+        if (Math.abs($scope.timeLeft.currentTime - new Date(data.currentTime)) > 5000)
+            $scope.timeLeft.currentTime = new Date(data.currentTime);
     });
     
     // ---- Opening flow ----
