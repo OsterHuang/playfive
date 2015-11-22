@@ -24,7 +24,7 @@
                 <strong>{{messageTitle}}</strong>
                 {{messageContent}}
             </div>
-        </div>
+		</div>
         
         <div class="container">
             <form novalidate class="form-horizontal">
@@ -34,7 +34,7 @@
                         <input 
 							type="text" 
 							ng-model="username" 
-							ng-model-options="{debounce: 1000}";
+							ng-model-options="{debounce: 2000}";
 							ng-change="check_username()";
 							class="form-control" 
 							placeholder="Account" 
@@ -57,7 +57,7 @@
                         <input 
 							type="text" 
 							ng-model="nickname" 
-							ng-model-options="{debounce: 1000}";
+							ng-model-options="{debounce: 2000}";
 							ng-change="check_nickname()";
 							class="form-control" 
 							placeholder="Nickname" 
@@ -86,7 +86,7 @@
                         <input 
 							type="text" 
 							ng-model="email" 
-							ng-model-options="{debounce: 1000}";
+							ng-model-options="{debounce: 2000}";
 							ng-change="check_email()";
 							class="form-control" 
 							placeholder="E-mail" 

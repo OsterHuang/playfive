@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+    <link rel="stylesheet" href="../stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    
+    <script src="../javascripts/jquery.min.js"></script>
+    <script src="../javascripts/bootstrap.min.js"></script>
+    <script src="../javascripts/angular.min.js"></script>
+    
+    <script src="../javascripts/pages/admin.js"></script>
+</head>
+
+<body>
+	
+    <div ng-app="admin" ng-controller="adminController" class="container-fruid">
+        <div ng-include="'../header.html'"></div>
+		<div class="container" style="text-align:center">
+            <h3>指定管理員</h3>
+            <div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
+                <button type="button" class="close-message" ng-click="hideMessage()">x</button>
+                <strong>{{messageTitle}}</strong>
+                {{messageContent}}
+            </div>
+		</div>
+        
+        <div class="container">
+            <form novalidate class="form-horizontal">
+	            <center>
+				<table><tr>
+					<td><input type="password" ng-model="password" class="form-control" placeholder="Password" style="display: inline-block; width: 300px;"/>
+						　<button class="btn" ng-disabled="!password" ng-click="login()">                    
+							登入
+							<span class="glyphicon glyphicon-plus"></span>
+						</button>
+					</td>
+				</tr></table>
+				</center>
+
+				<p>
+
+	            <center>
+				<table><tr>
+					<td style="position: relative">
+					<input 
+						type="text" 
+						ng-model="nickname" 
+						ng-model-options="{debounce: 2000}";
+						ng-change="check_nickname()";
+						class="form-control" 
+						placeholder="Nickname" 
+						style="display: inline-block; width: 300px;"
+					/>
+					<span class="label label-success" ng-show="nickname && nicknameOk" 
+						  style="float: right; top: 8px; position: absolute;  right: 97px;">
+					<span class="glyphicon glyphicon-ok"></span>
+					</span>
+					<span class="label label-danger" ng-show="nickname && !nicknameOk"
+						  style="float: right; top: 8px; position: absolute; right: 97px;">
+						<span class="glyphicon glyphicon-remove"></span>
+					</span>
+					　<button class="btn" ng-disabled="!nicknameOk || !nicknameOk" ng-click="add()">                    
+							新增 <span class="glyphicon glyphicon-plus"></span>
+						</button>
+					</td>
+				</tr></table>
+				</center>
+				<p>
+	            <center>
+				<table><tr>
+					<td><input type="text" ng-model="picked" class="form-control" style="display: inline-block; width: 300px;" value="picked"/>
+						　<button class="btn" ng-disabled="!picked" ng-click="del()">                    
+							刪除
+							<span class="glyphicon glyphicon-plus"></span>
+						</button>
+					</td>
+				</tr></table>
+				</center>
+
+
+			</form>
+        </div>
+		
+		<center>
+		<h3>管理員清單</h3>
+		<div class="container" style="width: 600px; text-align:left">
+		<span 
+			ng-repeat="admin in adminList"
+			ng-click="pick(admin.nickname)"
+			style="width: 19%; display: inline-block; vertical-align:middle">{{admin.nickname}}</span>
+		</div>
+		</center>
+    </div>
+	<!-- End of ng-controller -->
+</body>
+    
+</html>

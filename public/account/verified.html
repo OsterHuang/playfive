@@ -9,12 +9,12 @@
 var result = document.location.hash;
 var msg = '';
 if(result=='#noaccount' || result=='#noaccount2'){
-	document.write('帳號不存在或認證錯誤，請<a href="account/create.html">重新申請</a>。<br>');
-	document.write('Error, please try to <a href="account/create.html">create new account.</a>');
+	document.write('帳號不存在或認證錯誤，請<a href="create.html">重新申請</a>。<br>');
+	document.write('Error, please try to <a href="create.html">create new account.</a>');
 }
 else if(result=='#verified'){
-	document.write('恭喜你！認證已通過，請回到<a href="login.html">首頁</a>登入。');
-	document.write('Congratulations! Your account has been verified. You may <a href="login.html">login</a> now.');
+	document.write('恭喜你！認證已通過，請回到<a href="../login.html">首頁</a>登入。');
+	document.write('Congratulations! Your account has been verified. You may <a href="../login.html">login</a> now.');
 }
 else if(result=='#notverified'){
 	document.write('認證碼錯誤。請確認。');

@@ -28,9 +28,6 @@ router.post('/create', function(req, res, next) {
 			{ updatedExisting : true }, 
 			function(err, doc) {
 				console.log('findAndModify:', err, doc);
-				//var d = new Date;
-				//var createdDate = d.getFullYear()+'-'+ (d.getMonth()+1) + '-' + d.getDate();
-				//console.log('createdDate:', createdDate);
 				db.collection('announce').insertOne({
 					number:doc.value.next,
 					publisher:req.body.publisher,
@@ -47,7 +44,7 @@ router.post('/create', function(req, res, next) {
 					console.log("公告已新增");
 					res.json({
 						messageTitle:'Success',
-						messageContent:'An announcement has been created.'
+						messageContent:'公告已新增。An announcement has been created.'
 					});
 				});
 			}
@@ -55,8 +52,39 @@ router.post('/create', function(req, res, next) {
     });
 });
 
+router.post('/edit', function(req, res, next){
+    console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
+    var url = 'mongodb://localhost:27017/playfive';
+	MongoClient.connect(url, function(err, db){
+        if (err) {
+            res.status(500).json({error:err.message});
+            return;
+        }
+		req.body.number *= 1;
+		db.collection('announce').update(
+			{number: req.body.number},
+			{$set:{content: req.body.content, title:req.body.title}},
+			function(err, result){
+				if(err){
+					res.json({
+						messageTitle:'Error',
+						messageContent:'更新失敗。'
+					});
+					return;
+				}
+				res.json({
+					messageTitle:'Success',
+					messageContent:'更新成功, 請重新整理。'
+				});
+				console.log(res.json);
+			}
+		);
+					
+	});
+});
+
 router.post('/getContent', function(req, res, next){
-	    console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
+    console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
 
     // -Oster- Connect to database...
     var url = 'mongodb://localhost:27017/playfive';
@@ -66,9 +94,12 @@ router.post('/getContent', function(req, res, next){
             res.status(500).json({error:err.message});
             return;
         }
+		req.body.number *= 1;
+		//需要將轉換為數字，否則搜尋資料庫時可能出現問題
 		
 		db.collection('announce').findOne(
 			{number: req.body.number},
+			
 			function(err, doc){
 				if(err){
 					res.status(500).json({error:err.message});
@@ -86,7 +117,8 @@ router.post('/getContent', function(req, res, next){
 					title: doc.title,
 					content: doc.content,
 					createdDate: doc.createdDate,
-					publisher: doc.publisher
+					publisher: doc.publisher,
+					isTop: doc.isTop
 				});
 			}
 		);

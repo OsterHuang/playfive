@@ -18,7 +18,8 @@
         <div ng-include="'../header.html'"></div>
 		<div class="container" style="text-align:center">
             <h3>重寄認證信 / Resend Verification Mail * 重設密碼 / Reset Password</h3>
-            <div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
+            <!--<div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">-->
+            <div class="alert alert-success" id="success-alert">
                 <button type="button" class="close-message" ng-click="hideMessage()">x</button>
                 <strong>{{messageTitle}}</strong>
                 {{messageContent}}
@@ -41,11 +42,11 @@
                 </span>
             
                 <div class="container" style="text-align:center">
-                    <button class="btn" ng-click="reverify()">                    
+                    <button class="btn" ng-disabled="!username && !email" ng-click="reverify()">                    
                         重寄認證信 / Resend Verification Mail
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
-                	<button class="btn" ng-click="reset()">                    
+                	<button class="btn" ng-disabled="!username && !email" ng-click="reset()">                    
                         重設密碼 / Reset Password
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
@@ -66,7 +67,10 @@
 				<span class="form-group">
                     <label class="col-sm-2 control-label">新密碼 / New Password</label>
                     <span class="col-sm-10">
-                        <input type="text" ng-model="newPsd" class="form-control" placeholder="New Password" required/> 
+                        <input 
+							type="text" 
+							ng-model="newPsd" 
+							class="form-control" placeholder="New Password" required/> 
                     </span>
                 </span>
                 <span class="form-group">
@@ -76,7 +80,7 @@
                     </span>
                 </span>
 			   	<div class="container" style="text-align:center">
-					<button class="btn" ng-click="renew()">                    
+					<button class="btn" ng-disabled="!username || !password || !newPsd || newPsd!=newPsd2" ng-click="renew()">                    
 						更新密碼 / Renew Password
 						<span class="glyphicon glyphicon-plus"></span>
 					</button>

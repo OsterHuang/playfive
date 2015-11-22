@@ -11,7 +11,6 @@ router.get('/', function(req, res, next) {
 });
 
 router.post('/createAccount', function(req, res, next) {
-    // -Oster- Should check request parameters....
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
 
     // -Oster- Connect to database...
@@ -23,7 +22,7 @@ router.post('/createAccount', function(req, res, next) {
             return;
         }
 		
-		var randomcode = Math.floor(Math.random()*1000000);
+		var randomcode = genRandomCode();
         db.collection('user').insertOne({
             username:req.body.username,
             nickname:req.body.nickname,
@@ -40,14 +39,15 @@ router.post('/createAccount', function(req, res, next) {
         }, function(err, result) {
 //            assert.equal(err, null); //Log error if error != null
             if (err) {
+                //res.status(500).json({error:err.message});
                 res.status(500).json({error:err.message});
-                return;
+				return;
             }
 
             console.log("新帳號已建立. A new account has been created.");
             res.json({
                 messageTitle:'Success',
-                messageContent:'帳號已建立，請至收取Email以完成認證手續。 Your account has been created. Please check your email.'
+                messageContent:'新帳號已建立，請至您申請的email信箱完成認證手續。'
             });
             
             db.close();
@@ -55,6 +55,133 @@ router.post('/createAccount', function(req, res, next) {
 			
 			// -dogswang- 寄送確認信
 			send_verify_code(req.body.email, req.body.username, randomcode);
+        });
+    });
+    // -Oster- This is the our control to send out error message to client.
+    // -Oster- Please refer proper http status code on https://en.wikipedia.org/wiki/List_of_HTTP_status_codes
+    //res.status(500).json({error:'Your error message'}); 
+	
+});
+
+router.post('/check_username', function(req, res, next) {
+    console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
+
+    // -Oster- Connect to database...
+    var url = 'mongodb://localhost:27017/playfive';
+    MongoClient.connect(url, function(err, db) {
+        // -Oster- If can not connect to database.....
+        if (err) {
+            res.status(500).json({error:err.message});
+            return;
+        }
+		
+		db.collection('user').findOne({
+            username:req.body.username
+        }, function(err, doc) {
+            if (err) {
+                res.status(500).json({error:err.message});
+				return;
+            }
+			if(!doc){
+				//username doesn't exsit
+				console.log('帳號不存在');
+				res.json({
+					messageTitle:'Success',
+					messageContent:'帳號['+ req.body.username +']可使用！This username is availible.'
+				});
+				return;
+			}
+
+			//username exsits
+            console.log("username exsits");
+            res.json({
+                messageTitle:'Sorry',
+                messageContent:'['+ req.body.username + ']已被使用。This username has been taken.'
+            });
+            
+            db.close();
+        });
+    });
+});
+
+router.post('/check_nickname', function(req, res, next) {
+    console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
+
+    // -Oster- Connect to database...
+    var url = 'mongodb://localhost:27017/playfive';
+    MongoClient.connect(url, function(err, db) {
+        // -Oster- If can not connect to database.....
+        if (err) {
+            res.status(500).json({error:err.message});
+            return;
+        }
+		
+		db.collection('user').findOne({
+            nickname:req.body.nickname
+        }, function(err, doc) {
+            if (err) {
+                //res.status(500).json({error:err.message});
+                res.status(500).json({error:err.message});
+				return;
+            }
+			if(!doc){
+				//nickname doesn't exsit
+				console.log('nickname does not exsit');
+				res.json({
+					messageTitle:'Success',
+					messageContent:'暱稱['+ req.body.nickname +']可使用！This nickname is availible.'
+				});
+				return;
+			}
+
+			//username exsits
+            console.log("username exsits");
+            res.json({
+                messageTitle:'Sorry',
+                messageContent:'['+ req.body.nickname + ']已被使用。This nickname has been taken.'
+            });
+            
+            db.close();
+        });
+    });
+});
+
+router.post('/check_email', function(req, res, next) {
+    console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
+    // -Oster- Connect to database...
+    var url = 'mongodb://localhost:27017/playfive';
+    MongoClient.connect(url, function(err, db) {
+        // -Oster- If can not connect to database.....
+        if (err) {
+            res.status(500).json({error:err.message});
+            return;
+        }
+		
+		db.collection('user').findOne({
+            email:req.body.email
+        }, function(err, doc) {
+            if (err) {
+             	res.status(500).json({error:err.message});
+				return;
+            }
+			if(!doc){
+				//email doesn't exsit
+				console.log('email does not exsit');
+				res.json({
+					messageTitle:'Success',
+					messageContent:'暱稱['+ req.body.email +']可使用！This email is availible.'
+				});
+				return;
+			}
+
+			//email exsits
+            console.log("username exsits");
+            res.json({
+                messageTitle:'Sorry',
+                messageContent:'['+ req.body.email + ']已被使用。This email has been taken.'
+            });
+            
+            db.close();
         });
     });
 });
@@ -83,6 +210,10 @@ router.get('/verify', function(req, res){
 			}
 			
 			if(doc.verifycode==req.query.code){
+				db.collection('user').update(
+					{username: req.query.account},
+					{$set:{status: 'normal'}}
+				);
 				res.redirect('verified.html#verified');
 			}
 			else{
@@ -97,7 +228,7 @@ router.get('/verify', function(req, res){
 					res.redirect('verified.html#notverified');
 				}
 				else{
-					var randomcode = Math.floor(Math.random()*1000000);
+					var randomcode = genRandomCode();
 					db.collection('user').update(
 						{username: req.query.account},
 						{$set:{wrong_password: 0, verifycode: randomcode}}
@@ -107,43 +238,46 @@ router.get('/verify', function(req, res){
 					res.redirect('verified.html#newcode');
 				}
 			}
-			//console.log('Query result:' + util.inspect(doc, {showHidden:false, depth:null}));
 		});
 	});
 });
 
 router.get('/reset', function(req, res){
-    console.log("Verified parameters:" + req.query.code + " " + req.query.account);
+    //console.log("Verified parameters:" + req.query.code + " " + req.query.account);
 	var url = 'mongodb://localhost:27017/playfive';
     MongoClient.connect(url, function(err, db) {
-        // -Oster- If can not connect to database.....
         if (err) {
             res.status(500).json({error:err.message});
             return;
         }
-		
-		db.collection('user').update({username: req.query.account, verifycode: req.query.code}, {$set:{password: req.query.code}},function(err, result) {
+		//var code = parseInt(req.query.code, 10);
+		var code = req.query.code;
+		db.collection('user').update({username: req.query.account, verifycode: code}, {$set:{password:code}},function(err, result) {
 			// -dogswang- If cannot connect to db
 			if (err) {
+				console.log('cannot connect to db');
 				res.status(500).json({error:err.message});
 				return;
 			}
 			console.log('Query result:' + util.inspect(result, {showHidden:false, depth:null}));
 			// -dogswang- If cannot find this data
-			if (!result){
-				console.log("帳號或密碼錯誤。");
+			if (result.result.nModified==0){
+				console.log("重設失敗。19263");
+				res.redirect('reset-fail.html');
+			}
+			else if(result.result.nModified==1){
+				console.log("重設成功。19264");
+				console.log('code is:', code);
+				code = 'reset-done.html#'+code;
+				console.log('code is:', code);
+				res.redirect(code);
 				return;
 			}
-			
-			res.redirect('reset_done.html');
+			else{
+				console.log("不明錯誤。19265");
+			}
 		});
 	});
-/* 
-	res.json({
-		messageTitle:'Success',
-		messageContent:'xxxxx'
-	}); */
-	
 });
 
 router.post('/reverify', function(req, res) {
@@ -159,15 +293,17 @@ router.post('/reverify', function(req, res) {
             return;
         }
 		
-		if(req.body.username!='')
+		if(typeof req.body.username!="undefined")
 			restrict = {username: req.body.username};
-		else if(req.body.email!='')
+		else if(typeof req.body.email != "undefined")
 			restrict = {email: req.body.email};
 		else{
 			console.log('no username & email');
 			return;
 		}
-
+		console.log('restrict is:', restrict);
+		
+		
 		db.collection('user').findOne(
 			restrict,
 			function(err, doc){
@@ -182,7 +318,7 @@ router.post('/reverify', function(req, res) {
 					return;
 				}
 				// -dogswang- 更新verifycode
-				randomcode = Math.floor(Math.random()*1000000);
+				randomcode = genRandomCode();
 				db.collection('user').update(
 					restrict,
 					{$set:{verifycode: randomcode}},
@@ -193,6 +329,10 @@ router.post('/reverify', function(req, res) {
 						}
 						// -dogswang- 寄送認證信
 						send_verify_code(doc.email, doc.username, randomcode);
+						res.json({
+							messageTitle: 'Success',
+							messageContent: '請收取email以完成認證手續。Please check your E-mail.'
+						});
 					}
 				);
 			}
@@ -213,9 +353,9 @@ router.post('/reset', function(req, res) {
             return;
         }
 		
-		if(req.body.username!='')
+		if(typeof req.body.username != 'undefined')
 			restrict = {username: req.body.username};
-		else if(req.body.email!='')
+		else if(typeof req.body.email != 'undefined')
 			restrict = {email: req.body.email};
 		else{
 			console.log('no username & email');
@@ -236,7 +376,7 @@ router.post('/reset', function(req, res) {
 					return;
 				}
 				// -dogswang- 更新verifycode
-				randomcode = Math.floor(Math.random()*1000000);
+				randomcode = genRandomCode();
 				db.collection('user').update(
 					restrict,
 					{$set:{verifycode: randomcode}},
@@ -247,6 +387,10 @@ router.post('/reset', function(req, res) {
 						}
 						// -dogswang- 寄送認證信
 						send_reset_code(doc.email, doc.username, randomcode);
+						res.json({
+							messageTitle: 'Success',
+							messageContent: '請收取email以完成修改手續。Please check your E-mail.'
+						});
 					}
 				);
 			}
@@ -266,46 +410,40 @@ router.post('/renew', function(req, res) {
             res.status(500).json({error:err.message});
             return;
         }
+		
 		var restrict = {username:req.body.username, password:req.body.password};
 		db.collection('user').update(restrict, {$set:{password: req.body.newPsd}}, function(err, result){
 			if (err) {
 				res.status(500).json({error:err.message});
+				res.json({
+					messageTitle: 'Error',
+					messageContent: err.message
+				});
 				return;
 			}
-			
+
+			//console.log('result is:', result);
+			if(result.result.nModified==1){
+				res.json({
+					messageTitle: 'Success',
+					messageContent: '密碼已更新。Password has been renewed.'
+				});
+			}
+			else if(result.result.nModified==0){
+				res.json({
+					messageTitle: 'Error',
+					messageContent: '帳號或密碼錯誤。Wrong account or password.'
+				});
+			}
+			else{
+				res.json({
+					messageTitle: 'Error',
+					messageContent: 'Error 1276.'
+				});
+			}
 		});
 	});
 });
-
-/*
-router.post('/listDog', function(req, res, next) {
-    // -Oster- Connect to database...
-    var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function (err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:', err);
-            res.status(500).json({error:err.message});
-            return;
-        } else {
-            var collection = db.collection('dog');
-            
-            collection.find().toArray(function (err, result) {
-                if (err) {
-                    res.status(500).json({error:err.message});
-                    return;
-                }
-                
-                console.log("Inserted one dog successfully.");
-                res.json({
-                    dogList:result
-                });
-                
-                db.close();
-            });
-        }
-    });
-});
-*/
 module.exports = router;
 
 function send_verify_code(address, username, randomcode){
@@ -318,10 +456,15 @@ function send_verify_code(address, username, randomcode){
 	   ssl:     true
 	});
 	// send the message and get a callback with an error or details of the message that was sent
-	var verifyurl = "http://localhost:3000/account/verify?account="+ username +"&code="+ randomcode;
+	var verifyurl = "http://128.199.91.60:3000/account/verify?account="+ username +"&code="+ randomcode;
+	var mailContent = 
+		"請拜訪 " + verifyurl 
+		+ " 啟用您的帳號。Please visit " 
+		+ verifyurl + " to activate your account."
+	;
 	server.send({
-	   text:    "請拜訪 "+ verifyurl + " 啟用您的帳號。",
-	   from:    "you <play5-admin@renju.org.tw>", 
+	   text:    mailContent,
+	   from:    "admin@play5 <play5-admin@renju.org.tw>", 
 	   to:      address,
 	   cc:      "",
 	   subject: "play5 認證信 (verification mail from play5)"
@@ -338,13 +481,22 @@ function send_reset_code(address, username, randomcode){
 	   ssl:     true
 	});
 	// send the message and get a callback with an error or details of the message that was sent
-	var verifyurl = "http://localhost:3000/account/reset?account="+ username +"&code="+ randomcode;
+	var verifyurl = "http://128.199.91.60:3000/account/reset?account="+ username +"&code="+ randomcode;
+	var mailContent = 
+		"我們收到您重設"+ username +"之密碼的要求，如果您確定要修改您在play5的密碼，請點 "+ verifyurl + " ，謝謝。"
+		+ "We receive an request to reset your password in Play5. If you really want to reset your password, please visit "
+		+ verifyurl + " . If not, please ignore this mail, thanks."
+	;
 	server.send({
-	   text:    "我們收到您重設密碼的要求，如果您確定要修改您在play5的密碼，\n請點 "+ verifyurl + " ，謝謝。",
-	   from:    "you <play5-admin@renju.org.tw>", 
+	   text:    mailContent,
+	   from:    "admin@play5 <play5-admin@renju.org.tw>", 
 	   to:      address,
 	   cc:      "",
 	   subject: "play5 請確認是否重設密碼 (Do you really want to reset your password in play5?)"
 	}, function(err, message) { console.log(err || message); });
 	// -dogswang- End of 寄送確認信
+}
+
+function genRandomCode(){
+	return Math.floor(Math.random()*1000000).toString();
 }
