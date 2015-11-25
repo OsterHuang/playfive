@@ -1,6 +1,8 @@
 var server_host = 'localhost';
 
-playfiveApp = angular.module('playfiveApp', ['lobbyPage', 'gamePage', 'announce', 'userProfilePage', 'ngStorage']);
+playfiveApp = angular.module('playfiveApp', 
+                             ['lobbyPage', 'gamePage', 'announce', 'announceEdit', 'userProfilePage', 
+                              'ngStorage', 'ngAnimate', 'ngSanitize']);
 
 playfiveApp.factory('socket', function ($rootScope) {
   var socket = io.connect('http://' + server_host + ':3030/');
@@ -65,7 +67,8 @@ playfiveApp.factory('socket', function ($rootScope) {
 });*/
 
 
-playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http, $window, $localStorage, socket) {    
+playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http, $window, 
+        $timeout, $localStorage, socket) {    
     if (!$localStorage.token) {
         $window.location = '/login.html';
         return;
@@ -114,7 +117,10 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
                 $rootScope.message = response.message;
                 $("#message").alert();
                 $("#message").fadeTo(5000, 500).slideUp(500, function() {});
-                //$window.location = '/login.html'
+                $localStorage.token = undefined;
+            
+                $timeout(function() {$window.location = '/login.html';}, 1500);
+                
             } else {
                 $rootScope.message = 'Welcome ' + response.user.nickname;
                 $("#message").alert();
@@ -128,6 +134,10 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
             console.log('Error ' + status + '. ' + data);
             $scope.result = 'Error.';
             $rootScope.message = data.error;
+            $localStorage.token = undefined;
+            
+            $timeout(function() {$window.location = '/login.html';}, 1500);
+            
             $("#message").alert();
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
         });

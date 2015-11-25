@@ -109,8 +109,15 @@
                 </table>
             </div>
             
-            <div id="annoucement" class="tab-pane fade"  ng-app="announce" ng-controller="announceController">
-                <div ng-include="'./announce/_list.html'" ></div>
+            <div id="annoucement" class="tab-pane fade"  >
+                <div ng-app="announce " ng-controller="announceController" ng-include="'./announce/_list.html'" 
+                     ng-hide="editingAnnounce"
+                     class="announce-list-show-hide">
+                </div>
+                <div ng-app="announceEdit" ng-controller="announceEditController" ng-include="'./announce/_edit.html'" 
+                     ng-show="editingAnnounce"
+                     class="announce-edit-show-hide">
+                </div>
             </div>
         </div>
     </div>

@@ -17,60 +17,17 @@
 </script>
 <div ng-app="announce" ng-controller="announceController" class="container-fruid">
     <div ng-include="'../header.html'"></div>
-	<div class="container" style="text-align:center">
+    
+     <div class="container" style="text-align:center">
 		<h3>公告清單</h3>
-		<div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
+		<div class="alert alert-success" id="message" style="position:absolute; z-index:99;">
 			<button type="button" class="close-message" ng-click="hideMessage()">x</button>
 			<strong>{{messageTitle}}</strong>
 			{{messageContent}}
 		</div>
 	</div>
-	
-	<div class="container">
-		<center>
-		<table class="table table-striped table-hover">
-			<tbody>
-			<tr>
-				<td align=center>編號 / number</td>
-				<td align=center>標題 / title</td>
-				<td align=center>日期 / date</td>
-			</tr>
-			</tbody>
-			<!--<tr ng-repeat="announce in displayList" style="cursor: pointer" ng-onclick="showDetail(announce.number)">-->
-			<tbody ng-repeat="announce in displayList">
-			<tr ng-click="getContent(announce)">
-				<td align="center">{{announce.number}}</td>
-				<td>{{announce.title}}</td>
-				<td align="center">{{announce.formatedCreatedDate}}</td>
-			</tr>
-			<tr ng-show="announce.expand">
-				<td colspan=3>
-					<a href="edit.html?number={{announce.number}}">編輯/Edit</a><br>
-					<div ng-bind-html="announce.content"></div>
-				</td>
-			</tr>
-			</tbody>
-		</table>
-
-		<div class="btn-group" role="group" aria-label="...">
-			<button type="button" ng-click="changePage(0)" ng-disabled="page==1" class="btn btn-default">
-				<span class="glyphicon glyphicon-fast-backward" /> </button>
-			<button type="button" ng-click="changePage(-10)" ng-disabled="page<=10" class="btn btn-default">
-				<span class="glyphicon glyphicon-backward" /> </button>
-			<button type="button" ng-click="changePage(-1)" ng-disabled="page==1" class="btn btn-default">
-				<span class="glyphicon glyphicon-triangle-left" /> </button>
-		</div>
-			p.{{page}}
-		<div class="btn-group" role="group" aria-label="...">
-			<button type="button" ng-click="changePage(1)" ng-disabled="page==totalPages" class="btn btn-default">
-				<span class="glyphicon glyphicon-triangle-right" /> </button>
-			<button type="button" ng-click="changePage(10)" ng-disabled="(page+10)>totalPages" class="btn btn-default">
-				<span class="glyphicon glyphicon-forward" />     </button>
-			<button type="button" ng-click="changePage(999)" ng-disabled="page==totalPages" class="btn btn-default">
-				<span class="glyphicon glyphicon-fast-forward" /></button>
-		</div>
-		</center>
-	</div>
+    
+    <div ng-include="'/announce/_list.html'"></div>
 </div>
 
 </body>

@@ -21,6 +21,11 @@ router.post('/create', function(req, res, next) {
             res.status(500).json({error:err.message});
             return;
         }
+		
+		// -dogswang- admin check
+		if(isAdmin(db, req.body.token, res)==false) return;
+		
+		// -dogswang- is admin, update
 		db.collection('counter').findAndModify(
 			{ _id: 'announce' },
 			['next'],
@@ -60,25 +65,34 @@ router.post('/edit', function(req, res, next){
             res.status(500).json({error:err.message});
             return;
         }
-		req.body.number *= 1;
-		db.collection('announce').update(
-			{number: req.body.number},
-			{$set:{content: req.body.content, title:req.body.title}},
-			function(err, result){
-				if(err){
-					res.json({
-						messageTitle:'Error',
-						messageContent:'更新失敗。'
-					});
-					return;
-				}
-				res.json({
-					messageTitle:'Success',
-					messageContent:'更新成功, 請重新整理。'
-				});
-				console.log(res.json);
-			}
-		);
+		
+        function updateAnnounce() {
+            req.body.number *= 1;
+            db.collection('announce').update(
+                {number: req.body.number},
+                {$set:{content: req.body.content, title:req.body.title}},
+                function(err, result){
+                    if(err){
+                        res.json({
+                            messageTitle:'Error',
+                            messageContent:'更新失敗。'
+                        });
+                        return;
+                    }
+                    res.json({
+                        messageTitle:'Success',
+                        messageContent:'更新成功, 請重新整理。'
+                    });
+                }
+            );
+        }
+        
+		// -dogswang- admin check
+		isAdmin(db, req.body.token, res, updateAnnounce);
+		
+		// -dogswang- is admin, update
+		
+		
 					
 	});
 });
@@ -145,9 +159,7 @@ router.post('/getList', function(req, res){
 				return;
 			}
 			
-			console.log('doc content:', doc);
 			res.json(doc);
-			
 		});
 	});
 });
@@ -311,36 +323,31 @@ router.post('/renew', function(req, res) {
 	});
 });
 
-/*
-router.post('/listDog', function(req, res, next) {
-    // -Oster- Connect to database...
-    var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function (err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:', err);
-            res.status(500).json({error:err.message});
+function isAdmin(db, token, res, updateAnnounce){
+	db.collection('user').findOne({
+		token: '' + token,
+		role: 'admin'
+	}, function(err, doc){
+        console.log("find one result", doc);
+		if(err){
+			console.log('unknow error 25963');
+			res.json({
+				mseeageTitle: 'Error',
+				messageContent: 'Unable to connect to db. 25963'
+			});
             return;
-        } else {
-            var collection = db.collection('dog');
-            
-            collection.find().toArray(function (err, result) {
-                if (err) {
-                    res.status(500).json({error:err.message});
-                    return;
-                }
-                
-                console.log("Inserted one dog successfully.");
-                res.json({
-                    dogList:result
-                });
-                
-                db.close();
-            });
-        }
-    });
-});
-*/
-module.exports = router;
+		}
+		if(!doc){
+			console.log('you are not admin');
+			res.json({
+				messageTitle: 'Error',
+				messageContent: 'You are not admin'
+			});
+            return;
+		}
+		return updateAnnounce();
+	});
+}
 
 function send_verify_code(address, username, randomcode){
 	// -dogswang- 寄送確認信
@@ -382,3 +389,5 @@ function send_reset_code(address, username, randomcode){
 	}, function(err, message) { console.log(err || message); });
 	// -dogswang- End of 寄送確認信
 }
+
+module.exports = router;

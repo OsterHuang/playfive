@@ -1,0 +1,71 @@
+.announce-list-show-hide {
+  padding:4px;
+  /*border:1px solid #eee;*/
+    position:relative;
+}
+
+.announce-list-show-hide {
+  -webkit-transition:all linear 0.5s;
+  transition:all linear 0.5;
+}
+
+.announce-list-show-hide.ng-hide {
+  opacity:0;
+}
+
+
+.announce-edit-show-hide {
+  padding:4px;
+    position:absolute;
+    top:40px;
+    width:100%;
+  /*border:1px solid #eee;*/
+}
+
+.announce-edit-show-hide {
+  -webkit-transition:all linear 0.5s;
+  transition:all linear 0.5s;
+    
+    left:0;
+  
+}
+
+.announce-edit-show-hide.ng-hide {
+  opacity:0;
+    animation-delay: 0.5s;
+    left:100%;
+}
+
+
+
+.animate-show.ng-hide-add, 
+.animate-show.ng-hide-remove {
+  -webkit-transition:all linear 0.5s;
+  -moz-transition:all linear 0.5s;
+  -o-transition:all linear 0.5s;
+  transition:all linear 0.5s;
+  display:block!important;
+}
+
+.animate-show.ng-hide-add.ng-hide-add-active,
+.animate-show.ng-hide-remove {
+  line-height:0;
+  opacity:0;
+  padding:0 10px;
+}
+
+.animate-show.ng-hide-add,
+.animate-show.ng-hide-remove.ng-hide-remove-active {
+  line-height:20px;
+  opacity:1;
+  padding:10px;
+  border:1px solid black;
+    transition-delay: 0.5s;
+  background:white;
+}
+
+.check-element {
+  padding:10px;
+  border:1px solid black;
+  background:white;
+}

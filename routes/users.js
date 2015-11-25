@@ -124,13 +124,14 @@ router.post('/me', function(req, res, next) {
                         result:'success',
                         user:{
                             username:document.username,
-                            nickname:document.nickname
+                            nickname:document.nickname,
+                            role:document.role
                         }
                     });
                 } else {
                     res.status(200).json({
                         result:'fail',
-                        message:'username or password error',
+                        message:'Unauthoried',
                     });
                 }
                 
