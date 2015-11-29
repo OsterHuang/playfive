@@ -4,17 +4,17 @@
 		<table class="table table-striped table-hover">
 			<thead>
 			<tr>
-				<th align=center>編號 / number</th>
-				<th align=center>標題 / title</th>
-				<th align=center>日期 / date</th>
+				<td align=center>編號 / number</td>
+				<td align=center>標題 / title</td>
+				<td align=center>日期 / date</td>
 			</tr>
 			</tbody>
 			<tr ng-repeat="announce in displayList" style="cursor: pointer" ng-onclick="showDetail(announce.number)">
 			<tbody ng-repeat="announce in displayList">
 			<tr ng-click="getContent(announce)">
-				<th align="center">{{announce.number}}</th>
-				<th>{{announce.title}}</th>
-				<th align="center">{{announce.formatedCreatedDate}}</th>
+				<td align="center">{{announce.number}}</td>
+				<td>{{announce.title}}</td>
+				<td align="center">{{announce.formatedCreatedDate}}</td>
 			</tr>
 			<tr ng-show="announce.expand">
 				<td colspan="3" style="text-align:left">

@@ -721,7 +721,7 @@ function calculateTimeLeft(pGame) {
     if (basicTimeLeft < 0) {
         if (pGame.timeRule.perMoveTime) {
             availableTimeLeft = basicTimeLeft + pGame.timeRule.perMoveTime;
-            console.log(' tokenTimeThisAction:' + availableTimeLeft);
+            //console.log(' tokenTimeThisAction:' + availableTimeLeft);
             basicTimeLeft = 0;
         } 
     } 

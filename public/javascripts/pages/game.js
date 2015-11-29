@@ -226,6 +226,33 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $scope.invalidOpeningMsg = null;
     }
     
+    $scope.validateSymmetric = function(pOrdinate) {
+        if (!$scope.game.alts || $scope.game.alts.length == 0) {
+            $scope.invalidOpeningMsg = null;
+            return;
+        }
+            
+        var symPoints = [];
+        for (var i in $scope.game.alts) {
+            //console.log();
+            var stones5 = $scope.game.moves.slice();
+            stones5.push({seq:5, ordinate:$scope.game.alts[i].ordinate});
+            var symPts = symFinder(stones5);
+            console.log(" Find points from  ", pOrdinate, symPts);
+            Array.prototype.push.apply(symPoints, symPts);
+        }
+        
+        for (var i = 0; i < symPoints.length; i++) {
+            console.log(' ' + $scope.toReadable(symPoints[i].ordinate) + ' compare with ' + $scope.toReadable(pOrdinate));
+            if (symPoints[i].ordinate.x == pOrdinate.x && symPoints[i].ordinate.y == pOrdinate.y) {
+                $scope.invalidOpeningMsg = 'This is a symmetric point with other 5th moves.' + $scope.toReadable(pOrdinate);
+                return;
+            }
+        }
+        
+        $scope.invalidOpeningMsg = null;
+    }
+    
     // ----
     // Timer
     // ----
@@ -428,7 +455,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             $scope.validateOpeningStone($scope.game.moves.length, grid.ordinate);
             if ($scope.invalidOpeningMsg)//Validate fails
                 return;
-        }
+        } 
         
         //Has alternatives
         if (grid.alt != null) {
@@ -451,8 +478,16 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         }
         
         if ($scope.game.status === 'alt-making') {
-            if ($scope.game.rule === 'classic' && $scope.game.alts && $scope.game.alts.length == $scope.game.altQty)
+            if (($scope.game.rule === 'classic' || $scope.game.rule === 'yamaguchi' ) && $scope.game.alts && $scope.game.alts.length >= $scope.game.altQty)
                 return;
+            
+            var symMessage = $scope.validateSymmetric(grid.ordinate);
+            if ($scope.invalidOpeningMsg) {//Validate fails
+                $rootScope.meesage = $scope.invalidOpeningMsg;
+                $("#message").alert();
+                $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+                return;
+            }
             
             grid.alt = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
             if (!$scope.game.alts) {
@@ -803,18 +838,21 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         console.log('On chosen open', game);
         $scope.isLocked = false;
         $scope.game = game;
+        $scope.resetTimeLeft(game);
         $scope.arrangeMoves();
     });
     
     socket.on('game-swapped-receive', function(game) {
         console.log('On swapped', game);
         $scope.game = game;
+        $scope.resetTimeLeft(game);
     });
     
     socket.on('game-alt-making-receive', function(game) {
         console.log('On alt-making-receive', game);
         $scope.isLocked = false;
         $scope.game = game;
+        $scope.resetTimeLeft(game);
         $scope.arrangeMoves();
     });
     
@@ -822,6 +860,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         console.log('On alt-choosing-receive', game);
         $scope.isLocked = false;
         $scope.game = game;
+        $scope.resetTimeLeft(game);
         $scope.arrangeMoves();
     });
     
@@ -830,6 +869,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $scope.isLocked = false;
         $scope.game = game;
         $scope.clearGridAlts();
+        $scope.resetTimeLeft(game);
         $scope.arrangeMoves();
     });
     
