@@ -127,7 +127,16 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
                 $("#message").fadeTo(5000, 500).slideUp(500, function() {});
                 
                 $rootScope.user = response.user;
-                socket.emit('online', {username:$rootScope.user.username, nickname:$rootScope.user.nickname}, null);
+                socket.emit(
+                    'online', 
+                    {username:$rootScope.user.username, 
+                     nickname:$rootScope.user.nickname,
+                     role:$rootScope.user.role,
+                     status:$rootScope.user.status,
+                     rating:$rootScope.user.rating         
+                    }, 
+                    null
+                );
             }
             
         }).error(function(data, status) {
@@ -151,6 +160,20 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
 //        console.log('On receive message - ' + message); 
 //        $rootScope.lobbyChat = $rootScope.lobbyChat + message.from + ':' + message.content + '\n';
 //        console.log(' Final lobbyChat:' + $rootScope.lobbyChat);
+    });
+    
+    socket.on('kicked', function() {
+        alert('You are kicked. Please be aware of your behavior.');
+        $localStorage.token = null;
+        $window.location = '/login.html';
+    });
+    
+    socket.on('muted', function() {
+        $root.user.status = 'silent';
+    });
+    
+    socket.on('unmuted', function() {
+        $root.user.status = 'normal';
     });
     
     socket.on('reconnect', function() {

@@ -15,13 +15,44 @@
             <div id="userList" class="tab-pane fade in active">
                 <table class="table table-striped" style="margin-top:10px" >
                     <tr>
-                        <th class="text-center">Nickname</th><th class="text-center">Rank</th><th class="text-center">In Game</th>
+                        <th class="text-center">Nickname</th>
+                        <th class="text-center">Rank</th>
+                        <th class="text-center" ng-show="user.role === 'admin'">Action</th>
                     </tr>
                     <tr ng-repeat="u in onlineUsers">
-                        <td>{{u.nickname}}<span ng-show="u.username == user.username">(Me)</span></td>
+                        
                         <td>
+                            {{u.nickname}}<span ng-show="u.username == user.username">(Me)</span>
+                            <span ng-show="u.role === 'admin'" class="glyphicon glyphicon-user" 
+                                  style="color:#414eb1;"
+                                  data-toggle="tooltip" data-placement="Admin" title="This is Admin"></span>
+                            <span ng-show="u.status === 'silent'" class="glyphicon glyphicon-volume-off"
+                                 ></span>
                         </td>
                         <td>
+                            {{u.rating}}
+                        </td>
+                        <td ng-show="user.role === 'admin'" style="width:200px">
+                            <div ng-show="u.role != 'admin'">
+                                <button class="btn btn-default btn-xs" ng-click="confirmBan(u)" ng-show="u.status != 'banned'">
+                                    <span class="glyphicon glyphicon-ban-circle"></span>
+                                    Ban
+                                </button>
+
+                                <button class="btn btn-default btn-xs" ng-click="confirmKick(u)">
+                                    <span class="glyphicon glyphicon-screenshot"></span>
+                                    Kick
+                                </button>
+
+                                <button class="btn btn-default btn-xs" ng-click="confirmMute(u)" ng-show="u.status != 'silent'">
+                                    <span class="glyphicon glyphicon-volume-off"></span>
+                                    Mute
+                                </button>
+                                <button class="btn btn-default btn-xs" ng-click="unmute(u)" ng-show="u.status === 'silent'">
+                                    <span class="glyphicon glyphicon-volume-up"></span>
+                                    Un-Mute
+                                </button>
+                            </div>
                         </td>
                     </tr>
                 </table>
@@ -42,7 +73,8 @@
                         <tr>
                             <th class="text-center">NO</th>
                             <th class="text-center">Creator</th><th class="text-center">Rule</th><th class="text-center">Time rule</th>
-                            <th class="text-center">Rating</th><th class="text-center">Tentitive Black</th><th class="text-center">Action</th>
+                            <th class="text-center">Rating</th><th class="text-center">Tentitive Black</th>
+                            <th class="text-center">Only With</th><th class="text-center">Action</th>
                         </tr>
                         <tr ng-repeat="g in createdGames">
                             <td>{{g.seq}}</td>
@@ -64,7 +96,11 @@
                                 <span ng-show="!g.isTempBlack">Participant</span>
                             </td>
                             <td>
-                                <button class="btn btn-info" ng-click="joinGame(g)" ng-hide="g.creator.username == user.username">
+                                <span ng-show="g.isTempBlack">{{g.specificOpp.nickname}}</span>
+                            </td>
+                            <td>
+                                <button class="btn btn-info" ng-click="joinGame(g)" 
+                                        ng-hide="g.creator.username === user.username || g.specificOpp.username !== user.username">
                                     <span class="glyphicon glyphicon-road"></span>  
                                     Join
                                 </button>
@@ -152,7 +188,15 @@
                     <div class="container-fluid">
                         <div class="row">
                             <label>Opponent:</label>
-                            <span> </span>
+                            <span style="border:solid 1px #d3e7f0; background-color:#e0f2f5; border-radius:8px; padding:2px 4px; margin-top: 2px; margin-right: 8px; margin-bottom: 2px; margin-left: 2px;"
+                                  ng-show="newGame.specificOpp"> 
+                                {{newGame.specificOpp.nickname}} 
+                                <span class="glyphicon glyphicon-minus"  ng-click="cancelChooseOpp()" style="cursor:pointer; color:#c1c5e2"></span>
+                            </span>
+                            <button class="btn btn-primary btn-xs" ng-click="openChooseOppDialog()">
+                                <span class="glyphicon glyphicon-user">
+                                </span>
+                            </button>
                         </div>
                         <div class="row">
                             <label >Rule:</label>
@@ -220,4 +264,41 @@
             </div>
         </div>
     </div>
+
+    <div class="modal fade" id="chooseOppDialog" tabindex="-1" role="dialog" aria-labelledby="myModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                
+                <div class="modal-body">
+                    <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                    
+                    <div class="container-fluid">
+                        <input ng-model="searchOpp.any" placeholder="Search"
+                               style="border-radius: 4px; padding: 2px; border: 1px solid #999; background-color: #EEEEEE;"></input>
+                        <table class="table table-striped" style="margin-top:10px" >
+                            <tr>
+                                <th class="text-center">Nickname</th>
+                                <th class="text-center">Rank</th>
+                            </tr>
+                            
+                            <tr ng-repeat="u in onlineUsers | filter: chooseOppFilter">
+                                <td>
+                                    {{u.nickname}}
+                                    <button class="btn btn-default btn-xs" ng-click="chooseOpp(u)" data-dismiss="modal">
+                                        <span class="glyphicon glyphicon-hand-left" ></span>
+                                    </button>
+                                </td>
+                                <td>
+                                    {{u.rating}}
+                                </td>
+                            </tr>
+                        </table>
+                        
+                    </div>
+                </div>
+                
+            </div>
+        </div>
+    </div>
+
 </div>

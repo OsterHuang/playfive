@@ -40,6 +40,31 @@ router.post('/login', function(req, res, next) {
 
         console.log('Found document:' + util.inspect(document, {showHidden: false, depth: null}));
         if (document) {
+            if(!document.status || document.status === 'temp') {
+                console.log('Status temp.' + req.body.username);
+                res.status(200).json({
+                    result:'fail',
+                    message:'You account is not verified.',
+                });
+                return;
+            }
+            if(document.status === 'banned') {
+                console.log('Status banned.' + req.body.username);
+                res.status(200).json({
+                    result:'fail',
+                    message:'You account is banned.',
+                });
+                return;
+            }
+            
+            if (!(document.status === 'normal' || document.status === 'silent')) {
+                 res.status(200).json({
+                    result:'fail',
+                    message:'Account problem.',
+                });
+                return;
+            }
+            
             //Generate token
             var token = crypto.randomBytes(16).toString('hex');
             console.log('Generated token:' + token);
@@ -111,7 +136,9 @@ router.post('/me', function(req, res, next) {
                 user:{
                     username:document.username,
                     nickname:document.nickname,
-                    role:document.role
+                    role:document.role,
+                    status:document.status,
+                    rating:document.rating
                 }
             });
         } else {
