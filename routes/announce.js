@@ -14,17 +14,16 @@ router.post('/create', function(req, res, next) {
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
 	
     // -dogswang- admin check
-    if(isAdmin(db, req.body.token, res)==false) return;
-
-    // -dogswang- is admin, update
-    req.db.collection('counter').findAndModify(
+    
+	isAdmin(req.db, req.body.token, res, function (){
+	    req.db.collection('counter').findAndModify(
         { _id: 'announce' },
         ['next'],
         { $inc: { next: 1 } },
         { updatedExisting : true }, 
         function(err, doc) {
             console.log('findAndModify:', err, doc);
-            db.collection('announce').insertOne({
+            req.db.collection('announce').insertOne({
                 number:doc.value.next,
                 publisher:req.body.publisher,
                 title:req.body.title,
@@ -43,20 +42,22 @@ router.post('/create', function(req, res, next) {
                     messageContent:'公告已新增。An announcement has been created.'
                 });
             });
-        }
-    );
+        });
+	});
 });
 
 router.post('/edit', function(req, res, next){
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
 	
         function updateAnnounce() {
-            req.body.number *= 1;
+            //req.body.number *= 1;
+			console.log('  Update announce');
             req.db.collection('announce').update(
                 {number: req.body.number},
                 {$set:{content: req.body.content, title:req.body.title}},
                 function(err, result){
                     if(err){
+						console.log('Update error:', err);
                         res.json({
                             messageTitle:'Error',
                             messageContent:'更新失敗。'
@@ -72,7 +73,7 @@ router.post('/edit', function(req, res, next){
         }
         
 		// -dogswang- admin check
-		isAdmin(db, req.body.token, res, updateAnnounce);
+		isAdmin(req.db, req.body.token, res, updateAnnounce);
 		
 		// -dogswang- is admin, update
 });
@@ -126,7 +127,7 @@ router.post('/getList', function(req, res){
         res.json(doc);
     });
 });
-
+/*
 router.get('/reset', function(req, res){
     //console.log("Verified parameters:" + req.query.code + " " + req.query.account);
     
@@ -250,8 +251,8 @@ router.post('/renew', function(req, res) {
 
     });
 });
-
-function isAdmin(db, token, res, updateAnnounce){
+*/
+function isAdmin(db, token, res, callback){
 	db.collection('user').findOne({
 		token: '' + token,
 		role: 'admin'
@@ -263,17 +264,19 @@ function isAdmin(db, token, res, updateAnnounce){
 				mseeageTitle: 'Error',
 				messageContent: 'Unable to connect to db. 25963'
 			});
-            return;
+            return false;
 		}
 		if(!doc){
+			console.log('token is: ', token);
 			console.log('you are not admin');
 			res.json({
 				messageTitle: 'Error',
 				messageContent: 'You are not admin'
 			});
-            return;
+            return false;
 		}
-		return updateAnnounce();
+		callback();
+		return;
 	});
 }
 

@@ -21,6 +21,7 @@ router.post('/createAccount', function(req, res, next) {
         email:req.body.email,
         role:'user',
         status:'temp',
+		language: req.body.language,
         wrong_password:0,
         rating:1500,
         win:0,
@@ -136,8 +137,6 @@ router.post('/check_email', function(req, res, next) {
             messageTitle:'Sorry',
             messageContent:'['+ req.body.email + ']已被使用。This email has been taken.'
         });
-
-        db.close();
     });
 });
 
@@ -159,7 +158,7 @@ router.get('/verify', function(req, res){
         }
 
         if(doc.verifycode==req.query.code){
-            db.collection('user').update(
+            req.db.collection('user').update(
                 {username: req.query.account},
                 {$set:{status: 'normal'}}
             );
@@ -169,7 +168,7 @@ router.get('/verify', function(req, res){
             var times = doc.wrong_password +1;
             console.log(times);
             if(times<3){
-                db.collection('user').update(
+                req.db.collection('user').update(
                     {username: req.query.account},
                     {$set:{wrong_password: times}}
                 );
@@ -178,7 +177,7 @@ router.get('/verify', function(req, res){
             }
             else{
                 var randomcode = genRandomCode();
-                db.collection('user').update(
+                req.db.collection('user').update(
                     {username: req.query.account},
                     {$set:{wrong_password: 0, verifycode: randomcode}}
                 );
@@ -191,34 +190,36 @@ router.get('/verify', function(req, res){
 });
 
 router.get('/reset', function(req, res){
-    //console.log("Verified parameters:" + req.query.code + " " + req.query.account);
-    
+    console.log('abcd');
     var code = req.query.code;
-    req.db.collection('user').update({username: req.query.account, verifycode: code}, {$set:{password:code}},function(err, result) {
-        // -dogswang- If cannot connect to db
-        if (err) {
-            console.log('cannot connect to db');
-            res.status(500).json({error:err.message});
-            return;
-        }
-        console.log('Query result:' + util.inspect(result, {showHidden:false, depth:null}));
-        // -dogswang- If cannot find this data
-        if (result.result.nModified==0){
-            console.log("重設失敗。19263");
-            res.redirect('reset-fail.html');
-        }
-        else if(result.result.nModified==1){
-            console.log("重設成功。19264");
-            console.log('code is:', code);
-            code = 'reset-done.html#'+code;
-            console.log('code is:', code);
-            res.redirect(code);
-            return;
-        }
-        else{
-            console.log("不明錯誤。19265");
-        }
-    });
+    req.db.collection('user').update(
+		{username: req.query.account, verifycode: code}, 
+		{$set:{password:code}},
+		function(err, result) {
+			if (err) {
+				console.log('cannot connect to db');
+				res.status(500).json({error:err.message});
+				return;
+			}
+			console.log('Query result:' + util.inspect(result, {showHidden:false, depth:null}));
+			// -dogswang- If cannot find this data
+			if (result.result.nModified==0){
+				console.log("重設失敗。19263");
+				res.redirect('reset-fail.html');
+			}
+			else if(result.result.nModified==1){
+				console.log("重設成功。19264");
+				console.log('code is:', code);
+				code = 'reset-done.html#'+code;
+				console.log('code is:', code);
+				res.redirect(code);
+				return;
+			}
+			else{
+				console.log("不明錯誤。19265");
+			}
+		}
+	);
 });
 
 router.post('/reverify', function(req, res) {
@@ -250,7 +251,7 @@ router.post('/reverify', function(req, res) {
             }
             // -dogswang- 更新verifycode
             randomcode = genRandomCode();
-            db.collection('user').update(
+            req.db.collection('user').update(
                 restrict,
                 {$set:{verifycode: randomcode}},
                 function(err, result){
@@ -298,7 +299,7 @@ router.post('/reset', function(req, res) {
             }
             // -dogswang- 更新verifycode
             randomcode = genRandomCode();
-            db.collection('user').update(
+            req.db.collection('user').update(
                 restrict,
                 {$set:{verifycode: randomcode}},
                 function(err, result){
@@ -354,7 +355,7 @@ router.post('/renew', function(req, res) {
         }
     });
 });
-module.exports = router;
+
 
 function send_verify_code(address, username, randomcode){
 	// -dogswang- 寄送確認信
@@ -410,3 +411,5 @@ function send_reset_code(address, username, randomcode){
 function genRandomCode(){
 	return Math.floor(Math.random()*1000000).toString();
 }
+
+module.exports = router;

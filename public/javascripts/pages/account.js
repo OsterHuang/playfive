@@ -11,7 +11,7 @@ account.controller('accountController', function ($scope, $http, $window) {
         $http({
                 url: '/account/createAccount',
                 method: 'POST',
-                data: JSON.stringify({username:$scope.username, nickname:$scope.nickname, password:$scope.password, email:$scope.email}),
+                data: JSON.stringify({username:$scope.username, nickname:$scope.nickname, password:$scope.password, email:$scope.email, language: $scope.language}),
                 headers: {'Content-Type': 'application/json'}
         }).success(function(response) {
             console.log(response);

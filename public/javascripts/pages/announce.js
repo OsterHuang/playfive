@@ -1,5 +1,5 @@
-announce = angular.module('announce', []);
-announce.controller('announceController', function ($scope, $http, $window) {
+announce = angular.module('announce', ['ngStorage']);
+announce.controller('announceController', function ($scope, $http, $localStorage, $window) {
     
     $("#success-alert").hide();
     
@@ -29,6 +29,7 @@ announce.controller('announceController', function ($scope, $http, $window) {
     }
 	
     $scope.create = function() {
+		console.log('token is:', $localStorage.token);
 		$http({
 			url: '/announce/create',
 			method: 'POST',

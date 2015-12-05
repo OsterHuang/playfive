@@ -45,7 +45,7 @@ announceEdit.controller('announceEditController', function ($rootScope, $scope, 
 		}).error(function(data, status){
 //			$scope.messageTitle = 'Error';
 //			$scope.messageContent = '更新失敗。';
-            $rootScope.message = response.messageContent;
+            $rootScope.message = data.messageContent;
 	        $("#message").alert();
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
 			console.log('Error ' + status + '. ' + data);

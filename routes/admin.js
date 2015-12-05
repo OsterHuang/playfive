@@ -73,34 +73,34 @@ router.post('/add', function(req, res){
             }
             if(result.result.nModified==1){
                 console.log('new admin has been added.');
-                return;
+                //-dogswang- if success to modify
+			    req.db.collection('user').find({role: 'admin'},{nickname:1}).sort({nickname:1}).toArray( function(err, doc) {
+					// -dogswang- If cannot connect to db
+					if (err) {
+						res.status(500).json({error:err.message});
+						return;
+					}
+					// -dogswang- If cannot find this data
+					if (!doc){
+						console.log("資料庫不存在。");
+						return;
+					}
+					res.json({
+						adminList: doc,
+						messageTitle: 'Success',
+						messageContent: '管理員新增成功'
+					});
+				});
             }
             console.log('unknow error 24175');
         }
     );
 
-    req.db.collection('user').find({role: 'admin'},{nickname:1}).sort({nickname:1}).toArray( function(err, doc) {
-        // -dogswang- If cannot connect to db
-        if (err) {
-            res.status(500).json({error:err.message});
-            return;
-        }
-        // -dogswang- If cannot find this data
-        if (!doc){
-            console.log("資料庫不存在。");
-            return;
-        }
-        res.json({
-            adminList: doc,
-            messageTitle: 'Success',
-            messageContent: '管理員新增成功'
-        });
-    });
 });
 
 router.post('/del', function(req, res){
 	var isRoot = check_root(req.body.password);
-	if(isRoot==false) return;s
+	if(isRoot==false) return;
     
     req.db.collection('user').updateOne(
         {nickname: req.body.nickname},
@@ -114,44 +114,45 @@ router.post('/del', function(req, res){
             if(result.result.nModified==1){
                 console.log('new admin has been deleted.');
                 hasModified = true;
-                return;
-            }
+            
+				req.db.collection('user').find({role: 'admin'},{nickname:1}).sort({nickname:1}).toArray( function(err, doc) {
+					// -dogswang- If cannot connect to db
+					if (err) {
+						console.log('Error 16583');
+						res.status(500).json({error:err.message});
+						return;
+					}
+					// -dogswang- If cannot find this data
+					if (!doc){
+						console.log('Error 16584');
+						console.log("資料庫不存在。");
+						return;
+					}
+					if(hasModified==true){
+						res.json({
+							adminList: doc,
+							messageTitle: 'Success',
+							messageContent: '管理員刪除成功'
+						});
+					}
+					else{
+						res.json({
+							adminList: doc,
+							messageTitle: 'Error',
+							messageContent: '管理員刪除失敗'
+						});
+					}
+				});
+			}
             console.log('unknow error 24175');
             hasModified = false;
-        }
-    );
-
-    req.db.collection('user').find({role: 'admin'},{nickname:1}).sort({nickname:1}).toArray( function(err, doc) {
-        // -dogswang- If cannot connect to db
-        if (err) {
-            res.status(500).json({error:err.message});
-            return;
-        }
-        // -dogswang- If cannot find this data
-        if (!doc){
-            console.log("資料庫不存在。");
-            return;
-        }
-        if(hasModified==true){
-            res.json({
-                adminList: doc,
-                messageTitle: 'Success',
-                messageContent: '管理員刪除成功'
-            });
-        }
-        else{
-            res.json({
-                adminList: doc,
-                messageTitle: 'Error',
-                messageContent: '管理員刪除失敗'
-            });
-        }
-    });
+		}
+	);
+	
 });
 
 module.exports = router;
 function check_root(psd){
-	if(psd == 'uisthebest') return true;
+	if(psd == 'riftwisthebest') return true;
 	return false;
 }
-

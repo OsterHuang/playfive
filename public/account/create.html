@@ -104,8 +104,18 @@
                     </span>
                 </span>
             
-                <div class="container" style="text-align:center">
-                    <button class="btn" ng-disabled="!usernameOk || !nicknameOk || !password || !emailOk || !username || !nickname || !email" ng-click="create()">                    
+                <span class="form-group">
+					<label class="col-sm-2 control-label">語言 / language</label>
+					<span class="col-sm-10">
+						<select ng-model="language" class="form-control">
+						<option value="chinese">中文</option>
+						<option value="english">English</option>
+						</select>
+					</span>
+				</span>
+				
+				<div class="container" style="text-align:center">
+                    <button class="btn" ng-disabled="!language || !usernameOk || !nicknameOk || !password || !emailOk || !username || !nickname || !email" ng-click="create()">                    
                         申請 / Apply
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
