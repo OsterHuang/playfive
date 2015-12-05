@@ -12,63 +12,47 @@ router.get('/', function(req, res, next) {
 
 router.post('/create', function(req, res, next) {
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
+	
+    // -dogswang- admin check
+    if(isAdmin(db, req.body.token, res)==false) return;
 
-    // -Oster- Connect to database...
-    var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function(err, db) {
-        // -Oster- If can not connect to database.....
-        if (err) {
-            res.status(500).json({error:err.message});
-            return;
+    // -dogswang- is admin, update
+    req.db.collection('counter').findAndModify(
+        { _id: 'announce' },
+        ['next'],
+        { $inc: { next: 1 } },
+        { updatedExisting : true }, 
+        function(err, doc) {
+            console.log('findAndModify:', err, doc);
+            db.collection('announce').insertOne({
+                number:doc.value.next,
+                publisher:req.body.publisher,
+                title:req.body.title,
+                content:req.body.content,
+                isTop:req.body.isTop,
+                createdDate: new Date()
+            }, function(err, result) {
+                if (err) {
+                    res.status(500).json({error:err.message});
+                    return;
+                }
+
+                console.log("公告已新增");
+                res.json({
+                    messageTitle:'Success',
+                    messageContent:'公告已新增。An announcement has been created.'
+                });
+            });
         }
-		
-		// -dogswang- admin check
-		if(isAdmin(db, req.body.token, res)==false) return;
-		
-		// -dogswang- is admin, update
-		db.collection('counter').findAndModify(
-			{ _id: 'announce' },
-			['next'],
-			{ $inc: { next: 1 } },
-			{ updatedExisting : true }, 
-			function(err, doc) {
-				console.log('findAndModify:', err, doc);
-				db.collection('announce').insertOne({
-					number:doc.value.next,
-					publisher:req.body.publisher,
-					title:req.body.title,
-					content:req.body.content,
-					isTop:req.body.isTop,
-					createdDate: new Date()
-				}, function(err, result) {
-					if (err) {
-						res.status(500).json({error:err.message});
-						return;
-					}
-
-					console.log("公告已新增");
-					res.json({
-						messageTitle:'Success',
-						messageContent:'公告已新增。An announcement has been created.'
-					});
-				});
-			}
-		);
-    });
+    );
 });
 
 router.post('/edit', function(req, res, next){
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
-    var url = 'mongodb://localhost:27017/playfive';
-	MongoClient.connect(url, function(err, db){
-        if (err) {
-            res.status(500).json({error:err.message});
-            return;
-        }
-		
+	
         function updateAnnounce() {
             req.body.number *= 1;
-            db.collection('announce').update(
+            req.db.collection('announce').update(
                 {number: req.body.number},
                 {$set:{content: req.body.content, title:req.body.title}},
                 function(err, result){
@@ -91,236 +75,180 @@ router.post('/edit', function(req, res, next){
 		isAdmin(db, req.body.token, res, updateAnnounce);
 		
 		// -dogswang- is admin, update
-		
-		
-					
-	});
 });
 
 router.post('/getContent', function(req, res, next){
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
+    
+    req.body.number *= 1;
+    //需要將轉換為數字，否則搜尋資料庫時可能出現問題
 
-    // -Oster- Connect to database...
-    var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function(err, db) {
-        // -Oster- If can not connect to database.....
-        if (err) {
-            res.status(500).json({error:err.message});
-            return;
+    req.db.collection('announce').findOne(
+        {number: req.body.number},
+
+        function(err, doc){
+            if(err){
+                res.status(500).json({error:err.message});
+                return;
+            }
+            if(!doc){
+                console.log('公告不存在');
+                res.json({
+                    messageTitle:'Sorry',
+                    messageContent:'公告['+ req.body.username +']不存在！'
+                });
+                return;
+            }
+            res.json({
+                title: doc.title,
+                content: doc.content,
+                createdDate: doc.createdDate,
+                publisher: doc.publisher,
+                isTop: doc.isTop
+            });
         }
-		req.body.number *= 1;
-		//需要將轉換為數字，否則搜尋資料庫時可能出現問題
-		
-		db.collection('announce').findOne(
-			{number: req.body.number},
-			
-			function(err, doc){
-				if(err){
-					res.status(500).json({error:err.message});
-					return;
-				}
-				if(!doc){
-					console.log('公告不存在');
-					res.json({
-						messageTitle:'Sorry',
-						messageContent:'公告['+ req.body.username +']不存在！'
-					});
-					return;
-				}
-				res.json({
-					title: doc.title,
-					content: doc.content,
-					createdDate: doc.createdDate,
-					publisher: doc.publisher,
-					isTop: doc.isTop
-				});
-			}
-		);
-	});
+    );
 });
 
 router.post('/getList', function(req, res){
-    var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function(err, db) {
-        // -Oster- If can not connect to database.....
+    req.db.collection('announce').find({},{number:1, title:1, createdDate:1}).sort({createdDate:-1}).toArray( function(err, doc) {
+        // -dogswang- If cannot connect to db
         if (err) {
             res.status(500).json({error:err.message});
             return;
         }
-		db.collection('announce').find({},{number:1, title:1, createdDate:1}).sort({createdDate:-1}).toArray( function(err, doc) {
-			// -dogswang- If cannot connect to db
-			if (err) {
-				res.status(500).json({error:err.message});
-				return;
-			}
-			// -dogswang- If cannot find this data
-			if (!doc){
-				console.log("資料庫不存在。");
-				return;
-			}
-			
-			res.json(doc);
-		});
-	});
+        // -dogswang- If cannot find this data
+        if (!doc){
+            console.log("資料庫不存在。");
+            return;
+        }
+
+        res.json(doc);
+    });
 });
 
 router.get('/reset', function(req, res){
     //console.log("Verified parameters:" + req.query.code + " " + req.query.account);
-	var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function(err, db) {
+    
+    var code = parseInt(req.query.code, 10);
+    req.db.collection('user').update({username: req.query.account, verifycode: code}, {$set:{password:code}},function(err, result) {
+        // -dogswang- If cannot connect to db
         if (err) {
+            console.log('cannot connect to db');
             res.status(500).json({error:err.message});
             return;
         }
-		var code = parseInt(req.query.code, 10);
-		db.collection('user').update({username: req.query.account, verifycode: code}, {$set:{password:code}},function(err, result) {
-			// -dogswang- If cannot connect to db
-			if (err) {
-				console.log('cannot connect to db');
-				res.status(500).json({error:err.message});
-				return;
-			}
-			console.log('Query result:' + util.inspect(result, {showHidden:false, depth:null}));
-			// -dogswang- If cannot find this data
-			if (!result){
-				console.log("帳號或密碼錯誤。");
-				return;
-			}
-			console.log()
-			res.redirect('reset-done.html#'+code);
-		});
-	});
+        console.log('Query result:' + util.inspect(result, {showHidden:false, depth:null}));
+        // -dogswang- If cannot find this data
+        if (!result){
+            console.log("帳號或密碼錯誤。");
+            return;
+        }
+        console.log()
+        res.redirect('reset-done.html#'+code);
+    });
 });
 
 router.post('/reverify', function(req, res) {
     // -Oster- Should check request parameters....
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
-
-    // -Oster- Connect to database...
-    var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function(err, db) {
-        // -Oster- If can not connect to database.....
-        if (err) {
-            res.status(500).json({error:err.message});
-            return;
-        }
 		
-		if(req.body.username!='')
-			restrict = {username: req.body.username};
-		else if(req.body.email!='')
-			restrict = {email: req.body.email};
-		else{
-			console.log('no username & email');
-			return;
-		}
+    if(req.body.username!='')
+        restrict = {username: req.body.username};
+    else if(req.body.email!='')
+        restrict = {email: req.body.email};
+    else{
+        console.log('no username & email');
+        return;
+    }
 
-		db.collection('user').findOne(
-			restrict,
-			function(err, doc){
-				// -dogswang- If cannot connect to db
-				if (err) {
-					res.status(500).json({error:err.message});
-					return;
-				}
-				// -dogswang- If cannot find this data
-				if (!doc){
-					console.log("帳號或email不存在。");
-					return;
-				}
-				// -dogswang- 更新verifycode
-				randomcode = Math.floor(Math.random()*1000000);
-				db.collection('user').update(
-					restrict,
-					{$set:{verifycode: randomcode}},
-					function(err, result){
-						if(err){
-							res.status(500).json({error:err.message});
-							return;
-						}
-						// -dogswang- 寄送認證信
-						send_verify_code(doc.email, doc.username, randomcode);
-					}
-				);
-			}
-		);
-	});
+    req.db.collection('user').findOne(
+        restrict,
+        function(err, doc){
+            // -dogswang- If cannot connect to db
+            if (err) {
+                res.status(500).json({error:err.message});
+                return;
+            }
+            // -dogswang- If cannot find this data
+            if (!doc){
+                console.log("帳號或email不存在。");
+                return;
+            }
+            // -dogswang- 更新verifycode
+            randomcode = Math.floor(Math.random()*1000000);
+            req.db.collection('user').update(
+                restrict,
+                {$set:{verifycode: randomcode}},
+                function(err, result){
+                    if(err){
+                        res.status(500).json({error:err.message});
+                        return;
+                    }
+                    // -dogswang- 寄送認證信
+                    send_verify_code(doc.email, doc.username, randomcode);
+                }
+            );
+        }
+    );
 });
 
 router.post('/reset', function(req, res) {
     // -Oster- Should check request parameters....
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
-
-    // -Oster- Connect to database...
-    var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function(err, db) {
-        // -Oster- If can not connect to database.....
-        if (err) {
-            res.status(500).json({error:err.message});
-            return;
-        }
 		
-		if(req.body.username!='')
-			restrict = {username: req.body.username};
-		else if(req.body.email!='')
-			restrict = {email: req.body.email};
-		else{
-			console.log('no username & email');
-			return;
-		}
+    if(req.body.username!='')
+        restrict = {username: req.body.username};
+    else if(req.body.email!='')
+        restrict = {email: req.body.email};
+    else{
+        console.log('no username & email');
+        return;
+    }
 
-		db.collection('user').findOne(
-			restrict,
-			function(err, doc){
-				// -dogswang- If cannot connect to db
-				if (err) {
-					res.status(500).json({error:err.message});
-					return;
-				}
-				// -dogswang- If cannot find this data
-				if (!doc){
-					console.log("帳號或email不存在。");
-					return;
-				}
-				// -dogswang- 更新verifycode
-				randomcode = Math.floor(Math.random()*1000000);
-				db.collection('user').update(
-					restrict,
-					{$set:{verifycode: randomcode}},
-					function(err, result){
-						if(err){
-							res.status(500).json({error:err.message});
-							return;
-						}
-						// -dogswang- 寄送認證信
-						send_reset_code(doc.email, doc.username, randomcode);
-					}
-				);
-			}
-		);
-	});
+    req.db.collection('user').findOne(
+        restrict,
+        function(err, doc){
+            // -dogswang- If cannot connect to db
+            if (err) {
+                res.status(500).json({error:err.message});
+                return;
+            }
+            // -dogswang- If cannot find this data
+            if (!doc){
+                console.log("帳號或email不存在。");
+                return;
+            }
+            // -dogswang- 更新verifycode
+            randomcode = Math.floor(Math.random()*1000000);
+            req.db.collection('user').update(
+                restrict,
+                {$set:{verifycode: randomcode}},
+                function(err, result){
+                    if(err){
+                        res.status(500).json({error:err.message});
+                        return;
+                    }
+                    // -dogswang- 寄送認證信
+                    send_reset_code(doc.email, doc.username, randomcode);
+                }
+            );
+        }
+    );
 });
 
 router.post('/renew', function(req, res) {
     // -Oster- Should check request parameters....
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
-
-    // -Oster- Connect to database...
-    var url = 'mongodb://localhost:27017/playfive';
-    MongoClient.connect(url, function(err, db) {
-        // -Oster- If can not connect to database.....
+    
+    var restrict = {username:req.body.username, password:req.body.password};
+    req.db.collection('user').update(restrict, {$set:{password: req.body.newPsd}}, function(err, result){
         if (err) {
             res.status(500).json({error:err.message});
             return;
         }
-		var restrict = {username:req.body.username, password:req.body.password};
-		db.collection('user').update(restrict, {$set:{password: req.body.newPsd}}, function(err, result){
-			if (err) {
-				res.status(500).json({error:err.message});
-				return;
-			}
-			
-		});
-	});
+
+    });
 });
 
 function isAdmin(db, token, res, updateAnnounce){

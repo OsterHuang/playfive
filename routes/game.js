@@ -22,37 +22,27 @@ router.post('/latest-games', function(req, res, next) {
         return;
     }
     
-    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:' + err);
-            res.status(500).json({error:err.message});
-            return; 
-        } else {
-            var collection = db.collection('game');
-            
-            collection.find(
-                    {$or:[{"black.username":req.body.username}, {"white.username":req.body.username}]}, 
+    var collection = req.db.collection('game');
+
+    collection.find(
+            {$or:[{"black.username":req.body.username}, {"white.username":req.body.username}]}, 
 //                    {_id:0})
 //                .sort({seq:-1})
-                    { sort: { seq:-1 }, fields : { _id:0}, limit : 10})
-                .toArray(function(err, docs) {
-                    if (err) {
-                        console.log(err);
-                        res.status(500).json({error:err.message});
-                        return;
-                    }
+            { sort: { seq:-1 }, fields : { _id:0}, limit : 10})
+        .toArray(function(err, docs) {
+            if (err) {
+                console.log(err);
+                res.status(500).json({error:err.message});
+                return;
+            }
 
 //                    console.log('Found docs:' + util.inspect(docs, {showHidden: false, depth: null}));
-                    
-                    res.status(200).json({
-                        result:'success',
-                        userLatestGames:docs
-                    });
 
-                    db.close();
+            res.status(200).json({
+                result:'success',
+                userLatestGames:docs
             });
-        }
-    });    
+    });
 });
 
 

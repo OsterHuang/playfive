@@ -9,13 +9,20 @@ var router = express.Router();
 
 var forbiddenFinder = new (require('../my_modules/forbidden-finder').ForbiddenFinder)(15);
 
+var db;
+
 console.log('Insert counters...');
-MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
+MongoClient.connect('mongodb://localhost:27017/playfive', function (err, database) {
     if (err) {
         console.log(' Can not connect db on route.main.js.');
         return;
     }
 
+    db = database;
+    createCounters();
+});
+
+function createCounters() {
     db.collection('counter').insert(
         { _id: 'game', next: 1},
         function(err, doc) {
@@ -37,8 +44,7 @@ MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
             }
         }
     );
-
-});
+}
 
 /* GET home page. */
 router.get('/', function(req, res, next) {
@@ -77,65 +83,56 @@ io.on('connection', function (socket) {
     
     socket.on('lobby-create-game', function(data) {
         console.log("On lobby-game-created: (" + socket.username + ", " + socket.room + ")", data);
-        
-        MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
-            if (err) {
-                console.log(' Can not connect db.');
-                socket.emit('message', {message:err.message})
-                return;
-            }
             
-            db.collection('counter').findAndModify(
-                { _id: 'game' },
-                ['next'],
-                { $inc: { next: 1 } },
-                { updatedExisting : true }, 
-                function(err, doc) {
-                    if (err) {
-                        console.log(' Find and upsert counter error - ' + err.message);
-                        socket.emit('message', {message:err.message});
-                        return;
-                    }
-                    
-                    console.log(' After got sequence - ' + util.inspect(doc, {showHidden: false, depth:null}));
-                    //Time from string to int (unit:seconds)
-                    if (data.newGame.timeRule.basicTime) {
-                        data.newGame.timeRule.basicTime = parseInt(data.newGame.timeRule.basicTime, 10);
-                    }
-                    if (data.newGame.timeRule.perMoveTime) {
-                        data.newGame.timeRule.perMoveTime = parseInt(data.newGame.timeRule.perMoveTime, 10);
-                    }
-                    if (data.newGame.timeRule.perMovePlusTime) {
-                        data.newGame.timeRule.perMovePlusTime = parseInt(data.newGame.timeRule.perMovePlusTime, 10);
-                    }
-
-                    var newGame = {
-                        seq:doc.value.next,
-                        uid:hat(),
-                        creator:data.newGame.creator,
-                        rule:data.newGame.rule,
-                        timeRule:data.newGame.timeRule,
-                        boardSize:15,
-                        status:'opened',
-                        winner:null,
-                        black:null,
-                        white:null,
-                        isTempBlack:data.newGame.isTentitiveBlack,
-                        isRating:data.newGame.isRating,
-                        tempBlack:null,
-                        observers:[],
-                        moves:[]
-                    };
-                    
-                    m_processingGames.addGame(newGame);
-
-                    io.emit('lobby-game-list', { 
-                        createdGames: m_processingGames.listCreatedGames(), 
-                        progressingGames: m_processingGames.listProgressingGames()});
+        db.collection('counter').findAndModify(
+            { _id: 'game' },
+            ['next'],
+            { $inc: { next: 1 } },
+            { updatedExisting : true }, 
+            function(err, doc) {
+                if (err) {
+                    console.log(' Find and upsert counter error - ' + err.message);
+                    socket.emit('message', {message:err.message});
+                    return;
                 }
-            );
-            
-        });
+
+                console.log(' After got sequence - ' + util.inspect(doc, {showHidden: false, depth:null}));
+                //Time from string to int (unit:seconds)
+                if (data.newGame.timeRule.basicTime) {
+                    data.newGame.timeRule.basicTime = parseInt(data.newGame.timeRule.basicTime, 10);
+                }
+                if (data.newGame.timeRule.perMoveTime) {
+                    data.newGame.timeRule.perMoveTime = parseInt(data.newGame.timeRule.perMoveTime, 10);
+                }
+                if (data.newGame.timeRule.perMovePlusTime) {
+                    data.newGame.timeRule.perMovePlusTime = parseInt(data.newGame.timeRule.perMovePlusTime, 10);
+                }
+
+                var newGame = {
+                    seq:doc.value.next,
+                    uid:hat(),
+                    creator:data.newGame.creator,
+                    rule:data.newGame.rule,
+                    timeRule:data.newGame.timeRule,
+                    boardSize:15,
+                    status:'opened',
+                    winner:null,
+                    black:null,
+                    white:null,
+                    isTempBlack:data.newGame.isTentitiveBlack,
+                    isRating:data.newGame.isRating,
+                    tempBlack:null,
+                    observers:[],
+                    moves:[]
+                };
+
+                m_processingGames.addGame(newGame);
+
+                io.emit('lobby-game-list', { 
+                    createdGames: m_processingGames.listCreatedGames(), 
+                    progressingGames: m_processingGames.listProgressingGames()});
+            }
+        );
         
     });
     
@@ -605,98 +602,60 @@ io.on('connection', function (socket) {
 function saveGame(pGame) {
     console.log('saveGame seq:', pGame.seq);
     
-    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
-        if (err) {
-            console.log(' Can not connect db on route.main.js to save game....');
-            return;
-        }
-
-        db.collection('game').insert(
-            pGame,
-            function(err, doc) {
-                if (err) {
-                    console.log(' Insert game error - ' + err.message);
-                } else if (doc.result.ok == 1 && doc.result.n > 0) {
-                    console.log(' Insert game success - seq value:', doc.ops[0]);
-                    if (doc.ops[0].isRating) {
-                        summarizeRatingInfo(doc.ops[0]);
-                    }
+    db.collection('game').insert(
+        pGame,
+        function(err, doc) {
+            if (err) {
+                console.log(' Insert game error - ' + err.message);
+            } else if (doc.result.ok == 1 && doc.result.n > 0) {
+                console.log(' Insert game success - seq value:', doc.ops[0]);
+                if (doc.ops[0].isRating) {
+                    summarizeRatingInfo(doc.ops[0]);
                 }
             }
-        );
-
-    });
+        }
+    );
 }
 
 function summarizeRatingInfo(pGame) {
     console.log('summarizeRatingInfo()', pGame.seq);
     
-    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
-        if (err) {
-            console.log(' Can not connect db on route.main.js to save game....');
-            return;
+        
+    var updateUserRateInfo = function(pUser, isWon, isLost, isDraw, pScoreUpDown) {
+        if (isWon) {
+            db.collection('user').update({username:pUser.username},  {$inc:{win:1, rating:10}});
+        } else if (isLost) {
+            db.collection('user').update({username:pUser.username},  {$inc:{loss:1, rating:-10}});
+        } else {
+            db.collection('user').update({username:pUser.username},  {$inc:{draw:1, rating:0}});
         }
-        
-//        var user_black;
-//        var user_white;
-//        var findBlack = function (err, pUserBlack) {
-//            console.log('findBlack err: %o, pUserBlack %o', err, pUserBlack);
-//            if (err) {
-//                return;
-//            }
-//            user_black = pUserBlack;
-//            db.collection('user').findOne({username:pGame.white.username},findWhite);
-//        }
-//        
-//        var findWhite = function (err, pUserWhite) {
-//            console.log('findWhite err: %o, pUserBlack %o', err, pUserWhite);
-//            if (err) {
-//                return;
-//            }
-//            user_white = pUserWhite;
-//            caculateAndUpdate();
-//        }
-        
-        var updateUserRateInfo = function(pUser, isWon, isLost, isDraw, pScoreUpDown) {
-            if (isWon) {
-                db.collection('user').update({username:pUser.username},  {$inc:{win:1, rating:10}});
-            } else if (isLost) {
-                db.collection('user').update({username:pUser.username},  {$inc:{loss:1, rating:-10}});
-            } else {
-                db.collection('user').update({username:pUser.username},  {$inc:{draw:1, rating:0}});
-            }
+    }
+
+    function caculateAndUpdate() {
+//        console.log(' caculateAndUpdate() --  \n Game: %j  ', pGame);
+
+        if (!pGame.winner) {//Draw
+            console.log('  Draw');
+            updateUserRateInfo(pGame.black, false, false, true, 0);
+            updateUserRateInfo(pGame.white, false, false, true, 0);
+
+        } else if (pGame.winner.username === pGame.black.username) {
+            console.log('  Black Win');
+            updateUserRateInfo(pGame.black, true, false, false, 0);
+            updateUserRateInfo(pGame.white, false, true, false, 0);
+
+        } else if (pGame.winner.username === pGame.white.username) {
+            console.log('  White Win');
+            updateUserRateInfo(pGame.black, false, true, false, 0);
+            updateUserRateInfo(pGame.white, true, false, false, 0);
+
+        } else {
+            console.log('  No one win?')
         }
-        
-        function caculateAndUpdate() {
-            //console.log(' caculateAndUpdate() --  \n Game: %j \n Black: %j \n White %j ', pGame, user_black, user_white);
-            console.log(' caculateAndUpdate() --  \n Game: %j  ', pGame);
 
-            if (!pGame.winner) {//Draw
-                console.log('  Draw');
-                updateUserRateInfo(pGame.black, false, false, true, 0);
-                updateUserRateInfo(pGame.white, false, false, true, 0);
-                
-            } else if (pGame.winner.username === pGame.black.username) {
-                console.log('  Black Win');
-                updateUserRateInfo(pGame.black, true, false, false, 0);
-                updateUserRateInfo(pGame.white, false, true, false, 0);
-
-            } else if (pGame.winner.username === pGame.white.username) {
-                console.log('  White Win');
-                updateUserRateInfo(pGame.black, false, true, false, 0);
-                updateUserRateInfo(pGame.white, true, false, false, 0);
-                
-            } else {
-                console.log('  No one win?')
-            }
-            
-        }
+    }
         
-        caculateAndUpdate();
-        
-        //db.collection('user').findOne({username:pGame.black.username}, findBlack);
-
-    });
+    caculateAndUpdate();
 }
 
 // ------

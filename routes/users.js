@@ -28,64 +28,56 @@ router.post('/login', function(req, res, next) {
         return;
     }
     
-    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
+    
+    var collection = req.db.collection('user');
+
+    collection.findOne({username: req.body.username, password:req.body.password}, function(err, document) {
         if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:' + err);
+            console.log(err);
             res.status(500).json({error:err.message});
-            return; 
+            return;
+        }
+
+        console.log('Found document:' + util.inspect(document, {showHidden: false, depth: null}));
+        if (document) {
+            //Generate token
+            var token = crypto.randomBytes(16).toString('hex');
+            console.log('Generated token:' + token);
+
+            //Check user login already or not
+
+            //Update token
+            collection.updateOne(
+                {_id:document._id}, 
+                {
+                    $set: { token: token },
+                    $currentDate: { lastModified: true }
+                }, 
+                function(err, results) {
+                    if (err) {
+                        console.log('Update token error:' + err);
+                        res.status(500).json({error:err.message});
+                        return; 
+
+                    } else {
+                        res.status(200).json({
+                            result:'success',
+                            message:'Login success.',
+                            token:token
+                        });
+
+                        console.log(results);
+                    }
+                }
+            );
         } else {
-            var collection = db.collection('user');
-            
-            collection.findOne({username: req.body.username, password:req.body.password}, function(err, document) {
-                if (err) {
-                    console.log(err);
-                    res.status(500).json({error:err.message});
-                    return;
-                }
-                
-                console.log('Found document:' + util.inspect(document, {showHidden: false, depth: null}));
-                if (document) {
-                    //Generate token
-                    var token = crypto.randomBytes(16).toString('hex');
-                    console.log('Generated token:' + token);
-
-                    //Check user login already or not
-
-                    //Update token
-                    collection.updateOne(
-                        {_id:document._id}, 
-                        {
-                            $set: { token: token },
-                            $currentDate: { lastModified: true }
-                        }, 
-                        function(err, results) {
-                            if (err) {
-                                console.log('Update token error:' + err);
-                                res.status(500).json({error:err.message});
-                                return; 
-                                
-                            } else {
-                                res.status(200).json({
-                                    result:'success',
-                                    message:'Login success.',
-                                    token:token
-                                });
-
-                                console.log(results);
-                            }
-                            
-                            db.close();
-                        }
-                    );
-                } else {
-                    res.status(200).json({
-                        result:'fail',
-                        message:'username or password error',
-                    });
-                }
+            res.status(200).json({
+                result:'fail',
+                message:'username or password error',
             });
         }
-    });    
+    });
+    
 });
 
 router.post('/me', function(req, res, next) {
@@ -101,44 +93,34 @@ router.post('/me', function(req, res, next) {
         return;
     }
     
-    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:' + err);
-            res.status(500).json({error:err.message});
-            return; 
-        } else {
-            var collection = db.collection('user');
-            
-            collection.findOne({token:req.body.token}, function(err, document) {
-                if (err) {
-                    console.log(err);
-                    res.status(500).json({error:err.message});
-                    return;
-                }
-                
-                console.log('Found document:' + util.inspect(document, {showHidden: false, depth: null}));
-                if (document) {
+    var collection = req.db.collection('user');
 
-                    //Check user login already or not
-                    res.status(200).json({
-                        result:'success',
-                        user:{
-                            username:document.username,
-                            nickname:document.nickname,
-                            role:document.role
-                        }
-                    });
-                } else {
-                    res.status(200).json({
-                        result:'fail',
-                        message:'Unauthoried',
-                    });
+    collection.findOne({token:req.body.token}, function(err, document) {
+        if (err) {
+            console.log(err);
+            res.status(500).json({error:err.message});
+            return;
+        }
+
+        console.log('Found document:' + util.inspect(document, {showHidden: false, depth: null}));
+        if (document) {
+
+            //Check user login already or not
+            res.status(200).json({
+                result:'success',
+                user:{
+                    username:document.username,
+                    nickname:document.nickname,
+                    role:document.role
                 }
-                
-                db.close();
+            });
+        } else {
+            res.status(200).json({
+                result:'fail',
+                message:'Unauthoried',
             });
         }
-    });    
+    });
 });
 
 router.post('/user-info', function(req, res, next) {
@@ -154,40 +136,30 @@ router.post('/user-info', function(req, res, next) {
         return;
     }
     
-    MongoClient.connect('mongodb://localhost:27017/playfive', function (err, db) {
-        if (err) {
-            console.log('Unable to connect to the mongoDB server. Error:' + err);
-            res.status(500).json({error:err.message});
-            return; 
-        } else {
-            var collection = db.collection('user');
-            
-            collection.findOne({username:req.body.username}, ['username', 'nickname', 'email', 'rating', 'win', 'loss', 'draw'], function(err, document) {
-                if (err) {
-                    console.log(err);
-                    res.status(500).json({error:err.message});
-                    return;
-                }
-                
-                console.log('Found document:' + util.inspect(document, {showHidden: false, depth: null}));
-                if (document) {
+    var collection = req.db.collection('user');
 
-                    //Check user login already or not
-                    res.status(200).json({
-                        result:'success',
-                        userInfo:document
-                    });
-                } else {
-                    res.status(200).json({
-                        result:'fail',
-                        message:'No such member',
-                    });
-                }
-                
-                db.close();
+    collection.findOne({username:req.body.username}, ['username', 'nickname', 'email', 'rating', 'win', 'loss', 'draw'], function(err, document) {
+        if (err) {
+            console.log(err);
+            res.status(500).json({error:err.message});
+            return;
+        }
+
+        console.log('Found document:' + util.inspect(document, {showHidden: false, depth: null}));
+        if (document) {
+
+            //Check user login already or not
+            res.status(200).json({
+                result:'success',
+                userInfo:document
+            });
+        } else {
+            res.status(200).json({
+                result:'fail',
+                message:'No such member',
             });
         }
-    });    
+    });
 });
 
 router.post('/logout', function(req, res, next) {
