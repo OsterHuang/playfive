@@ -30,7 +30,7 @@
             <form novalidate class="form-horizontal">
                 <span class="form-group">
                     <label class="col-sm-2 control-label">帳號 / Account</label>
-                    <span class="col-sm-10">
+                    <span class="col-sm-10" style="position: relative">
                         <input 
 							type="text" 
 							ng-model="username" 
@@ -41,11 +41,11 @@
 							required
 						/> 
 						<span class="label label-success" ng-show="username && usernameOk" 
-							style="float: right; top: -30px; position: relative;  margin-right: 10px;">
+							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-ok"></span>
 						</span>
 						<span class="label label-danger" ng-show="username && !usernameOk"
-							style="float: right; top: -30px; position: relative;  margin-right: 10px;">
+							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-remove"></span>
 							已存在/Unavailiable
 						</span>
@@ -64,11 +64,11 @@
 							required
 						/> 
 						<span class="label label-success" ng-show="nickname && nicknameOk" 
-							style="float: right; top: -30px; position: relative;  margin-right: 10px;">
+							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-ok"></span>
 						</span>
 						<span class="label label-danger" ng-show="nickname && !nicknameOk"
-							style="float: right; top: -30px; position: relative;  margin-right: 10px;">
+							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-remove"></span>
 							已存在/Unavailiable
 						</span>
@@ -93,11 +93,11 @@
 							required
 						/> 
 						<span class="label label-success" ng-show="email && emailOk" 
-							style="float: right; top: -30px; position: relative;  margin-right: 10px;">
+							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-ok"></span>
 						</span>
 						<span class="label label-danger" ng-show="email && !emailOk"
-							style="float: right; top: -30px; position: relative;  margin-right: 10px;">
+							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-remove"></span>
 							已存在/Unavailiable
 						</span>
