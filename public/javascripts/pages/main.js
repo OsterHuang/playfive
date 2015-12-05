@@ -1,6 +1,8 @@
 var server_host = 'localhost';
 
-playfiveApp = angular.module('playfiveApp', ['lobbyPage', 'gamePage', 'ngStorage']);
+playfiveApp = angular.module('playfiveApp', 
+                             ['lobbyPage', 'gamePage', 'announce', 'announceEdit', 'userProfilePage', 
+                              'ngStorage', 'ngAnimate', 'ngSanitize']);
 
 playfiveApp.factory('socket', function ($rootScope) {
   var socket = io.connect('http://' + server_host + ':3030/');
@@ -65,21 +67,29 @@ playfiveApp.factory('socket', function ($rootScope) {
 });*/
 
 
-playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http, $window, $localStorage, socket) {
+playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http, $window, 
+        $timeout, $localStorage, socket) {    
+    if (!$localStorage.token) {
+        $window.location = '/login.html';
+        return;
+    }
+    
     $rootScope.message = null;
     $rootScope.lobbyChat = '';
     $rootScope.modal = {};
     $rootScope.mainArea = '';
     $scope.chatContent = '';
     
-    if (!$localStorage.token) {
-        $window.location = '/login.html';
-        return;
+    $rootScope.showProfile = function() {
+        $('#profileDialog').modal({
+            keyboard: true
+        });
+        $rootScope.$broadcast('user-profile-refresh', $rootScope.user);
     }
     
     $rootScope.logout = function() {
-        alert('Logout in Root-Scope');
-        setCookie('username', null);
+        alert('Logout');
+        $localStorage.token = null;
         $window.location = '/login.html';
     }
     
@@ -104,12 +114,15 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
         ).success(function(response) {
             console.log(response);
             if (response.result != 'success') {
-                $scope.message = response.message;
+                $rootScope.message = response.message;
                 $("#message").alert();
                 $("#message").fadeTo(5000, 500).slideUp(500, function() {});
-                //$window.location = '/login.html'
+                $localStorage.token = undefined;
+            
+                $timeout(function() {$window.location = '/login.html';}, 1500);
+                
             } else {
-                $scope.message = 'Welcome ' + response.user.nickname;
+                $rootScope.message = 'Welcome ' + response.user.nickname;
                 $("#message").alert();
                 $("#message").fadeTo(5000, 500).slideUp(500, function() {});
                 
@@ -120,17 +133,24 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
         }).error(function(data, status) {
             console.log('Error ' + status + '. ' + data);
             $scope.result = 'Error.';
-            $scope.message = data.error;
+            $rootScope.message = data.error;
+            $localStorage.token = undefined;
+            
+            $timeout(function() {$window.location = '/login.html';}, 1500);
+            
             $("#message").alert();
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
         });
         
     });
     
-    socket.on('message', function(message) {
-        console.log('On receive message - ' + message); 
-        $rootScope.lobbyChat = $rootScope.lobbyChat + message.from + ':' + message.content + '\n';
-        console.log(' Final lobbyChat:' + $rootScope.lobbyChat);
+    socket.on('message', function(data) {
+        $rootScope.message = data.message;
+        $("#message").alert();
+        $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+//        console.log('On receive message - ' + message); 
+//        $rootScope.lobbyChat = $rootScope.lobbyChat + message.from + ':' + message.content + '\n';
+//        console.log(' Final lobbyChat:' + $rootScope.lobbyChat);
     });
     
     socket.on('reconnect', function() {
@@ -141,8 +161,9 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
     });
     
     socket.on('disconnect', function (data) {
-        console.log(data);
+        console.log('Disconnect from server' + data);
         $rootScope.message = 'Disconnect from server.';
+        $rootScope.user.myProgressingGame = null;
     });
     
 });

@@ -3,13 +3,17 @@
     margin-top:0px;
     margin-left: 16px;
     margin-right: 16px;
-    margin-bottom: 16px;
+    margin-bottom: 10px;
 }
 
-
-.boardLine {
-    fill:none; stroke:black; stroke-width:1
+.preview-enabled {
+    cursor:pointer;
 }
+
+.preview-disabled {
+    cursor:not-allowed;
+}
+
 
 div .board th, td {
     text-align:center
@@ -19,8 +23,14 @@ div .board th, td {
     background-size: 95%;
     height: 100%;
     width: 100%;
+    display: -webkit-box;
+    display: -webkit-flex;
+    display: -moz-box;
+    display: -ms-flexbox;
     display: flex;
-    justify-content: center;
+    -webkit-flex-align: center;
+    -ms-flex-align: center;
+    -webkit-align-items: center;
     align-items: center;
     background-repeat: no-repeat;
 }
@@ -33,4 +43,43 @@ div .board th, td {
 .stone.black {
     background-image: url(../../images/board/black.png);
     color:white;
+}
+
+.stone.white span {
+    margin-left: auto;
+    margin-right:auto;
+}
+
+.stone.black span {
+    margin-left: auto;
+    margin-right:auto;
+}
+
+.timer {
+    float:right;
+    border:1px #5F9DD2 solid; 
+    color:#4783b5 ; 
+    padding-left:8px; 
+    padding-right:8px;
+    border-radius:8px; 
+}
+
+.timer.myturn {
+    font-weight:bold;
+}
+
+.final-count-down {
+    animation-name: flash;
+    animation-duration: 1s;
+    animation-iteration-count: 5;
+}
+
+@keyframes flash {
+  0% {
+    background-color: #00FF4136;
+  }
+  100% {
+    background-color: #FF4136;
+    
+  }
 }

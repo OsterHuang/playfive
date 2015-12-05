@@ -31,7 +31,7 @@ var listProgressingGames = function() {
     var games = processingGames.values();
     for (var i = 0; i < games.length; i++) {
         //console.log('listProgressingGames() - The game status is ' + games[i].status + '.' + (games[i].status === 'started'));
-        if (games[i].status === 'started') {
+        if (games[i].status != 'opened' && games[i].status != 'finished') {
             ret.push(games[i]); 
         }
     }

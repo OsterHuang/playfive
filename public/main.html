@@ -4,39 +4,39 @@
 
 <head>
     <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
+    
     <link rel="stylesheet" href="stylesheets/style.css">
     <link rel="stylesheet" href="stylesheets/pages/game.css">
     <link rel="stylesheet" href="stylesheets/pages/main.css">
+    <link rel="stylesheet" href="stylesheets/pages/announce.css">
 
     
     <script src="javascripts/jquery.min.js"></script>
     <script src="javascripts/bootstrap.min.js"></script>
     <script src="javascripts/angular.min.js"></script>
+    <script src="javascripts/angular-animate.min.js"></script>
     <script src="javascripts/ngStorage.min.js"></script>
-    <!--<script src="/socket.io/socket.io.js"></script>-->
-    <script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>
+    <script src="javascripts/socket.io.js"></script>
+    <script src="javascripts/angular-sanitize.min.js"></script>
+<!--    <script src="https://cdn.socket.io/socket.io-1.3.5.js"></script>-->
     
+    <script src="javascripts/tools.js"></script>
     <script src="javascripts/pages/main.js"></script>
     <script src="javascripts/pages/lobby.js"></script>
     <script src="javascripts/pages/game.js"></script>
-    <script src="javascripts/tools.js"></script>
+    <script src="javascripts/pages/announce_list.js"></script>
+    <script src="javascripts/pages/announce_edit.js"></script>
+    <script src="javascripts/pages/user-profile.js"></script>
+    <script src="javascripts/play5board.js"></script>
+    <script src="javascripts/sym-finder.js"></script>
 
 </head>
 
 <body class="full-height">
     <div ng-app="playfiveApp" ng-controller="playfiveController" class="container-fluid full-height">
-        <div class="row full-height" style="background-color:#337ab7; height:60px" ng-hide="user.myProgressingGame">
-            <div class="col-sm-9">
-                <div style="color:white; font-size:28px; font-weight:bold; margin-top:10px">Renju Online</div>
-            </div>
-            
-            <div class="col-sm-3" style="text-align:right">
-                <div style="color:white; font-size:16px; margin-top:20px; margin-right:10px; display:inline-block;">{{user.nickname}}</div>
-                <button class="btn" style="margin-top:0px" ng-click="logout()">
-                    <span class="glyphicon glyphicon-log-out"></span>
-                </button>
-            </div>
-            
+        
+        <div>
+            <div ng-include="'./header.html'"></div>
         </div>
         
         <div class="alert alert-info" role="alert" id="message" style="position:absolute; z-index:99; margin-top:5px">
@@ -47,12 +47,28 @@
         <div class="row  full-height" style="margin-top:20px; height:82%">
             <!-- [[[ Lobby ]]] -->
             <div id="divLobby" ng-app="lobbyPage" ng-controller="lobbyController" class=" full-height" ng-hide="user.myProgressingGame">
-                <div ng-include="'./main_lobby.html'" class="container-fluid  full-height"></div>
+                <div ng-include="'./main_lobby.html'" class="container-fluid full-height"></div>
             </div>
 
             <!-- [[[ Board ]]] -->
             <div id="divBoard" class="full-height" ng-show="user.myProgressingGame" ng-app="gamePage" ng-controller="gameController">
-                <div ng-include="'./main_game.html'" class="container-fluid  full-height"></div>
+                <div ng-include="'./main_game.html'" class="container-fluid full-height"></div>
+            </div>
+        </div>
+        
+        <div class="modal fade" id="profileDialog" tabindex="-1" role="dialog" 
+             aria-labelledby="myModalLabel" aria-hidden="true"
+             ng-app="userProfilePage" ng-controller="userProfileController">
+            <div class="modal-dialog modal-lg">
+                <div class="modal-content">
+                    <div class="modal-header" style="padding:8px">
+                        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                        <h3 class="modal-title" id="modalLabel">User Information</h3>
+                    </div>
+                    <div class="modal-body" style="padding:2px">
+                        <div ng-include="'./main_profile.html'" class="container-fluid full-height"></div>
+                    </div>
+                </div>
             </div>
         </div>
         

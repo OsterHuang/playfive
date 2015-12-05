@@ -1,5 +1,6 @@
 //Express modules
 var express = require('express');
+var expressMongoDb = require('express-mongo-db');
 var path = require('path');
 var favicon = require('serve-favicon');
 var logger = require('morgan');
@@ -9,6 +10,8 @@ var bodyParser = require('body-parser');
 //Our modules
 var routes = require('./routes/index');
 var account = require('./routes/account');
+var announce = require('./routes/announce');
+var admin = require('./routes/admin');
 var users = require('./routes/users');
 var main = require('./routes/main');
 var lobby = require('./routes/lobby');
@@ -28,9 +31,12 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
 app.use(cookieParser());
 app.use(express.static(path.join(__dirname, 'public')));
+app.use(expressMongoDb('mongodb://localhost:27017/playfive'));
 
 app.use('/', routes);
 app.use('/account', account);
+app.use('/announce', announce);
+app.use('/admin', admin);
 app.use('/users', users);
 app.use('/lobby', lobby);
 app.use('/main', main);

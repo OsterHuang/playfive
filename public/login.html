@@ -16,13 +16,19 @@
 </head>
 
 <body>
-    <div ng-app="loginPage" ng-controller="loginController" class="container">
+    <div ng-app="loginPage" ng-controller="loginController" class="container-fluid">
+        
+        <div>
+            <div ng-include="'./header.html'"></div>
+        </div>
+        
         <div class="alert alert-success" id="message" style="position:absolute; z-index:99; margin-top:10px">
             <button type="button" class="close-message" ng-click="hideMessage()">x</button>
             {{message}}
         </div>
         
-        <form novalidate class="form-horizontal">
+        <div class="container">
+            <form novalidate class="form-horizontal">
                 <span class="form-group">
                     <label class="col-sm-2 control-label">Your username</label>
                     <span class="col-sm-10">
@@ -35,14 +41,23 @@
                         <input type="text" ng-model="password" class="form-control" placeholder="Password" required/> 
                     </span>
                 </span>
-            
-            <div class="container" style="text-align:center">
-                <button class="btn" ng-click="login()"> 
-                    <span class="glyphicon glyphicon-log-in"></span>                   
-                    Login
-                </button>
-            </div>
-        </form>
+
+                <div class="container" style="text-align:center">
+                    <button class="btn" ng-click="login()"> 
+                        <span class="glyphicon glyphicon-log-in"></span>                   
+                        Login
+                    </button>
+                </div>
+                
+                <div class="container" style="text-align:center">
+                    Are you not a member?
+                    <button class="btn btn-link" ng-click="applyNewAccount()"> 
+                        Join now
+                    </button>
+					<a href="account/resend.html">Account Problems?</a>
+                </div>
+            </form>
+        </div>
         
     </div>
 </body>

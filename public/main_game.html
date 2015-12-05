@@ -2,87 +2,190 @@
 <!-- [[[ game ]]] -->
 <div class="row  full-height" style="margin: auto;">
     
-    <div class="col-sm-2">
+    <div class="col-sm-3">
         <div id="divGameInfo" class="panel panel-default">
             <div class="panel-heading" style="text-align:center">
-                <h3 class="panel-title">No.0000001</h3>
-<!--
-                <div class="badge" style="margin-top:5px;width:90%; height:30px">
-                    No.0001
-                    
-                </div>
--->
-                <span class="btn btn-default" ng-click="isShowNumber = (isShowNumber ? false : true)"
-                          style="padding:4px 2px; color:grey; font-size:10px; float:right;">
-                        <span class="glyphicon glyphicon-check" ng-show="isShowNumber"></span>
-                        <span class="glyphicon glyphicon-unchecked" ng-show="!isShowNumber"></span>
-                        show number
-                    </span>
+                <h4 class="panel-title">Game No.{{game.seq}}</h4>
             </div>
             <div class="panel-body" >
-                    <div class="game-info row">
-                        
-                        <div>
-                            Move {{user.myProgressingGame.moves.length + 1}}   
-                            
-                        </div>
-                        
-                        <div>
-                            <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
-                            {{user.myProgressingGame.black.nickname}}
-                        </div>
-                        
-                        <div>
-                            <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
-                            {{user.myProgressingGame.white.nickname}}
-                        </div> 
-                        
-                        <div>
-                            <span>Rating Game.</span>
-                        </div>
-                        
-                        <div>
-                            
-                            <span>Renju Rule.</span>
-                        </div>
-                        
-                        
-                    </div>
+                <div class="game-info row">
+
                     <div>
-                        <span style="font-size:16px; font-weight:bold; float:left; width:70%">
-                            
+                        Move {{game.moves.length + 1}}  
+                    </div>
+                    
+<!--                    Current Time:{{timeLeft.currentTime}}-->
+
+                    <div style="border-radius: 8px; padding: 4px;"
+                         ng-class="isFinalCountDown(timeLeft.black) ? 'final-count-down' : ''">
+                        <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
+                        {{game.black.nickname}}
+                        <span class="timer" ng-class="(isBlackTurn() ? 'timer myturn' : 'timer')">
+                            {{timeLeft.black.countDownString}}
                         </span>
                     </div>
+
+                    <div style="border-radius: 8px; padding: 4px;"
+                         ng-class="isFinalCountDown(timeLeft.white)  ? 'final-count-down' : ''">
+                        <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
+                        {{game.white.nickname}}
+                        <span class="timer" ng-class="(isWhiteTurn() ? 'timer myturn' : 'timer')">
+                            {{timeLeft.white.countDownString}}
+                        </span>
+                    </div> 
+
+                    <div>
+                        <span ng-show="game.isRating"><span class="glyphicon glyphicon-ok"></span>
+                            Rated
+                        </span>
+                        <span ng-show="!game.isRating"><span class="glyphicon glyphicon-remove"></span>
+                            Non-rated
+                        </span>
+                    </div>
+
+                    <div>
+                        <span class="glyphicon glyphicon-blackboard"></span>
+                        <span>
+                            {{game.rule}}
+                        </span>
+                    </div>
+                    
+                    <div ng-show="game.rule === 'yamaguchi' || game.rule === 'classic'">
+                        <span class="glyphicon glyphicon-hand-right" ></span>
+                        <span>
+                            5th Quantity:{{game.altQty}}
+                            <span class="badge" ng-repeat="move5th in game.alts" style="margin-left:4px">
+                                {{toReadable(move5th.ordinate)}}
+                            </span>
+                        </span>
+                        
+                    </div>
+                    
+
+                    <div style="margin:16px; font-size:14px" class="alert alert-warning" role="alert">
+                        <span ng-show="isWhiteTurn()">
+                            <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
+                            Turn
+                        </span>
+                        
+                        <span ng-show="isBlackTurn()">
+                            <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
+                            Turn
+                        </span>
+
+                        <span ng-show="game.status === 'opening'" >
+                            {{ game.tempBlack.nickname}} is deciding opening
+                        </span>
+                        
+                        <span ng-show="game.status === 'swapping'" >
+                            {{ game.white.nickname}} swap to black or not.
+                        </span>
+                        
+                        <span ng-show="game.status === 'alt-making'" >
+                            {{ game.black.nickname}} is making alternatives.
+                        </span>
+                        
+                        <span ng-show="game.status === 'alt-choosing'" >
+                            {{ game.white.nickname}} is choosing alternatives.
+                        </span>
+                        
+                        <span ng-show="game.status === 'finished'">
+                            <span>The game is finished.</span>
+                            <span>{{game.result}}</span>
+                        </span>
+                    </div>
+
+                </div>
             </div>
         </div>
     </div>
 
-    <div class="col-sm-7">
-        <div id="divGameBoard">
+    <div class="col-sm-6">
+        
+        <!-- Action -->
+        <div style="text-align:center; padding-bottom:6px; ">
+            <div id="divGameAction" ng-show="game && isMyGame()" >
+                <span ng-show="game.status === 'started'">
+                    <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">Draw</button>
+                    <button class="" ng-show="isMyTurn()" ng-click="confirmPass()" >Pass</button>
+<!--                    <button class="" ng-show="isMyTurn() && game.moves.length >= 1" ng-click="confirmUndo()">Undo</button>-->
+                </span>
+                
+                <button class="" ng-show="game.status != 'finished'" ng-click="confirmResign()" >Resign</button>
+                <button class="" ng-show="game.status === 'finished'" ng-click="quitGame()">Quit</button>
+                
+                <button class="" ng-show="game.status === 'opening' && game.tempBlack.username === user.username" ng-click="undoOpening()">Undo</button>
+                
+            </div>
             
-            <table style="margin-left:auto; margin-right:auto">
+            <div id="divWatchAction" ng-show="game && !isMyGame()">
+                <button class="" ng-click="quitWatchedGame()">Quit</button>
+            </div>
+        </div>
+        
+        <!-- Board -->
+        <div id="divGameBoard" style="text-align:center; ">
+            
+            <table style="margin-left:auto; margin-right:auto; background-image:url(./images/board/wood_board.png);">
                 <tr>
-                    <td></td>
+                    <td>
+                        <span ng-click="isShowNumber = (isShowNumber ? false : true)"
+                          style="padding:4px 2px; color:grey; font-size:10px; cursor:pointer">
+                            <span class="glyphicon glyphicon-check" style="color:rgb(51, 51, 51)" ng-show="isShowNumber"></span>
+                            <span class="glyphicon glyphicon-unchecked" style="color:rgb(51, 51, 51)" ng-show="!isShowNumber"></span>
+                        </span>
+                    </td>
                     <td ng-repeat="x in board.xAxis">
                         {{x}}
                     </td>
-                    <td></td>
+                    <td>
+                        <span  ng-click="showStudyBoard()"
+                          style="padding:4px 2px; color:grey; font-size:10px; cursor:pointer">
+                            <span class="glyphicon glyphicon-export" style="color:rgb(51, 51, 51)"></span>
+                        </span>
+                    </td>
                 </tr>
 
                 <tr ng-repeat="row in board.grids">
                     <td>
                         {{transOrigToReadableY(row.y, board.size)}}
                     </td>
-                    <td ng-repeat="grid in row" ng-style="grid.style" ng-mousemove="mouseOnBoard(grid)" ng-mouseleave="mouseOutBoard(grid)">
-                        <div ng-show="!grid.move" >
-                            <img src="./images/board/black.png" ng-show="grid.previewMove && moves.length % 2 == 0" style="width:95%; height:95%" />
-                            <img src="./images/board/white.png" ng-show="grid.previewMove && moves.length % 2 == 1" style="width:95%; height:95%" />
+                    <td ng-repeat="grid in row" ng-style="grid.style" 
+                        ng-click="clickOnBoard(grid)"
+                        ng-mousemove="mouseOnBoard(grid)" ng-mouseleave="mouseOutBoard(grid)">
+                        <!-- Cursor preview -->
+                        <div ng-show="!grid.move && !board.firstClickMove  && !grid.alt
+                                      && (grid.ordinate.x == board.previewMove.ordinate.x && grid.ordinate.y == board.previewMove.ordinate.y)" 
+                             ng-class="board.previewMove.class" >
+                            <img src="./images/board/black.png" ng-show="game.moves.length % 2 == 0" 
+                                 style="opacity: 0.4; width:95%; height:95%" />
+                            <img src="./images/board/white.png" ng-show="game.moves.length % 2 == 1" 
+                                 style="opacity: 0.4; width:95%; height:95%"/>
                         </div>
+                        
+                        <!-- Click comfirm -->
+                        <div ng-show="board.firstClickMove && game.moves.length % 2 == 0 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
+                             class="stone black" style="opacity: 0.80">
+                            <span data-toggle="tooltip" data-placement="right" title="Tooltip on right">Ok?</span>
+                        </div>
+                        <div ng-show="board.firstClickMove && game.moves.length % 2 == 1 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" class="stone white" style="opacity: 0.80">
+                            <span data-toggle="tooltip" data-placement="right" title="Tooltip on right">Ok?</span>
+                        </div>
+                        
+                        <!-- Real Stone  -->
                         <div ng-show="grid.move && grid.move.seq % 2 == 1" class="stone black">
                             <span ng-show="isShowNumber">{{grid.move.seq}}</span>
                         </div>
                         <div ng-show="grid.move && grid.move.seq % 2 == 0" class="stone white">
                             <span ng-show="isShowNumber">{{grid.move.seq}}</span>
+                        </div>
+                        
+                        <!-- Alternative Stone  -->
+                        <div ng-show="grid.alt && (game.status === 'alt-making' || (game.status === 'alt-choosing' && !gridAltChosen))" class="stone black" style="cursor:pointer">
+                            <span>A</span>
+                        </div>
+                        <div ng-show="grid.alt && game.status === 'alt-choosing' && gridAltChosen && grid.alt.chosen" class="stone black">
+                            <span>{{grid.alt.seq}}?</span>
                         </div>
                     </td>
                     <td>
@@ -99,21 +202,69 @@
                 </tr>
             </table>
             
+            <!-- Game flow action -->
+            <div style="margin:16px" ng-show="board.firstClickMove && !invalidOpeningMsg">
+                <button class="btn btn-primary"  ng-click="confirmNextMove()">
+                    <span class="glyphicon glyphicon-ok"></span>
+                </button>
+                <button class="btn btn-primary"  ng-click="cancelNextMove()">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+            </div>
+            
+            <div style="margin:16px" ng-show="invalidOpeningMsg" class="alert alert-danger" role="alert">
+                {{invalidOpeningMsg}}
+            </div>
+            
+            <div style="margin:16px" ng-show="isOpeningEnd()">
+                <input type="text" size="8" style="text-align:right; width:auto; display:inline; padding:6px 4px" class="form-control" placeholder="5th Qty" 
+                       ng-model="board.txtAltQty" ng-model-options="{debounce:400}" 
+                       ng-change="changeOnAltQty()" ng-show="game.rule === 'yamaguchi'" focus-on-show/>
+                <button class="btn btn-success"  ng-click="confirmOpening()" ng-disabled="game.rule === 'yamaguchi' && !game.altQty">
+                    <span class="glyphicon glyphicon-thumbs-up" >Confirm this opening</span>
+                </button>
+            </div>
+            <div style="margin:16px" ng-show="game.status === 'alt-making' && (game.rule === 'classic' || game.rule === 'yamaguchi') && game.alts.length == game.altQty && isMyTurn()">
+                <button class="btn btn-success"  ng-click="confirmAlternatives()">
+                    <span class="glyphicon glyphicon-thumbs-up">Confirm these alternatives.</span>
+                </button>
+            </div>
+            
+            <div style="margin:16px" ng-show="game.status === 'swapping' && isMyTurn()">
+                <button class="btn btn-default"  ng-click="confirmSwap(true)">
+                    <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
+                </button>
+                <button class="btn btn-default"  ng-click="confirmSwap(false)">
+                    <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
+                </button>
+            </div>
+            
+            <div style="margin:16px" ng-show="game.status === 'alt-choosing' && gridAltChosen">
+                <button class="btn btn-default"  ng-click="confirmAltChosen()">
+                    <span class="glyphicon glyphicon-ok"></span>
+                </button>
+                <button class="btn btn-default"  ng-click="cancelAltChosen()">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
+            </div>
         </div>
     </div>
     
     <div class="col-sm-3  full-height">
         <div class="panel panel-default full-height">
+            <h4 class="panel-title">Game No.{{game.seq}} Channel</h4>
             <div class="panel-body full-height">
                 <div style="width:100%; height:90%;">
-                    <pre style="height: 100%">{{lobbyChat}}</pre>
+                    <pre style="height: 100%">{{gameRoomChat}}</pre>
                 </div>
-                <div class="input-group" style="margin-top:5%">
-                    <input type="text" class="form-control" placeholder="Your message" ng-model="chatContent">
-                    <span class="input-group-btn">
-                        <button class="btn btn-default" type="button" ng-click="chatInGame()">Send</button>
-                    </span>
-                </div>
+                <form role="form">
+                    <div class="input-group" style="margin-top:5%">
+                        <input type="text" class="form-control" placeholder="Your message" ng-model="gameRoomChatOut.content">
+                        <span class="input-group-btn">
+                            <button class="btn btn-default" type="submit" ng-click="chatInGame()">Send</button>
+                        </span>
+                    </div>
+                </form>
             </div>
         </div>
     </div>

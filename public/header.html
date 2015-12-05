@@ -1,0 +1,28 @@
+<div class="row" style="background-color:#337ab7; height:60px">
+    
+    <div style="float:left">
+        <div style="color:white; font-size:28px; font-weight:bold; margin:10px; cursor:pointer" onclick="location.href='/main.html'">Play5 Online</div>
+    </div>
+
+    <div style="float:right; text-align:right; margin-right:10px; " ng-show="user">
+        <div style="margin-top:20px; display:inline-block;">
+                <span style="color:white; font-size:16px; cursor:pointer" ng-click="showProfile()">{{user.nickname}}</span>
+        </div>
+        <button class="btn" style="margin-top:0px" ng-click="logout()">
+            <span class="glyphicon glyphicon-log-out"></span>
+        </button>
+    </div>
+    
+    <!--
+    <div class="col-sm-9">
+        <div style="color:white; font-size:28px; font-weight:bold; margin-top:10px">Play5 Online</div>
+    </div>
+
+    <div class="col-sm-3" style="text-align:right">
+        <div style="color:white; font-size:16px; margin-top:20px; margin-right:10px; display:inline-block;">{{user.nickname}}</div>
+        <button class="btn" style="margin-top:0px" ng-click="logout()">
+            <span class="glyphicon glyphicon-log-out"></span>
+        </button>
+    </div>
+    -->
+</div>

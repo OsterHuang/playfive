@@ -37,4 +37,8 @@ loginPage.controller('loginController', function ($rootScope, $scope, $http, $wi
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
         });
     };
+    
+    $scope.applyNewAccount = function() {
+        $window.location = '/account/create.html';
+    };
 });

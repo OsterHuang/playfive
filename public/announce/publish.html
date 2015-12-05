@@ -1,0 +1,77 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    
+    <script src="../javascripts/jquery.min.js"></script>
+    <script src="../javascripts/bootstrap.min.js"></script>
+    <script src="../javascripts/angular.min.js"></script>
+	<script src="../javascripts/ngStorage.min.js"></script>
+	
+    
+    <script src="../javascripts/pages/announce.js"></script>
+</head>
+<body>
+<script>
+//-dogswang- check admin ID
+</script>
+<div ng-app="announce" ng-controller="announceController" class="container-fruid">
+    <div ng-include="'../header.html'"></div>
+	<div class="container" style="text-align:center">
+		<h3>發布公告</h3>
+		<div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
+			<button type="button" class="close-message" ng-click="hideMessage()">x</button>
+			<strong>{{messageTitle}}</strong>
+			{{messageContent}}
+		</div>
+	</div>
+	
+	<div class="container">
+		<form novalidate class="form-horizontal">
+			<span class="form-group">
+				<span class="col-sm-2"></span>
+				<label class="col-sm-2 control-label">分類</label>
+				<span class="col-sm-6">
+					<input type="text" ng-model="publisher" class="form-control" placeholder="Category" required/> 
+				</span>
+				<span class="col-sm-2"></span>
+			</span>
+			<span class="form-group">
+				<span class="col-sm-2"></span>
+				<label class="col-sm-2 control-label">標題</label>
+				<span class="col-sm-6">
+					<input type="text" ng-model="title" class="form-control" placeholder="Title" required/> 
+				</span>
+				<span class="col-sm-2"></span>
+			</span>
+			
+			<span class="form-group">
+				<span class="col-sm-2"></span>
+				<label class="col-sm-2 control-label">內容</label>
+				<span class="col-sm-6">
+					<textarea ng-model="content" rows="10" class="form-control" placeholder="Content"></textarea>
+				</span>
+				<span class="col-sm-2"></span>
+			</span>
+			
+			<span class="form-group">
+				<span class="col-sm-2"></span>
+				<label class="col-sm-2 control-label"><!--置頂--></label>
+				<span class="col-sm-1">
+					<!--<input type="checkbox" ng-model="isTop" class="form-control" required/> -->
+				</span>
+				<span class="col-sm-5" style="text-align:right">
+				<button class="btn" ng-click="create()">                    
+					送出 / Send
+					<span class="glyphicon glyphicon-plus"></span>
+				</button>
+				</span>
+				<span class="col-sm-2"></span>
+			</span>
+		</form>
+	</div>
+</div>
+
+</body>
+</html>
+

@@ -1,0 +1,42 @@
+<html>
+<head>
+    <link rel="stylesheet" href="../stylesheets/bootstrap.min.css">
+    <link rel="stylesheet" href="../stylesheets/style.css">
+    
+    <script src="../javascripts/jquery.min.js"></script>
+    <script src="../javascripts/bootstrap.min.js"></script>
+    <script src="../javascripts/angular.min.js"></script>
+    
+    <script src="../javascripts/pages/account.js"></script>
+</head>
+<body>
+    <div ng-app="account" ng-controller="accountController" class="container-fruid">
+    <div ng-include="'../header.html'"></div>
+
+<script>
+msg = document.location.hash.replace(/\D/g,'');
+</script>
+<br>	
+<br>	
+<center>
+<table>
+<tr><td><script>document.write('成功！您的密碼已經重新設定為 '+msg);</script>。<br>
+Success! Your password has been reset as <script>document.write(msg);</script>.
+</td></tr>
+<tr><td>*</td></tr>
+<tr><td>
+請以新密碼重新<a href="../login.html">登入</a>。<br>
+Please <a href="../login.html">login</a> with your new password.
+</td></tr>
+<tr><td>*</td></tr>
+<tr><td>
+或<a href="resend.html">點我</a>修改密碼。<br>
+You may also <a href="resend.html">change your password</a>.
+</td></tr>
+</table>
+</center>
+<!--	重設失敗，請確認您點選的是最新郵件當中的連結。<br>
+	Failed to reset password. Please make sure that you have checked your latest E-mail from us.-->
+</div>
+</body>
+</html>

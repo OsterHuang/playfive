@@ -2,17 +2,28 @@
 <head>
 </head>
 <body>
+<div ng-app="account" ng-controller="accountController" class="container-fruid">
+        <div ng-include="'../header.html'"></div>
+</div>
 <script>
 var result = document.location.hash;
 var msg = '';
-if(result=='#noaccount' || result=='#noaccount2')
-	msg = '帳號不存在或認證錯誤，請重新申請。';
-else if(result=='#verified')
-	msg = '恭喜你！認證已通過，請回到首頁登入。';
-else if(result=='#notverified')
-	msg = '認證碼錯誤。請回信箱確認連結無誤。';
-else if(result=='#newcode')
-	msg = '認證錯誤，系統已經重新寄出認證信';
+if(result=='#noaccount' || result=='#noaccount2'){
+	document.write('帳號不存在或認證錯誤，請<a href="create.html">重新申請</a>。<br>');
+	document.write('Error, please try to <a href="create.html">create new account.</a>');
+}
+else if(result=='#verified'){
+	document.write('恭喜你！認證已通過，請回到<a href="../login.html">首頁</a>登入。');
+	document.write('Congratulations! Your account has been verified. You may <a href="../login.html">login</a> now.');
+}
+else if(result=='#notverified'){
+	document.write('認證碼錯誤。請確認。');
+	document.write('Fail to verify, please check your email again.');
+}
+else if(result=='#newcode'){
+	document.write('認證錯誤，系統已經重新寄出認證信');
+	document.write('Fail to verify. The system has send a new email to you.');
+}
 else msg = '我不理解您的要求。';
 document.write(msg);
 </script>
