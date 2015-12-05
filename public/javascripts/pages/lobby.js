@@ -6,6 +6,8 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     $scope.lobbyChat = '';
     $scope.lobbyChatOut = {content:''};
     
+    $scope.searchOpp = {any:''} 
+    
     $scope.newGame = {
         rule:'gomoku',
         isTentitiveBlack:true,
@@ -33,6 +35,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
             rule:$scope.newGame.rule,
             isTentitiveBlack:$scope.newGame.isTentitiveBlack,
             isRating:$scope.newGame.isRating,
+            specificOpp:$scope.newGame.specificOpp,
             timeRule:{}
         };
         if ($scope.newGame.hasBasicTime) {
@@ -57,9 +60,92 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     }
     
     $scope.chatInLobby = function() {
+        if ($rootScope.user.status === 'silent') {
+            $rootScope.message = 'Your are muted.';
+            $("#message").alert();
+            $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+            return;
+        }
         socket.emit('lobby-chat-send', {from:$rootScope.user.username, content:$scope.lobbyChatOut.content});
     }
     
+    $scope.confirmKick = function(pUser) {
+        $rootScope.modal.title = 'Kick Confirm';
+        $rootScope.modal.message = "Are you sure to kick the user " + pUser.nickname + "?";
+        $rootScope.modal.button1Label = 'Yes';
+        $rootScope.modal.button2Label = 'No';
+        $rootScope.modal.clickButton1 = function() {
+            socket.emit('lobby-kick-user', pUser);
+        }
+        $rootScope.modal.clickButton2 = function() {
+            //Nothing here
+        }
+        $('#modalDialog').modal({
+            keyboard: true
+        });
+    }
+    
+    $scope.confirmBan = function(pUser) {
+        $rootScope.modal.title = 'Ban Confirm';
+        $rootScope.modal.message = "Are you sure to ban the user " + pUser.nickname + "?";
+        $rootScope.modal.button1Label = 'Yes';
+        $rootScope.modal.button2Label = 'No';
+        $rootScope.modal.clickButton1 = function() {
+            socket.emit('lobby-ban-user', pUser);
+        }
+        $rootScope.modal.clickButton2 = function() {
+            //Nothing here
+        }
+        $('#modalDialog').modal({
+            keyboard: true
+        });
+    }
+    
+    $scope.confirmMute = function(pUser) {
+        $rootScope.modal.title = 'Mute Confirm';
+        $rootScope.modal.message = "Are you sure to mute the user " + pUser.nickname + "?";
+        $rootScope.modal.button1Label = 'Yes';
+        $rootScope.modal.button2Label = 'No';
+        $rootScope.modal.clickButton1 = function() {
+            socket.emit('lobby-mute-user', pUser);
+        }
+        $rootScope.modal.clickButton2 = function() {
+            //Nothing here
+        }
+        $('#modalDialog').modal({
+            keyboard: true
+        });
+    }
+    
+    $scope.unmute = function(pUser) {
+        socket.emit('lobby-unmute-user', pUser);
+    }
+    
+    // ---- Choose Opponent ----
+    $scope.openChooseOppDialog = function() {
+        $('#chooseOppDialog').modal({
+            keyboard: true
+        });
+    }
+    
+    $scope.chooseOppFilter = function(itUser) {
+        if (itUser.username === $rootScope.user.username)
+            return false;
+        
+        if (itUser.nickname.indexOf($scope.searchOpp.any) > -1) {
+            return true;
+        } else {
+            return false;
+        }
+    }
+    
+    $scope.chooseOpp = function(pUser) {
+        $scope.newGame.specificOpp = pUser;
+    }
+    
+    $scope.cancelChooseOpp = function() {
+        $scope.newGame.specificOpp = null;
+    }
     
     // ----
     //

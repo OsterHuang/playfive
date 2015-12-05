@@ -57,7 +57,7 @@ io.on('connection', function (socket) {
     socket.emit('connected');
     
     socket.on('online', function(user) {
-        console.log("Socket on online() " + user.username);
+        console.log("Socket on online() ", user);
         var alreadyInUser = m_onlineUsers.findUser('' + user.username);
         console.log("User List: " + util.inspect(m_onlineUsers.listUsers(), {showHidden: false, depth: null}));
         console.log("Already has user? " + util.inspect(alreadyInUser, {showHidden: false, depth: null}));
@@ -66,6 +66,9 @@ io.on('connection', function (socket) {
             var newUser = {
                     username:user.username, 
                     nickname:user.nickname,
+                    rating:user.rating,
+                    role:user.role,
+                    status:user.status,
                     socketId:socket.id
                 };
             m_onlineUsers.addUser(newUser);
@@ -75,14 +78,14 @@ io.on('connection', function (socket) {
             }
             alreadyInUser.socketId = socket.id;
         }
-        socket.username = user.username;
+        socket.user = user;
         
         io.emit('lobby-user-list', { onlineUsers: m_onlineUsers.listUsers() });
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
     });
     
     socket.on('lobby-create-game', function(data) {
-        console.log("On lobby-game-created: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On lobby-game-created: (" + socket.user.username + ", " + socket.room + ")", data);
             
         db.collection('counter').findAndModify(
             { _id: 'game' },
@@ -122,6 +125,10 @@ io.on('connection', function (socket) {
                     isTempBlack:data.newGame.isTentitiveBlack,
                     isRating:data.newGame.isRating,
                     tempBlack:null,
+                    specificOpp:{
+                        username:data.newGame.specificOpp.username,
+                        nickname:data.newGame.specificOpp.nickname
+                    },
                     observers:[],
                     moves:[]
                 };
@@ -137,13 +144,13 @@ io.on('connection', function (socket) {
     });
     
     socket.on('lobby-cancel-game', function(data) {
-        console.log("On lobby-cancel-game: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On lobby-cancel-game: (" + socket.user.username + ", " + socket.room + ")", data);
         m_processingGames.removeGame(data.uid);
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
     });
     
     socket.on('lobby-start-game', function(data) {
-        console.log("On lobby-start-game: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On lobby-start-game: (" + socket.user.username + ", " + socket.room + ")", data);
         
         var joinGame = m_processingGames.findGame(data.joinGame.uid); 
         console.log('Start-game: ' + util.inspect(joinGame, {showHidden: false, depth:null}));
@@ -183,7 +190,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('lobby-join-game', function(data) {
-        console.log("On lobby-join-game: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On lobby-join-game: (" + socket.user.username + ", " + socket.room + ")", data);
         var joinGame = m_processingGames.findGame(data.joinGame.uid); 
         joinGame.responseTime = new Date();
         
@@ -193,7 +200,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('lobby-watch-game', function(data) {
-        console.log("On lobby-watch-game: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On lobby-watch-game: (" + socket.user.username + ", " + socket.room + ")", data);
         
         var watchGame = m_processingGames.findGame(data.watchGame.uid); 
         console.log('Watch-game: ' + util.inspect(watchGame, {showHidden: false, depth:null}));
@@ -205,13 +212,150 @@ io.on('connection', function (socket) {
     });
     
     socket.on('lobby-chat-send', function(data) {
-        console.log("On lobby-chat-send: (" + socket.username + ", " + socket.room + ")" + util.inspect(data, {showHidden: false, depth:null}));
+        console.log("On lobby-chat-send: (" + socket.user.username + ")" + util.inspect(data, {showHidden: false, depth:null}));
+        
+        var alreadyInUser = m_onlineUsers.findUser('' + socket.user.username);
+        if (alreadyInUser.status != 'normal')
+            return;
+        
         io.sockets.emit('lobby-chat-receive', data);
     });
     
+    // ---- Admin Function ----
+    socket.on('lobby-kick-user', function(pUser) {
+        console.log("On lobby-kick-user ", pUser, socket.user);
+        if (socket.user.role != 'admin') {
+            return;
+        }
+        
+        db.collection('user').updateOne(
+            {username:pUser.username}, 
+            {
+                $set: { token: null },
+                $currentDate: { lastModified: true }
+            }, 
+            function(err, results) {
+                if (err) {
+                    console.log('Update token to logout error:' + err);
+                    return; 
+                } 
+                
+                console.log('pUser', pUser);
+                var alreadyInUser = m_onlineUsers.findUser('' + pUser.username); //prevent null
+                console.log("Before disconnects User List: " + util.inspect(m_onlineUsers.listUsers(), {showHidden: false, depth: null}));
+                console.log('Disconnect user:', alreadyInUser);
+                
+                io.sockets.connected[alreadyInUser.socketId].emit('kicked');
+                io.sockets.connected[alreadyInUser.socketId].disconnect();
+            }
+        );
+    });
+    
+    socket.on('lobby-ban-user', function(pUser) {
+        console.log("On lobby-ban-user ", pUser, socket.user);
+        if (socket.user.role != 'admin') {
+            return;
+        }
+        
+        db.collection('user').updateOne(
+            {username:pUser.username}, 
+            {
+                $set: { token: null },
+                $set: { status:'banned'},
+                $currentDate: { lastModified: true }
+            }, 
+            function(err, results) {
+                if (err) {
+                    console.log('Update token, banned to logout error:' + err);
+                    return; 
+                } 
+                
+                var alreadyInUser = m_onlineUsers.findUser('' + pUser.username); //prevent null
+                console.log("Before disconnects User List: " + util.inspect(m_onlineUsers.listUsers(), {showHidden: false, depth: null}));
+                console.log('Disconnect user:', alreadyInUser);
+                
+                io.sockets.connected[alreadyInUser.socketId].emit('kicked');
+                io.sockets.connected[alreadyInUser.socketId].disconnect();
+            }
+        );
+    });
+    
+    socket.on('lobby-mute-user', function(pUser) {
+        console.log("On lobby-mute-user ", pUser, socket.user);
+        if (socket.user.role != 'admin') {
+            return;
+        }
+        
+        db.collection('user').updateOne(
+            {username:pUser.username}, 
+            {
+                $set: { status:'silent'},
+                $currentDate: { lastModified: true }
+            }, 
+            function(err, results) {
+                if (err) {
+                    console.log('Update to silent logout error:' + err);
+                    return; 
+                } 
+                
+                if (results) {
+                    console.log('Refresh user list by muting someone.');
+                    var alreadyInUser = m_onlineUsers.findUser('' + pUser.username);
+                    if (alreadyInUser) {
+                        alreadyInUser.status = 'silent';
+                        io.sockets.connected[alreadyInUser.socketId].emit('muted');
+                    }
+                    io.emit('lobby-user-list', { onlineUsers: m_onlineUsers.listUsers() });
+                    io.emit('lobby-chat-receive', {
+                        from:"[Admin]" + socket.user.nickname, 
+                        content:pUser.nickname + ' is set to mute by ' + socket.user.nickname
+                    });
+                }
+            }
+        );
+    });
+    
+    socket.on('lobby-unmute-user', function(pUser) {
+        console.log("On lobby-unmute-user ", pUser, socket.user);
+        if (socket.user.role != 'admin') {
+            return;
+        }
+        
+        db.collection('user').updateOne(
+            {username:pUser.username}, 
+            {
+                $set: { status:'normal'},
+                $currentDate: { lastModified: true }
+            }, 
+            function(err, results) {
+                if (err) {
+                    console.log('Update silent to normal error:' + err);
+                    return; 
+                } 
+                
+                if (results) {
+                    console.log('Refresh user list by un-muting someone.');
+                    var alreadyInUser = m_onlineUsers.findUser('' + pUser.username);
+                    if (alreadyInUser) {
+                        alreadyInUser.status = 'normal';
+                        io.sockets.connected[alreadyInUser.socketId].emit('unmuted');
+                    }
+                    io.emit('lobby-user-list', { onlineUsers: m_onlineUsers.listUsers() });
+                    io.emit('lobby-chat-receive', {
+                        from:"[Admin]" + socket.user.nickname, 
+                        content:pUser.nickname + ' can chat now.'
+                    });
+                }
+            }
+        );
+    });
+    
     socket.on('game-room-chat-send', function(data) {
-        console.log("On game-room-chat-send: (" + socket.username + ", " + socket.room + ")", data);
-        //io.to('room_' + data.gameSeq).emit('game-room-chat-receive', data);
+        console.log("On game-room-chat-send: (" + socket.user.username + ", " + socket.room + ")", data);
+        
+        var alreadyInUser = m_onlineUsers.findUser('' + socket.user.username);
+        if (alreadyInUser.status != 'normal')
+            return;
         io.sockets["in"]('room_' + data.gameSeq).emit('game-room-chat-receive', data);
     });
     
@@ -220,7 +364,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-going', function(data) {
-        console.log("On going: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On going: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
         
@@ -228,7 +372,7 @@ io.on('connection', function (socket) {
         if (game.status != 'started') {
             return;
         }
-        if (game.black.username != socket.username && game.white.username != socket.username) {
+        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
             console.log(' Not the user game.');
             socket.emit('message', {message:'This is not your game.'});
             return;
@@ -264,7 +408,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-undo', function(data) {
-//        console.log("On undo: (" + socket.username + ", " + socket.room + ")", data);
+//        console.log("On undo: (" + socket.user.username + ", " + socket.room + ")", data);
 //        var game = m_processingGames.findGame(data.game_id);
 //        console.log(" Game undo: " + util.inspect(game, {showHidden: false, depth: null}));
 //        
@@ -272,7 +416,7 @@ io.on('connection', function (socket) {
 //        if (game.status != 'started') {
 //            return;
 //        }
-//        if (game.black.username != socket.username && game.white.username != socket.username) {
+//        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
 //            console.log(' Not the user game.');
 //            socket.emit('message', {message:'This is not your game.'});
 //            return;
@@ -284,7 +428,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-draw-request', function(data) {
-        console.log("On draw-request: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On draw-request: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
         console.log(" game-draw-request: ", game);
@@ -299,7 +443,7 @@ io.on('connection', function (socket) {
     });
               
     socket.on('game-draw-accept', function(data) {
-        console.log("On drawAccept: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On drawAccept: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
 //        var blackUser = m_onlineUsers.findUser(game.black);
@@ -316,7 +460,7 @@ io.on('connection', function (socket) {
     });
         
     socket.on('game-draw-reject', function(data) {
-        console.log("On drawReject: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On drawReject: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(move.game_id);
         console.log(" Game: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -331,7 +475,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-resign', function(data) {
-        console.log("On resign: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On resign: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
         console.log(" Game: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -346,13 +490,18 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-leave', function(data) {
-        console.log("On game-leave: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On game-leave: (" + socket.user.username + ", " + socket.room + ")", data);
         socket.leave(socket.room); //Leave game room
         socket.emit('game-leaved');
     });
     
     socket.on('disconnect', function() {
-        console.log("On disconnect: where connection socket.id = (" + socket.username + ")" + socket.id);
+        if (!socket.user) {
+            console.log("On disconnect: No authoration....");
+            return;
+        }
+        
+        console.log("On disconnect: where connection socket.id = (" + socket.user.username + ")" + socket.id);
         console.log(' Online users: ' + util.inspect(m_onlineUsers.listUsers(), {showHidden: false, depth: null}));
         
         var me;
@@ -388,7 +537,7 @@ io.on('connection', function (socket) {
       ... opening / game-undo 
     **/
     socket.on('game-chosen-open', function(data) {
-        console.log("On game-chosen-open: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On game-chosen-open: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
         
@@ -396,12 +545,12 @@ io.on('connection', function (socket) {
         if (game.status != 'opening') {
             return;
         }
-        if (game.black.username != socket.username && game.white.username != socket.username) {
+        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
             console.log(' Not the user game.');
             socket.emit('message', {message:'This is not your game.'});
             return;
         }
-        if (game.tempBlack.username != socket.username) {
+        if (game.tempBlack.username != socket.user.username) {
             console.log(' Not the tentitive black.');
             socket.emit('message', {message:'You can not decide the opening'});
             return;
@@ -427,19 +576,19 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-swapped', function(data) {
-        console.log("On game-swapped: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On game-swapped: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         
         //Validation
         if (game.status != 'swapping') {
             return;
         }
-        if (game.black.username != socket.username && game.white.username != socket.username) {
+        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
             console.log(' Not the user game.');
             socket.emit('message', {message:'This is not your game.'});
             return;
         }
-        if (game.white.username != socket.username) {
+        if (game.white.username != socket.user.username) {
             console.log(' Not the tentitive white.');
             socket.emit('message', {message:'You can not do the swapping action.'});
             return;
@@ -469,7 +618,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-alt-making', function(data) {
-        console.log("On game-alt-making: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On game-alt-making: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" game-alt-making: " + util.inspect(game, {showHidden: false, depth: null}));
         
@@ -477,7 +626,7 @@ io.on('connection', function (socket) {
         if (game.status != 'swapped') {
             return;
         }
-        if (game.black.username != socket.username && game.white.username != socket.username) {
+        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
             console.log(' Not the user game.');
             socket.emit('message', {message:'This is not your game.'});
             return;
@@ -502,7 +651,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-alt-choosing', function(data) {
-        console.log("On game-alt-choosing: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On game-alt-choosing: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" game-alt-choosing: " + util.inspect(game, {showHidden: false, depth: null}));
         
@@ -510,7 +659,7 @@ io.on('connection', function (socket) {
         if (game.status != 'alt-making') {
             return;
         }
-        if (game.black.username != socket.username && game.white.username != socket.username) {
+        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
             console.log(' Not the user game.');
             socket.emit('message', {message:'This is not your game.'});
             return;
@@ -532,7 +681,7 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-alt-chosen', function(data) {
-        console.log("On alt-chosen: (" + socket.username + ", " + socket.room + ")", data);
+        console.log("On alt-chosen: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" Game alt-chosen: " + util.inspect(game, {showHidden: false, depth: null}));
         
@@ -540,7 +689,7 @@ io.on('connection', function (socket) {
         if (game.status != 'alt-choosing') {
             return;
         }
-        if (game.black.username != socket.username && game.white.username != socket.username) {
+        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
             console.log(' Not the user game.');
             socket.emit('message', {message:'This is not your game.'});
             return;
