@@ -5,6 +5,7 @@ announceList.controller('announceListController', function ($rootScope, $scope, 
 	$scope.annPerPage = 10;
 	$scope.annList;
 	$scope.displayList;
+    $scope.progressing = false;
 	
     $scope.hideMessage = function() {
         $("#message").hide();
@@ -35,25 +36,30 @@ announceList.controller('announceListController', function ($rootScope, $scope, 
 	}
 	
 	$scope.getList = function(){
+        $scope.progressing = true;
+        
 		$http({
-				url: '/announce/getList',
-				method: 'POST',
-				headers: {'Content-Type': 'application/json'}
-			}).success(function(response) {
-				$scope.totalAnnounce = response.length; //response長度=總公告數量
-				$scope.totalPages = Math.ceil($scope.totalAnnounce/$scope.annPerPage); //計算頁數
-				
-				//修改時間格式
-				$scope.annList = response;
-				angular.forEach($scope.annList, function(value, key) {
-					value.formatedCreatedDate = formatDate(new Date(value.createdDate));
-					value.expand = 0;
-				});
-				
-				//切割, 取得要顯示的公告
-				$scope.displayList = response.slice(($scope.page-1)*$scope.annPerPage, ($scope.page*$scope.annPerPage));
-			}).error(function(data, status) {
-				console.log('Error ' + status + '. ' + data);
+            url: '/announce/getList',
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        }).success(function(response) {
+            $scope.progressing = false;    
+
+            $scope.totalAnnounce = response.length; //response長度=總公告數量
+            $scope.totalPages = Math.ceil($scope.totalAnnounce/$scope.annPerPage); //計算頁數
+
+            //修改時間格式
+            $scope.annList = response;
+            angular.forEach($scope.annList, function(value, key) {
+                value.formatedCreatedDate = formatDate(new Date(value.createdDate));
+                value.expand = 0;
+            });
+
+            //切割, 取得要顯示的公告
+            $scope.displayList = response.slice(($scope.page-1)*$scope.annPerPage, ($scope.page*$scope.annPerPage));
+        }).error(function(data, status) {
+            $scope.progressing = false; 
+            console.log('Error ' + status + '. ' + data);
 		});
 	}
 	

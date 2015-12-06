@@ -28,13 +28,32 @@
   -moz-transition:all linear 0.5s;
   transition:all linear 0.5s;
   left:0;
-  
 }
+
 
 .announce-edit-show-hide.ng-hide {
   opacity:0;
     animation-delay: 0.5s;
     left:100%;
+}
+
+
+.announce-progressing-show-hide.ng-hide {
+  opacity:0;
+    animation-delay: 0.5s;
+    left:100%;
+}
+
+.announce-progressing-show-hide {
+  margin:4px;
+  float:right;
+}
+
+.announce-progressing-show-hide {
+  -webkit-transition:all linear 1.5s;
+  -moz-transition:all linear 1.5s;
+  transition:all linear 1.5s;
+  opacity:0;
 }
 
 .check-element {
