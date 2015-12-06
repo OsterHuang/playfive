@@ -110,6 +110,14 @@ io.on('connection', function (socket) {
                 if (data.newGame.timeRule.perMovePlusTime) {
                     data.newGame.timeRule.perMovePlusTime = parseInt(data.newGame.timeRule.perMovePlusTime, 10);
                 }
+                
+                var specificOpp = null; 
+                if (data.newGame.specificOpp) {
+                    specificOpp = {
+                        username:data.newGame.specificOpp.username,
+                        nickname:data.newGame.specificOpp.nickname
+                    };
+                }
 
                 var newGame = {
                     seq:doc.value.next,
@@ -125,10 +133,7 @@ io.on('connection', function (socket) {
                     isTempBlack:data.newGame.isTentitiveBlack,
                     isRating:data.newGame.isRating,
                     tempBlack:null,
-                    specificOpp:{
-                        username:data.newGame.specificOpp.username,
-                        nickname:data.newGame.specificOpp.nickname
-                    },
+                    specificOpp:specificOpp,
                     observers:[],
                     moves:[]
                 };

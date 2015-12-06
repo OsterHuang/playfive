@@ -1,7 +1,7 @@
 var server_host = 'localhost';
 
 playfiveApp = angular.module('playfiveApp', 
-                             ['lobbyPage', 'gamePage', 'announce', 'announceEdit', 'userProfilePage', 
+                             ['lobbyPage', 'gamePage', 'announceList', 'announceCreate', 'announceEdit', 'userProfilePage', 
                               'ngStorage', 'ngAnimate', 'ngSanitize']);
 
 playfiveApp.factory('socket', function ($rootScope) {

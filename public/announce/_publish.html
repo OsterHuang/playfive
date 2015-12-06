@@ -1,0 +1,45 @@
+
+<div class="container-fluid">
+    <form novalidate class="form-horizontal">
+        <span class="form-group">
+            <span class="col-sm-2"></span>
+            <label class="col-sm-2 control-label">分類</label>
+            <span class="col-sm-6">
+                <input type="text" ng-model="newAnnounce.publisher" class="form-control" placeholder="Category" required/> 
+            </span>
+            <span class="col-sm-2"></span>
+        </span>
+        <span class="form-group">
+            <span class="col-sm-2"></span>
+            <label class="col-sm-2 control-label">標題</label>
+            <span class="col-sm-6">
+                <input type="text" ng-model="newAnnounce.title" class="form-control" placeholder="Title" required/> 
+            </span>
+            <span class="col-sm-2"></span>
+        </span>
+
+        <span class="form-group">
+            <span class="col-sm-2"></span>
+            <label class="col-sm-2 control-label">內容</label>
+            <span class="col-sm-6">
+                <textarea ng-model="newAnnounce.content" rows="10" class="form-control" placeholder="Content"></textarea>
+            </span>
+            <span class="col-sm-2"></span>
+        </span>
+
+        <span class="form-group">
+            <span class="col-sm-2"></span>
+            <label class="col-sm-2 control-label"><!--置頂--></label>
+            <span class="col-sm-1">
+                <!--<input type="checkbox" ng-model="isTop" class="form-control" required/> -->
+            </span>
+            <span class="col-sm-5" style="text-align:right">
+            <button class="btn" ng-click="create()">                    
+                新增 / Create
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+            </span>
+            <span class="col-sm-2"></span>
+        </span>
+    </form>
+</div>

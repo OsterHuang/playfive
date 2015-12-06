@@ -1,10 +1,11 @@
-announce = angular.module('announce', ['ngStorage']);
-announce.controller('announceController', function ($scope, $http, $localStorage, $window) {
+announceCreate = angular.module('announceCreate', ['ngStorage']);
+announceCreate.controller('announceCreateController', function ($rootScope, $scope, $http, $localStorage, $window) {
     
-    $("#success-alert").hide();
+    $scope.newAnnounceInit = {publisher:'', title:'', content:'', isTop:''};
+    $scope.newAnnounce = angular.copy($scope.newAnnounceInit); //console.log('Copy value of newAnnounce:', $scope.newAnnounce);
     
     $scope.hideMessage = function() {
-        $("#success-alert").hide();
+        $("#message").hide();
     }
     
     $scope.show = function() {
@@ -16,38 +17,56 @@ announce.controller('announceController', function ($scope, $http, $localStorage
         }).success(function(response) {
             console.log(response);
             $scope.messageTitle = response.messageTitle;
-            $scope.messageContent = response.messageContent;
-            $("#success-alert").alert();
-            $("#success-alert").fadeTo(5000, 500).slideUp(500, function() {});
+            $rootScope.message = response.messageContent;
+            $("#message").alert();
+            $("#message").fadeTo(5000, 500).slideUp(500, function() {});
         }).error(function(data, status) {
             console.log('Error ' + status + '. ' + data);
             $scope.messageTitle = 'Error.';
-            $scope.messageContent = data.error;
-            $("#success-alert").alert();
-            $("#success-alert").fadeTo(5000, 500).slideUp(500, function() {});
+            $rootScope.message = data.error;
+            $("#message").alert();
+            $("#message").fadeTo(5000, 500).slideUp(500, function() {});
         });
     }
 	
     $scope.create = function() {
-		console.log('token is:', $localStorage.token);
+        var requestData = {
+            publisher:$scope.newAnnounce.publisher, 
+            title:$scope.newAnnounce.title, 
+            content:$scope.newAnnounce.content, 
+            isTop:$scope.newAnnounce.isTop, 
+            token: $localStorage.token
+        };
+        
+        console.log('Request data is', requestData);
 		$http({
 			url: '/announce/create',
 			method: 'POST',
-			data: JSON.stringify({publisher:$scope.publisher, title:$scope.title, content:$scope.content, isTop:$scope.isTop, token: $localStorage.token}),
+			data: JSON.stringify(requestData),
 			headers: {'Content-Type': 'application/json'}
 		}).success(function(response) {
             console.log(response);
             $scope.messageTitle = response.messageTitle;
-            $scope.messageContent = response.messageContent;
-            $("#success-alert").alert();
-            $("#success-alert").fadeTo(5000, 500).slideUp(500, function() {});
-			if($scope.messageTitle == 'Success') location="list.html";
+            $rootScope.message = response.messageContent;
+            $("#message").alert();
+            $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+            
+            $scope.newAnnounce = angular.copy($scope.newAnnounceInit);
+            $rootScope.creatingAnnounce = false;
+            $rootScope.$broadcast('refresh-announce-list', $rootScope.editingAnnounce);
+//			if($scope.messageTitle == 'Success') location="list.html";
         }).error(function(data, status) {
             console.log('Error ' + status + '. ' + data);
             $scope.messageTitle = 'Error.';
-            $scope.messageContent = data.error;
-            $("#success-alert").alert();
-            $("#success-alert").fadeTo(5000, 500).slideUp(500, function() {});
+            $rootScope.message = data.error;
+            $("#message").alert();
+            $("#message").fadeTo(5000, 500).slideUp(500, function() {});
         });
     }
+    
+    $scope.$on('create-announce', function(event) {
+        console.log('On create-announce event', event);
+    });
+    
+    $("#message").hide();
 });

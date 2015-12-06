@@ -1,5 +1,5 @@
-announce = angular.module('announce', ['ngSanitize']);
-announce.controller('announceController', function ($rootScope, $scope, $http, $window) {
+announceList = angular.module('announceList', ['ngSanitize', 'ngAnimate']);
+announceList.controller('announceListController', function ($rootScope, $scope, $http, $window) {
     $("#message").hide();
 	$scope.page = 1;
 	$scope.annPerPage = 10;
@@ -15,17 +15,22 @@ announce.controller('announceController', function ($rootScope, $scope, $http, $
 			ann.expand = 0;
 			return;
 		}
-		ann.expand = 1;
+        
+        ann.progressing = true;
+        
 		$http({
-				url: '/announce/getContent',
-				method: 'POST',
-				data: JSON.stringify({number: ann.number}),
-				headers: {'Content-Type': 'application/json'}
-			}).success(function(response) {
-				ann.content = response.content;
-				ann.publisher = response.publisher;
-			}).error(function(data, status) {
-				console.log('Error ' + status + '. ' + data);
+            url: '/announce/getContent',
+            method: 'POST',
+            data: JSON.stringify({number: ann.number}),
+            headers: {'Content-Type': 'application/json'}
+        }).success(function(response) {
+            ann.content = response.content;
+            ann.publisher = response.publisher;
+            ann.progressing = false;
+            ann.expand = 1;
+        }).error(function(data, status) {
+            ann.progressing = false;
+            console.log('Error ' + status + '. ' + data);
 		});
 	}
 	
@@ -91,7 +96,16 @@ announce.controller('announceController', function ($rootScope, $scope, $http, $
         $rootScope.$broadcast('inquiry-announce', $rootScope.editingAnnounce);
     }
     
+    $scope.createAnnounce = function() {
+        $rootScope.creatingAnnounce = true;
+        $rootScope.$broadcast('create-announce', $rootScope.editingAnnounce);
+    }
+    
     //
+    $scope.$on('refresh-announce-list', function(event) {
+        console.log('On refresh-announce-list event');
+        $scope.getList();
+    });
     
 	$scope.getList();
 });

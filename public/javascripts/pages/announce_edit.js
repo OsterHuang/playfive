@@ -36,11 +36,12 @@ announceEdit.controller('announceEditController', function ($rootScope, $scope, 
             }),
 			headers: {'Content-Type': 'application/json'}
 		}).success(function(response){
-			console.log('response is:', response);
+			console.log('Update announces success response is:', response);
 //            $rootScope.messageTitle = response.messageTitle;
             $rootScope.message = response.messageContent;
             $("#message").alert();
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+            $rootScope.$broadcast('refresh-announce-list');
 			
 		}).error(function(data, status){
 //			$scope.messageTitle = 'Error';

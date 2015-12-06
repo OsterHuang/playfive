@@ -100,7 +100,7 @@
                             </td>
                             <td>
                                 <button class="btn btn-info" ng-click="joinGame(g)" 
-                                        ng-hide="g.creator.username === user.username || g.specificOpp.username !== user.username">
+                                        ng-show="g.creator.username !== user.username && !g.specificOpp || user.username === g.specificOpp.username">
                                     <span class="glyphicon glyphicon-road"></span>  
                                     Join
                                 </button>
@@ -146,10 +146,17 @@
             </div>
             
             <div id="annoucement" class="tab-pane fade"  >
-                <div ng-app="announce " ng-controller="announceController" ng-include="'./announce/_list.html'" 
-                     ng-hide="editingAnnounce"
+                
+                <div ng-app="announceList" ng-controller="announceListController" ng-include="'./announce/_list.html'" 
+                     ng-hide="editingAnnounce || creatingAnnounce"
                      class="announce-list-show-hide">
                 </div>
+                
+                <div ng-app="announceCreate" ng-controller="announceCreateController" ng-include="'./announce/_publish.html'" 
+                     ng-show="creatingAnnounce"
+                     class="announce-edit-show-hide">
+                </div>
+                
                 <div ng-app="announceEdit" ng-controller="announceEditController" ng-include="'./announce/_edit.html'" 
                      ng-show="editingAnnounce"
                      class="announce-edit-show-hide">
@@ -188,8 +195,14 @@
                     <div class="container-fluid">
                         <div class="row">
                             <label>Opponent:</label>
-                            <span style="border:solid 1px #d3e7f0; background-color:#e0f2f5; border-radius:8px; padding:4px 8px; margin-top: 2px; margin-right: 8px; margin-bottom: 2px; margin-left: 2px; color:#EEEEEE"
-                                  ng-show="newGame.specificOpp"> 
+<!--
+                            <span style="border:solid 1px #d3e7f0; background-color:#e0f2f5; border-radius:8px; padding:4px 8px; margin-top: 2px; margin-right: 8px; margin-bottom: 2px; margin-left: 2px; color:#0a16af; font-weight:bold;"
+                                  ng-show="newGame.specificOpp">
+-->
+                            <span style="font-weight:bold; margin:4px; padding-left:8px; padding-right:2px; padding-top:2px; padding-bottom:4px" class="user-info-field"
+                                  ng-show="newGame.specificOpp">
+                                
+
                                 {{newGame.specificOpp.nickname}} 
                                 <span class="glyphicon glyphicon-minus"  ng-click="cancelChooseOpp()" style="cursor:pointer; color:#c1c5e2"></span>
                             </span>
@@ -201,10 +214,14 @@
                         <div class="row">
                             <label >Rule:</label>
                             <span style="width:100%">
-                                    <input type="radio" ng-model="newGame.rule" value="gomoku"/>Gomoku
-                                    <input type="radio" ng-model="newGame.rule" value="renju"/>Renju
-                                    <input type="radio" ng-model="newGame.rule" value="classic"/>Classic Rule
-                                    <input type="radio" ng-model="newGame.rule" value="yamaguchi"/>Yamaguchi
+                                <input type="radio" ng-model="newGame.rule" value="gomoku" />
+                                Gomoku &nbsp;
+                                <input type="radio" ng-model="newGame.rule" value="renju" />
+                                Renju &nbsp;
+                                <input type="radio" ng-model="newGame.rule" value="classic"/>
+                                Classic Rule &nbsp;
+                                <input type="radio" ng-model="newGame.rule" value="yamaguchi"/>
+                                Yamaguchi &nbsp;
                             </span>
                         </div>
                         <div class="row" style="border-top:1px solid #ddd; border-bottom:1px solid #ddd">
@@ -213,7 +230,10 @@
 
                                     <div class="container-fluid" style="padding-left:30px">
                                         <div class="row">
-                                            <label><input type="checkbox" ng-model="newGame.hasBasicTime" />Basic Time</label>
+                                            <label>
+                                                <input type="checkbox" ng-model="newGame.hasBasicTime" />
+                                                Basic Time
+                                            </label>
                                             <span>
                                                 <input type="text" ng-model="newGame.basicTime" ng-disabled="!newGame.hasBasicTime" 
                                                        class="form-control time-limit" size="5"/>
@@ -221,7 +241,10 @@
                                             </span>
                                         </div>
                                         <div class="row">
-                                            <label><input type="checkbox" ng-model="newGame.hasPerMoveTime" />Time per Move</label>
+                                            <label>
+                                                <input type="checkbox" ng-model="newGame.hasPerMoveTime" />
+                                                Time per Move
+                                            </label>
                                             <span>
                                                 <input type="text" ng-model="newGame.perMoveTime" ng-disabled="!newGame.hasPerMoveTime" 
                                                        class="form-control time-limit" size="5"></input>
@@ -229,7 +252,10 @@
                                             </span>
                                         </div>
                                         <div class="row">
-                                            <label><input type="checkbox" ng-model="newGame.hasPlusTime" />Plus Time per Move</label>
+                                            <label>
+                                                <input type="checkbox" ng-model="newGame.hasPlusTime" />
+                                                Plus Time per Move
+                                            </label>
                                             <span>
                                                 <input type="text" ng-model="newGame.perMovePlusTime" ng-disabled="!newGame.hasPlusTime" 
                                                        class="form-control time-limit" size="5" style="text-align:right;"></input>
@@ -246,7 +272,10 @@
                             </lable>
                         </div>
                         <div class="row">
-                            <span><input type="checkbox" ng-model="newGame.isRating" />Rating game?</span>
+                            <span>
+                                <input type="checkbox" ng-model="newGame.isRating" />
+                                Rating game?
+                            </span>
                         </div>
                     </div>
                 </div>
