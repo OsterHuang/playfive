@@ -27,19 +27,15 @@
             <span class="col-sm-2"></span>
         </span>
 
-        <span class="form-group">
-            <span class="col-sm-2"></span>
-            <label class="col-sm-2 control-label"><!--置頂--></label>
-            <span class="col-sm-1">
-                <!--<input type="checkbox" ng-model="isTop" class="form-control" required/> -->
-            </span>
-            <span class="col-sm-5" style="text-align:right">
+        <div style="margin-left:50%; margin-right:50%; text-align:center; display:table">
             <button class="btn" ng-click="create()">                    
                 新增 / Create
                 <span class="glyphicon glyphicon-plus"></span>
             </button>
-            </span>
-            <span class="col-sm-2"></span>
-        </span>
+            <button class="btn btn-link" ng-click="backToList()" ng-show="creatingAnnounce">                    
+                回列表
+                <span class="glyphicon glyphicon-list-alt"></span>
+            </button>
+        </div>
     </form>
 </div>

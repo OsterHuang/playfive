@@ -64,6 +64,10 @@ announceCreate.controller('announceCreateController', function ($rootScope, $sco
         });
     }
     
+    $scope.backToList = function() {
+        $rootScope.creatingAnnounce = null;
+    }
+    
     $scope.$on('create-announce', function(event) {
         console.log('On create-announce event', event);
     });
