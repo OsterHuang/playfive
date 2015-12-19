@@ -1,4 +1,4 @@
 
 function formatDate(pDate) {
-    return pDate.getFullYear() + '-' + (pDate.getMonth() + 1) + '-' + pDate.getDay();
+    return pDate.getFullYear() + '-' + (pDate.getMonth() + 1) + '-' + pDate.getDate();
 }

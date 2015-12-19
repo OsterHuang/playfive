@@ -63,10 +63,6 @@ announceList.controller('announceListController', function ($rootScope, $scope, 
 		});
 	}
 	
-	$scope.format = function (pDate) {
-		return new Date(pDate).format('yyyy-MM-dd');
-	}
-	
 	$scope.changePage = function(n){
 		if(n==1 && $scope.totalPages>$scope.page){
 			++$scope.page;
