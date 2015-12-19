@@ -483,7 +483,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             
             var symMessage = $scope.validateSymmetric(grid.ordinate);
             if ($scope.invalidOpeningMsg) {//Validate fails
-                $rootScope.meesage = $scope.invalidOpeningMsg;
+                $rootScope.message = $scope.invalidOpeningMsg;
                 $("#message").alert();
                 $("#message").fadeTo(5000, 500).slideUp(500, function() {});
                 return;
