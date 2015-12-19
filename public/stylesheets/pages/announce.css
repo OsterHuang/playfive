@@ -1,7 +1,8 @@
 .announce-list-show-hide {
   padding:4px;
   /*border:1px solid #eee;*/
-    position:relative;
+  position:relative;
+    overflow: hidden;
 }
 
 .announce-list-show-hide {
@@ -11,6 +12,9 @@
 }
 
 .announce-list-show-hide.ng-hide {
+  -webkit-transition:all linear 0.2s;
+  -moz-transition:all linear 0.2s;
+  transition:all linear 0.2;
   opacity:0;
 }
 
