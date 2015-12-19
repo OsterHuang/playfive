@@ -114,8 +114,12 @@
                 <table class="table table-striped" style="margin-top:10px" >
                     <tr>
                         <th class="text-center">NO</th>
-                        <th class="text-center">Creator</th><th class="text-center">Rule</th><th class="text-center">Time rule</th>
-                        <th class="text-center">Rating</th><th class="text-center">Opener</th><th class="text-center">Action</th>
+                        <th class="text-center">Creator</th>
+                        <th class="text-center">Rule</th>
+                        <th class="text-center">Time rule</th>
+                        <th class="text-center">Rating</th>
+                        <th class="text-center">Opponent</th>
+                        <th class="text-center">Action</th>
                     </tr>
                     <tr ng-repeat="g in progressingGames">
                         <td>{{g.seq}}</td>
@@ -133,7 +137,8 @@
                             <span class="glyphicon glyphicon-remove" ng-show="!g.isRating"></span>
                         </td>
                         <td>
-                            <span>{{g.tempBlack.nickname}}</span>
+                            <span ng-hide="g.black.nickname === g.creator.nickname">{{g.black.nickname}}</span>
+                            <span ng-hide="g.white.nickname === g.creator.nickname">{{g.white.nickname}}</span>
                         </td>
                         <td>
                             <button class="btn btn-info" ng-click="watchGame(g)" ng-hide="g.creator.username == user.username">
