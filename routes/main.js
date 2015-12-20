@@ -223,6 +223,7 @@ io.on('connection', function (socket) {
         if (alreadyInUser.status != 'normal')
             return;
         
+        data.sendTime = new Date();
         io.sockets.emit('lobby-chat-receive', data);
     });
     

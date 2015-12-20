@@ -172,12 +172,32 @@
     
     <div class="col-sm-3  full-height">
         <div class="panel panel-default full-height">
-            <div class="panel-body full-height">
-                <div style="width:100%; height:90%;">
-                    <pre style="height: 100%">{{lobbyChat}}</pre>
+            <div class="panel-body full-height" style="padding:4px">
+                <button id="btnBecomeAutoScroll" class="btn btn-default btn-xs" style="position:absolute; z-index:99; display:none;"
+                        ng-click="becomeAutoScroll()">
+                    <span class="glyphicon glyphicon-lock"></span>
+                </button>
+                
+                <div style="width:100%; height:90%;" class="chat" id="lobbyChat">
+<!--                    <pre style="height: 100%">{{lobbyChat}}</pre>-->
+                    <div class="message" ng-repeat="msg in lobbyChat.messages">
+                        <div class="info">
+                            <span class="nickname">
+                                {{msg.from}}
+                            </span>
+                            <span class="time">
+                                {{msg.formatedSendTime}}
+                            </span>
+                            <span class="glyphicon glyphicon-comment"></span>
+                        </div>
+                        
+                        <div class="content">
+                            {{msg.content}}
+                        </div>
+                    </div>
                 </div>
                 <form role="form">
-                    <div class="input-group" style="margin-top:5%">
+                    <div class="input-group" style="margin-top:6px">
                         <input type="text" class="form-control" placeholder="Your message" ng-model="lobbyChatOut.content">
                         <span class="input-group-btn">
                             <button class="btn btn-default" type="submit" ng-click="chatInLobby()">Send</button>

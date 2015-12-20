@@ -1,9 +1,13 @@
 
 lobbyPage = angular.module('lobbyPage', []);
 
-lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $window, $localStorage, socket) {
+lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $document, $window, $localStorage, socket) {
     
-    $scope.lobbyChat = '';
+    $scope.lobbyChat = {
+        content:'',
+        messages:[],
+        isAutoScroll: true
+    };
     $scope.lobbyChatOut = {content:''};
     
     $scope.searchOpp = {any:''} 
@@ -66,7 +70,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
             return;
         }
-        socket.emit('lobby-chat-send', {from:$rootScope.user.username, content:$scope.lobbyChatOut.content});
+        socket.emit('lobby-chat-send', {from:$rootScope.user.nickname, content:$scope.lobbyChatOut.content});
     }
     
     $scope.confirmKick = function(pUser) {
@@ -120,6 +124,38 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     $scope.unmute = function(pUser) {
         socket.emit('lobby-unmute-user', pUser);
     }
+    
+    $scope.onChatScroll = function(event) {
+        $scope.lobbyChat.isAutoScroll = false;
+        $("#btnBecomeAutoScroll").show();
+    }
+    
+    $scope.becomeAutoScroll = function() {
+        $('.chat').animate(
+            {scrollTop: $('.chat')[0].scrollHeight}, 
+            'fast',
+            function() {
+                $scope.lobbyChat.isAutoScroll = true;
+                $("#btnBecomeAutoScroll").hide();
+                console.log('Become auto scroll:', $scope.lobbyChat.isAutoScroll);
+            }
+        );
+    }
+    
+//    $scope.scrollChat = function() {
+//        $scope.lobbyChat.isAutoScroll = false;
+//    }
+    
+//    angular.element('#lobbyChat').on("scroll", function() {
+//         if (this.pageYOffset >= 100) {
+//             scope.boolChangeClass = true;
+//             console.log('Scrolled below header.');
+//         } else {
+//             scope.boolChangeClass = false;
+//             console.log('Header is in view.');
+//         }
+//        scope.$apply();
+//    });
     
     // ---- Choose Opponent ----
     $scope.openChooseOppDialog = function() {
@@ -177,9 +213,24 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     
     socket.on('lobby-chat-receive', function(message) {
         console.log('On lobby-chat-receive', message);
-        $scope.lobbyChat = $scope.lobbyChat + message.from + ':' + message.content + '\n';
-        if (message.from === $rootScope.user.username)
-            $scope.lobbyChatOut.content = '';
+        message.formatedSendTime = formatTime(new Date(message.sendTime));
+        $scope.lobbyChat.messages.push(message);
+        
+        if ($scope.lobbyChat.isAutoScroll) {
+//            $('.chat')[0].scrollTop = $('.chat')[0].scrollHeight;
+            $('.chat').animate(
+                {scrollTop: $('.chat')[0].scrollHeight}, 
+                'fast',
+                function() {
+                    $(".chat").scroll(function(event) {
+                        $scope.onChatScroll(event);
+                    });
+                    $scope.lobbyChat.isAutoScroll = true;
+                    $("#btnBecomeAutoScroll").hide();
+                }
+            );
+        }
+    
     });
     
     // ---- U ----
