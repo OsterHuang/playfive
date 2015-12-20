@@ -142,21 +142,6 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $do
         );
     }
     
-//    $scope.scrollChat = function() {
-//        $scope.lobbyChat.isAutoScroll = false;
-//    }
-    
-//    angular.element('#lobbyChat').on("scroll", function() {
-//         if (this.pageYOffset >= 100) {
-//             scope.boolChangeClass = true;
-//             console.log('Scrolled below header.');
-//         } else {
-//             scope.boolChangeClass = false;
-//             console.log('Header is in view.');
-//         }
-//        scope.$apply();
-//    });
-    
     // ---- Choose Opponent ----
     $scope.openChooseOppDialog = function() {
         $('#chooseOppDialog').modal({

@@ -379,6 +379,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     // ----
     $scope.isLocked = false;
     $scope.isShowNumber = false;
+    $scope.isDoubleClick = true;
     $scope.invalidOpeningMsg = null;
     
     $scope.gameRoomChatOut = {content:''};
@@ -406,16 +407,24 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     //　----
     //  User Interaction
     //  ----
+    $scope.mouseOnWholeBoard = function() {
+        if ($scope.isMyTurn() && !($scope.game.status === 'alt-choosing') && !($scope.game.status === 'opening' && $scope.game.moves.length >= 3)) {
+            $('#divGameBoard').css( 'cursor', 'pointer' );
+        } else {
+            $('#divGameBoard').css( 'cursor', 'not-allowed' );
+        }
+    }
+    
+    $scope.mouseOutWholeBoard = function() {
+        $('#divGameBoard').css( 'cursor', 'default' );
+    }
+    
     $scope.mouseOnBoard = function(grid) {
 //        console.log('mouseMove on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
 //                console.log('previewStoneWidth:' + $scope.board.moveStyle.width);
         //Preview stone
         $scope.board.previewMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
-        if ($scope.isMyTurn() && !($scope.game.status === 'alt-choosing') && !($scope.game.status === 'opening' && $scope.game.moves.length >= 3)) {
-            $scope.board.previewMove.class = "preview-enabled";
-        } else {
-            $scope.board.previewMove.class = "preview-disabled";
-        }
+        
     }
 
     $scope.mouseOutBoard = function(grid) {
@@ -498,8 +507,14 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             return;
         }
         
-        if ($scope.isLocked == false)
+        if ($scope.isLocked == false) {
+            if ($scope.isDoubleClick && $scope.board.firstClickMove && $scope.board.firstClickMove.ordinate.x == grid.ordinate.x && $scope.board.firstClickMove.ordinate.y == grid.ordinate.y) {
+                $scope.confirmNextMove();
+                return;
+            }
+            
             $scope.board.firstClickMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
+        }
     }
     
     $scope.confirmNextMove = function() {
@@ -618,6 +633,10 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     
     $scope.showStudyBoard = function() {
         window.open("analysis-board.html?moves=" + toMovesString($scope.game.moves, $scope.board.size), "StudyBoard", "height=600, width=600");
+    }
+    
+    $scope.toggleToDoubleClick = function() {
+        $scope.isDoubleClick = ($scope.isDoubleClick ? false : true);
     }
     
     // ---- Game Action ---- Draw, Resign, Undo, Quit

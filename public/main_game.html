@@ -61,6 +61,17 @@
                         
                     </div>
                     
+                    <div ng-show="isMyGame()" class="btn-group" role="group" aria-label="..." style="width:100%">
+                        <button class="btn btn-default" ng-click="toggleToDoubleClick(true)">
+                            <span class="glyphicon glyphicon-ok" ng-show="isDoubleClick"></span>
+                            Double Click
+                        </button>
+                        <button class="btn btn-default" ng-click="toggleToDoubleClick(false)">
+                            <span class="glyphicon glyphicon-ok"  ng-hide="isDoubleClick"></span>
+                            Confirm Check
+                        </button>
+                    </div>
+                    
 
                     <div style="margin:16px; font-size:14px" class="alert alert-warning" role="alert">
                         <span ng-show="isWhiteTurn()">
@@ -126,7 +137,8 @@
         <!-- Board -->
         <div id="divGameBoard" style="text-align:center; min-width:540px">
             
-            <table style="margin-left:auto; margin-right:auto; background-image:url(./images/board/wood_board.png);">
+            <table style="margin-left:auto; margin-right:auto; border-radius:4px; background-image:url(./images/board/wood_board.png);"
+                   ng-mouseover="mouseOnWholeBoard()" ng-mouseleave="mouseOutWholeBoard()">
                 <tr>
                     <td>
                         <span ng-click="isShowNumber = (isShowNumber ? false : true)"
@@ -203,7 +215,7 @@
             </table>
             
             <!-- Game flow action -->
-            <div style="margin:16px" ng-show="board.firstClickMove && !invalidOpeningMsg">
+            <div style="margin:16px" ng-show="board.firstClickMove && !isDoubleClick && !invalidOpeningMsg">
                 <button class="btn btn-primary"  ng-click="confirmNextMove()">
                     <span class="glyphicon glyphicon-ok"></span>
                 </button>
@@ -224,6 +236,7 @@
                     <span class="glyphicon glyphicon-thumbs-up" >Confirm this opening</span>
                 </button>
             </div>
+            
             <div style="margin:16px" ng-show="game.status === 'alt-making' && (game.rule === 'classic' || game.rule === 'yamaguchi') && game.alts.length == game.altQty && isMyTurn()">
                 <button class="btn btn-success"  ng-click="confirmAlternatives()">
                     <span class="glyphicon glyphicon-thumbs-up">Confirm these alternatives.</span>
