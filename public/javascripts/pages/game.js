@@ -360,6 +360,9 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     $scope.arrangeMoves = function() {
         for (var i in $scope.game.moves) {
             var movei = $scope.game.moves[i];
+            if (!movei.ordinate)
+                continue;
+            
             var gridi = $scope.board.grids[movei.ordinate.y][movei.ordinate.x]
             gridi.move = movei;
         }
@@ -648,7 +651,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $rootScope.modal.button2Label = 'No';
         $rootScope.modal.clickButton1 = function() {
             socket.emit('game-going', {
-                game_id:$rootScope.game.uid,
+                uid:$scope.game.uid,
                 seq:$scope.game.moves.length + 1,
                 ordinate:null
             });
@@ -669,7 +672,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $rootScope.modal.clickButton1 = function() {
             socket.emit('game-draw-request', {
                 username:$rootScope.user.username,
-                game_id:$scope.game.uid
+                uid:$scope.game.uid
             });
         }
         $rootScope.modal.clickButton2 = function() {
@@ -897,8 +900,12 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 function toMovesString(pMoves, pBoardSize) {
     var moveString = '';
     for (var i = 0; i < pMoves.length; i++) {
-        moveString = moveString.concat(toReadableFromOrigX(pMoves[i].ordinate.x));
-        moveString = moveString.concat(toReadableFromOrigY(pMoves[i].ordinate.y, pBoardSize));
+        if (!pMoves[i].ordinate) {
+            moveString = moveString.concat('--');
+        } else {
+            moveString = moveString.concat(toReadableFromOrigX(pMoves[i].ordinate.x));
+            moveString = moveString.concat(toReadableFromOrigY(pMoves[i].ordinate.y, pBoardSize));
+        }
         
         moveString = moveString.concat(',');
     }

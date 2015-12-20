@@ -314,6 +314,10 @@
         };
                     
         this.paintOneMove = function(pMove) {
+            if (!pMove.ordinate) {
+                return;
+            }
+            
             var stone;//span element for the white or black Image
             var stoneSeq = document.createElement("span"); //span element for the number
             if (pMove.seq % 2 == 1) {
@@ -369,7 +373,10 @@
         
         this.paintOneTraceMove = function(pMove) {
             var btnTrace = parentObj.createTraceButton();
-            btnTrace.innerHTML = pMove.seq + '.' + toReadableOrdinate(pMove.ordinate, parentObj.boardSize);
+            if (pMove.ordinate)
+                btnTrace.innerHTML = pMove.seq + '.' + toReadableOrdinate(pMove.ordinate, parentObj.boardSize);
+            else
+                btnTrace.innerHTML = pMove.seq + '.N/A';
             btnTrace.move = pMove;
             parentObj.panelTrace.appendChild(btnTrace);
 
@@ -391,7 +398,9 @@
         
         this.showMoves = function() {
             for (var i = 0; i < parentObj.moves.length; i++) {
-                if (parentObj.moves[i].seq <= this.showingSeq) {
+                if (!parentObj.moves[i].stone) {
+                    continue;
+                } else if (parentObj.moves[i].seq <= this.showingSeq) {
                     parentObj.moves[i].stone.style.display = 'flex';
                 } else {
                     parentObj.moves[i].stone.style.display = 'none';
@@ -603,6 +612,10 @@ function toMovesObj(rawString, boardSize) {
 * cnn - c means alphebat, n means digits
 */
 function toOrigOrdinate(cnn, boardSize) {
+    if (cnn === '--') {
+        return null;
+    }
+    
     var ordinate = {
         x: toOrigFromReadableX(cnn.substr(0, 1)), 
         y: toOrigFromReadableY(cnn.substr(1), boardSize)

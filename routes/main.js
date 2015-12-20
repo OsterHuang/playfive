@@ -399,7 +399,7 @@ io.on('connection', function (socket) {
         });
         
         var isRenju = (game.rule === 'gomoku' ? false : true);
-        var finishedResult = forbiddenFinder.isGameFinished(game.moves, game.boardSize, isRenju, false);
+        var finishedResult = forbiddenFinder.isGameFinished(trimPassedMoves(game.moves), game.boardSize, isRenju, false);
         if (finishedResult.isFinished) {
             game.status = 'finished';
             game.winner = finishedResult.winner === 'black' ? game.black : game.white;
@@ -436,7 +436,7 @@ io.on('connection', function (socket) {
     socket.on('game-draw-request', function(data) {
         console.log("On draw-request: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
-        var game = m_processingGames.findGame(data.game_id);
+        var game = m_processingGames.findGame(data.uid);
         console.log(" game-draw-request: ", game);
         var blackUser = m_onlineUsers.findUser(game.black.username);
         var whiteUser = m_onlineUsers.findUser(game.white.username);
@@ -753,6 +753,16 @@ io.on('connection', function (socket) {
     }
     setInterval(tickTimeout, 5000)
 });
+
+function trimPassedMoves(pMoves) {
+    var trimedMoves = [];
+    for (var x in pMoves) {
+        if (pMoves[x].ordinate) {
+            trimedMoves.push(pMoves[x]);
+        }
+    }
+    return trimedMoves;
+}
 
 function saveGame(pGame) {
     console.log('saveGame seq:', pGame.seq);
