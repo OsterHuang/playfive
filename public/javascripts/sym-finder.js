@@ -34,10 +34,10 @@ function symFinder(stones){
 		Yw = stones[1].ordinate.y - stones[3].ordinate.y;
 		
 		if((Xb==Xw && Xw==0) || (Yb==Yw && Yw==0)){
-			//線對稱, 上下&左右  ex.松月天地雙止
-			tempX = 2*p-x;
-			tempY = y;
-			if((tempX==stones[4].ordinate.x && tempY==stones[4].ordinate.y) || (tempX==arr[0].ordinate.x && tempY==arr[0].ordinate.y)){
+			//線對稱, 上下or左右  ex.松月天地雙止
+			var tempX = 2*p-x;
+			var tempY = y;
+			if((tempX==x && tempY==y) || (tempX==arr[0].ordinate.x && tempY==arr[0].ordinate.y)){
 				//對稱點(tempX, tempY)是(自己 or arr[0])
 				return arr;
 			}
@@ -50,7 +50,7 @@ function symFinder(stones){
 			//(x, y)之對稱點為 (y-q+p, x-p+q),(p+q-y, p+q-x)
 			tempX = y-q+p;
 			tempY = x-p+q;
-			if((tempX==stones[4].ordinate.x && tempY==stones[4].ordinate.y) || (tempX==arr[0].ordinate.x && tempY==arr[0].ordinate.y)){
+			if((tempX==x && tempY==y) || (tempX==arr[0].ordinate.x && tempY==arr[0].ordinate.y)){
 				//對稱點(tempX, tempY)是(自己 or arr[0])
 				return arr;
 			}
@@ -61,23 +61,27 @@ function symFinder(stones){
 	}
 	else if(a==0){ //對稱軸垂直，為左右對稱
 		console.log('symType = 2');
-		if(x!=p || y!=q)
+		if(x!=p)
 			arr[0] = {ordinate: {x: 2*p-x, y: y}};
 	}
 	else if(b==0){ //對稱軸水平，為上下對稱
 		console.log('symType = 3');
-		if(x!=p && y!=q)
+		if(y!=q)
 			arr[0] = {ordinate: {x: x, y: 2*q-y}};
 	}
 	else if(a==b){ //對稱軸為／方向
 		console.log('symType = 4');
-		if(x!=p && y!=q)　//平移, xy座標互換, 平移回去
-			arr[0] = {ordinate: {x: y-q+p, y: x-p+q}};
+		var tempX = y-q+p;
+		var tempY = x-p+q;
+		if(x!=tempX && y!=tempY)　//平移, xy座標互換, 平移回去
+			arr[0] = {ordinate: {x: tempX, y: tempY}};
 	}
 	else if(a==-b){　//對稱軸為＼方向
 		console.log('symType = 5');
-		if(x!=p && y!=q)　//平移, 加負號, xy座標互換, 平移回去
-			arr[0] = {ordinate: {x: p+q-y, y: p+q-x}};
+		var tempX = p+q-y;
+		var tempY = p+q-x;
+		if(x!=tempX && y!=tempY)　//平移, 加負號, xy座標互換, 平移回去
+			arr[0] = {ordinate: {x: tempX, y: tempY}};
 	}
 	return arr;
 }
