@@ -9,27 +9,33 @@
     <script src="../javascripts/jquery.min.js"></script>
     <script src="../javascripts/bootstrap.min.js"></script>
     <script src="../javascripts/angular.min.js"></script>
+    <script src="../javascripts/ngStorage.min.js"></script>
     
-    <script src="../javascripts/pages/account.js"></script>
+    <script src="../javascripts/pages/translate.js"></script>
+	<script src="../javascripts/pages/account.js"></script>
 </head>
 
 <body>
 	
     <div ng-app="account" ng-controller="accountController" class="container-fruid">
         <div ng-include="'../header.html'"></div>
+		{{str_selectLanguage}} 
+		<select ng-model="language" ng-change="translate()">
+			<option value='English'>English</option>
+			<option value='Chinese'>中文</option>
+		</select>
 		<div class="container" style="text-align:center">
-            <h3>申請帳號 / Create a New Account</h3>
+            <h3>{{str_createAccount}}</h3>
             <div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">
                 <button type="button" class="close-message" ng-click="hideMessage()">x</button>
                 <strong>{{messageTitle}}</strong>
                 {{messageContent}}
             </div>
 		</div>
-        
         <div class="container">
             <form novalidate class="form-horizontal">
                 <span class="form-group">
-                    <label class="col-sm-2 control-label">帳號 / Account</label>
+                    <label class="col-sm-2 control-label">{{str_username}}</label>
                     <span class="col-sm-10" style="position: relative">
                         <input 
 							type="text" 
@@ -47,12 +53,12 @@
 						<span class="label label-danger" ng-show="username && !usernameOk"
 							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-remove"></span>
-							已存在/Unavailiable
+							{{str_unavailable}}
 						</span>
 	                </span>
                 </span>
                 <span class="form-group">
-                    <label class="col-sm-2 control-label">暱稱 / Nickname</label>
+                    <label class="col-sm-2 control-label">{{str_nickname}}</label>
                     <span class="col-sm-10">
                         <input 
 							type="text" 
@@ -70,18 +76,18 @@
 						<span class="label label-danger" ng-show="nickname && !nicknameOk"
 							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-remove"></span>
-							已存在/Unavailiable
+							{{str_unavailable}}
 						</span>
                     </span>
                 </span>
                 <span class="form-group">
-                    <label class="col-sm-2 control-label">密碼 / Password</label>
+                    <label class="col-sm-2 control-label">{{str_password}}</label>
                     <span class="col-sm-10">
                         <input type="text" ng-model="password" class="form-control" placeholder="Password" required/> 
                     </span>
                 </span>
                 <span class="form-group">
-                    <label class="col-sm-2 control-label">信箱 / email</label>
+                    <label class="col-sm-2 control-label">{{str_email}}</label>
                     <span class="col-sm-10">
                         <input 
 							type="text" 
@@ -99,13 +105,13 @@
 						<span class="label label-danger" ng-show="email && !emailOk"
 							style="float: right; top: 8px; position: absolute;  right: 25px;">
 							<span class="glyphicon glyphicon-remove"></span>
-							已存在/Unavailiable
+							{{str_unavailable}}
 						</span>
                     </span>
                 </span>
             
                 <span class="form-group">
-					<label class="col-sm-2 control-label">語言 / language</label>
+					<label class="col-sm-2 control-label">{{str_language}}</label>
 					<span class="col-sm-10">
 						<select ng-model="language" class="form-control">
 						<option value="chinese">中文</option>
@@ -116,7 +122,7 @@
 				
 				<div class="container" style="text-align:center">
                     <button class="btn" ng-disabled="!language || !usernameOk || !nicknameOk || !password || !emailOk || !username || !nickname || !email" ng-click="create()">                    
-                        申請 / Apply
+                        {{str_apply}}
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
                 </div>

@@ -12,7 +12,7 @@ router.get('/', function(req, res, next) {
 
 router.post('/createAccount', function(req, res, next) {
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
-		
+	console.log('*******req is: ', req.headers);
     var randomcode = genRandomCode();
     req.db.collection('user').insertOne({
         username:req.body.username,

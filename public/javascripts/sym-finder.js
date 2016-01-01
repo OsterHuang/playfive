@@ -19,10 +19,11 @@ function symFinder(stones){
 	var arr = [];
 	
 	if(a==0 && b==0){ //點對稱
-		console.log('symType = 1');
+		console.log('symType 1');
 		if(x==p && y==q) //(x, y)就是旋轉中心 => (x, y)沒有對稱點
 			return arr;
 		
+		console.log('???');
 		//旋轉對稱點不是自己
 		arr[0] = {ordinate: {x: 2*p-x, y: 2*q-y}};
 		
@@ -33,8 +34,11 @@ function symFinder(stones){
 		Xw = stones[1].ordinate.x - stones[3].ordinate.x;
 		Yw = stones[1].ordinate.y - stones[3].ordinate.y;
 		
-		if((Xb==Xw && Xw==0) || (Yb==Yw && Yw==0)){
-			//線對稱, 上下or左右  ex.松月天地雙止
+		console.log('Xb=',Xb,'Yb=',Yb,'Xw=',Xw,'Yw=',Yw);
+		
+		if((Xb==Xw && Xw==0) || (Yb==Yw && Yw==0) || (Xb==0 && Yw==0) || (Xw==0 && Yb==0)){
+			consol.log('恆星對稱白4');
+			//線對稱, 上下or左右  ex.松月天地雙止 || 恆星對稱白4
 			var tempX = 2*p-x;
 			var tempY = y;
 			if((tempX==x && tempY==y) || (tempX==arr[0].ordinate.x && tempY==arr[0].ordinate.y)){
@@ -45,7 +49,8 @@ function symFinder(stones){
 			arr[2] = {ordinate: {x: x, y: (2*q-y)}};
 			return arr;
 		}
-		if((Xb/Yb)==(Xw/Yw)){
+		if(((Xb/Yb)==(Xw/Yw)) || (Xb==Yb && Xw==-Yw) || (Xb==-Yb && Xw==Yw)){
+			console.log('花月打xx');
 			//線對稱, 45度上下&左右  ex.斜月, 白四下在黑三左下方
 			//(x, y)之對稱點為 (y-q+p, x-p+q),(p+q-y, p+q-x)
 			tempX = y-q+p;
