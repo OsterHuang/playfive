@@ -64,31 +64,42 @@ function symFinder(stones){
 			return arr;
 		}
 	}
-	else if(a==0){ //對稱軸垂直，為左右對稱
-		console.log('symType = 2');
-		if(x!=p)
-			arr[0] = {ordinate: {x: 2*p-x, y: y}};
+	else{
+		var vectorBlack = 
+			{x: stones[0].ordinate.x-stones[2].ordinate.x,
+			 y: stones[0].ordinate.y-stones[2].ordinate.y};
+		var vectorWhite = 
+			{x: stones[1].ordinate.x-stones[3].ordinate.x,
+			 y: stones[1].ordinate.y-stones[3].ordinate.y};
+		
+		if(vectorBlack.x*b+vectorBlack.y*a==0 && vectorWhite.x*b+vectorWhite.y*a==0){
+			if(a==0){ //對稱軸垂直，為左右對稱
+				console.log('symType = 2');
+				
+				if(x!=p)
+					arr[0] = {ordinate: {x: 2*p-x, y: y}};
+			}
+			else if(b==0){ //對稱軸水平，為上下對稱
+				console.log('symType = 3');
+				if(y!=q) arr[0] = {ordinate: {x: x, y: 2*q-y}};
+			}
+			else if(a==b){ //對稱軸為／方向
+				console.log('symType = 4');
+				var tempX = y-q+p;
+				var tempY = x-p+q;
+				if(x!=tempX && y!=tempY)　//平移, xy座標互換, 平移回去
+					arr[0] = {ordinate: {x: tempX, y: tempY}};
+			}
+			else if(a==-b){　//對稱軸為＼方向
+				console.log('symType = 5');
+				var tempX = p+q-y;
+				var tempY = p+q-x;
+				if(x!=tempX && y!=tempY)　//平移, 加負號, xy座標互換, 平移回去
+					arr[0] = {ordinate: {x: tempX, y: tempY}};
+			}
+			return arr;
+		}
 	}
-	else if(b==0){ //對稱軸水平，為上下對稱
-		console.log('symType = 3');
-		if(y!=q)
-			arr[0] = {ordinate: {x: x, y: 2*q-y}};
-	}
-	else if(a==b){ //對稱軸為／方向
-		console.log('symType = 4');
-		var tempX = y-q+p;
-		var tempY = x-p+q;
-		if(x!=tempX && y!=tempY)　//平移, xy座標互換, 平移回去
-			arr[0] = {ordinate: {x: tempX, y: tempY}};
-	}
-	else if(a==-b){　//對稱軸為＼方向
-		console.log('symType = 5');
-		var tempX = p+q-y;
-		var tempY = p+q-x;
-		if(x!=tempX && y!=tempY)　//平移, 加負號, xy座標互換, 平移回去
-			arr[0] = {ordinate: {x: tempX, y: tempY}};
-	}
-	return arr;
 }
 
 
