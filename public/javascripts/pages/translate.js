@@ -79,6 +79,8 @@ function translate($scope, language, filename){
 			$scope.str_opponent = '對手';
 			$scope.str_send = '傳送';
 			$scope.str_yourMessage = '在此輸入訊息...';
+			$scope.str_gameNumber = '對局編號';
+			$scope.str_amountOfMoves = '手數';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -112,6 +114,8 @@ function translate($scope, language, filename){
 			$scope.str_opponent = 'Opponent';
 			$scope.str_send = 'Send';
 			$scope.str_yourMessage = 'Your Message...';
+			$scope.str_gameNumber = 'Game NO.';
+			$scope.str_amountOfMoves = 'Move';
 		break;
 		}
 	}

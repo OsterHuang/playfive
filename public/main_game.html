@@ -5,13 +5,13 @@
     <div class="col-sm-3">
         <div id="divGameInfo" class="panel panel-default">
             <div class="panel-heading" style="text-align:center">
-                <h4 class="panel-title">Game No.{{game.seq}}</h4>
+                <h4 class="panel-title">{{str_gameNumber}}{{game.seq}}</h4>
             </div>
             <div class="panel-body" >
                 <div class="game-info row">
 
                     <div>
-                        Move {{game.moves.length + 1}}  
+                        {{str_amountOfMoves}} {{game.moves.length + 1}}  
                     </div>
                     
 <!--                    Current Time:{{timeLeft.currentTime}}-->
@@ -36,10 +36,10 @@
 
                     <div>
                         <span ng-show="game.isRating"><span class="glyphicon glyphicon-ok"></span>
-                            Rated
+                            {{str_rated}}
                         </span>
                         <span ng-show="!game.isRating"><span class="glyphicon glyphicon-remove"></span>
-                            Non-rated
+                            {{str_notRated}}
                         </span>
                     </div>
 
@@ -53,7 +53,7 @@
                     <div ng-show="game.rule === 'yamaguchi' || game.rule === 'classic'">
                         <span class="glyphicon glyphicon-hand-right" ></span>
                         <span>
-                            5th Quantity:{{game.altQty}}
+                            {{str_5thQuantity}}:{{game.altQty}}
                             <span class="badge" ng-repeat="move5th in game.alts" style="margin-left:4px">
                                 {{toReadable(move5th.ordinate)}}
                             </span>
@@ -64,11 +64,11 @@
                     <div ng-show="isMyGame()" class="btn-group" role="group" aria-label="..." style="width:100%">
                         <button class="btn btn-default" ng-click="toggleToDoubleClick(true)">
                             <span class="glyphicon glyphicon-ok" ng-show="isDoubleClick"></span>
-                            Double Click
+                            {{str_doubleClick}}
                         </button>
                         <button class="btn btn-default" ng-click="toggleToDoubleClick(false)">
                             <span class="glyphicon glyphicon-ok"  ng-hide="isDoubleClick"></span>
-                            Confirm Check
+                            {{str_confirmCheck}}
                         </button>
                     </div>
                     
