@@ -38,7 +38,11 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $scope.isLocked = false;
         $scope.isShowNumber = false;
         $scope.gameRoomChatOut = {content:''};
-        $scope.gameRoomChat = '';
+        $scope.gameRoomChat = {
+            content:'',
+            messages:[],
+            isAutoScroll: true
+        };
         $interval.cancel($scope.timeLeft.counting);
         $interval.cancel($scope.timeLeft.syncing);
     }
@@ -386,7 +390,11 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     $scope.invalidOpeningMsg = null;
     
     $scope.gameRoomChatOut = {content:''};
-    $scope.gameRoomChat = '';
+    $scope.gameRoomChat = {
+        content:'',
+        messages:[],
+        isAutoScroll: true
+    };
     $scope.game = {moves:[], black:{}, white:{}, boardSize:15, alts:[]};
     
     $scope.timeLeft = {
@@ -516,11 +524,18 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         
         if ($scope.isLocked == false) {
             if ($scope.isDoubleClick && $scope.board.firstClickMove && $scope.board.firstClickMove.ordinate.x == grid.ordinate.x && $scope.board.firstClickMove.ordinate.y == grid.ordinate.y) {
+                $("stonePreview").css({position:'absolute'});
+                $("stoneBlackConfirm").hide();
+                $("stoneWhiteConfirm").hide();
                 $scope.confirmNextMove();
                 return;
             }
             
+            //Showup confirm stone...
             $scope.board.firstClickMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
+            $("stonePreview").css({position:'flex'});
+            $("stoneBlackConfirm").show();
+            $("stoneWhiteConfirm").show();
         }
     }
     
@@ -636,6 +651,22 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     
     $scope.chatInGame = function() {
         socket.emit('game-room-chat-send', {from:$rootScope.user.username, gameSeq:$scope.game.seq, content:$scope.gameRoomChatOut.content});
+    }
+    $scope.onGameChatScroll = function(event) {
+        $scope.gameRoomChat.isAutoScroll = false;
+        $("#btnGameChatBecomeAutoScroll").show();
+    }
+    
+    $scope.becomeGameChatAutoScroll = function() {
+        $('#gameRoomChat').animate(
+            {scrollTop: $('#gameRoomChat')[0].scrollHeight}, 
+            'fast',
+            function() {
+                $scope.gameRoomChat.isAutoScroll = true;
+                $("#btnGameChatBecomeAutoScroll").hide();
+                console.log('Become auto scroll:', $scope.gameRoomChat.isAutoScroll);
+            }
+        );
     }
     
     $scope.showStudyBoard = function() {
@@ -809,6 +840,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $scope.resetTimeLeft(game);
 //        $scope.calculateBothTimeLeft();
 //        $scope.timeLeft.basicTimeup = false;
+
         $scope.arrangeMoves();
         
         $scope.sounds.going.play();
@@ -846,8 +878,26 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     
     socket.on('game-room-chat-receive', function(message) {
         console.log('On game-room-chat-receive', message);
-        $scope.gameRoomChat = $scope.gameRoomChat + message.from + ':' + message.content + '\n';
-        $scope.gameRoomChatOut.content = '';
+        message.formatedSendTime = formatTime(new Date(message.sendTime));
+        $scope.gameRoomChat.messages.push(message);
+        
+        if (message.from === $rootScope.user.nickname) {
+            $scope.gameRoomChatOut.content = '';
+        }
+        
+        if ($scope.gameRoomChat.isAutoScroll) {
+            $('#gameRoomChat').animate(
+                {scrollTop: $('#gameRoomChat')[0].scrollHeight}, 
+                'fast',
+                function() {
+                    $("#gameRoomChat").scroll(function(event) {
+                        $scope.onGameChatScroll(event);
+                    });
+                    $scope.gameRoomChat.isAutoScroll = true;
+                    $("#btnGameChatBecomeAutoScroll").hide();
+                }
+            );
+        }
     });
     
     socket.on('game-fetch-time-receive', function(data) {

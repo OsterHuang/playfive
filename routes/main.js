@@ -362,6 +362,8 @@ io.on('connection', function (socket) {
         var alreadyInUser = m_onlineUsers.findUser('' + socket.user.username);
         if (alreadyInUser.status != 'normal')
             return;
+        
+        data.sendTime = new Date();
         io.sockets["in"]('room_' + data.gameSeq).emit('game-room-chat-receive', data);
     });
     

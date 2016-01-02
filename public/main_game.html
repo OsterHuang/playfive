@@ -166,7 +166,7 @@
                         ng-click="clickOnBoard(grid)"
                         ng-mousemove="mouseOnBoard(grid)" ng-mouseleave="mouseOutBoard(grid)">
                         <!-- Cursor preview -->
-                        <div ng-show="!grid.move && !board.firstClickMove  && !grid.alt
+                        <div name="stonePreview" ng-show="!grid.move && !board.firstClickMove  && !grid.alt
                                       && (grid.ordinate.x == board.previewMove.ordinate.x && grid.ordinate.y == board.previewMove.ordinate.y)" 
                              ng-class="board.previewMove.class" >
                             <img src="./images/board/black.png" ng-show="game.moves.length % 2 == 0" 
@@ -176,11 +176,12 @@
                         </div>
                         
                         <!-- Click comfirm -->
-                        <div ng-show="board.firstClickMove && game.moves.length % 2 == 0 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
-                             class="stone black" style="opacity: 0.80">
+                        <div name="stoneBlackConfirm" ng-show="board.firstClickMove && game.moves.length % 2 == 0 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
+                             class="stone black confirm" style="opacity: 0.80">
                             <span data-toggle="tooltip" data-placement="right" title="Tooltip on right">Ok?</span>
                         </div>
-                        <div ng-show="board.firstClickMove && game.moves.length % 2 == 1 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" class="stone white" style="opacity: 0.80">
+                        <div name="stoneWhiteConfirm" ng-show="board.firstClickMove && game.moves.length % 2 == 1 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
+                             class="stone white" style="opacity: 0.80">
                             <span data-toggle="tooltip" data-placement="right" title="Tooltip on right">Ok?</span>
                         </div>
                         
@@ -265,11 +266,32 @@
     
     <div class="col-sm-3  full-height">
         <div class="panel panel-default full-height">
-            <h4 class="panel-title">{{str_channelNumber}}Game No.{{game.seq}} {{str_channel}}</h4>
+            <h4 class="panel-title" style="margin:4px">{{str_channelNumber}}Game No.{{game.seq}} {{str_channel}}</h4>
             <div class="panel-body full-height">
-                <div style="width:100%; height:90%;">
-                    <pre style="height: 100%">{{gameRoomChat}}</pre>
+                <button id="btnGameChatBecomeAutoScroll" class="btn btn-default btn-xs" style="position:absolute; z-index:99; display:none;"
+                        ng-click="becomeGameChatAutoScroll()">
+                    <span class="glyphicon glyphicon-lock"></span>
+                </button>
+                
+                <div style="width:100%; height:90%;" class="chat" id="gameRoomChat">
+<!--                    <pre style="height: 100%">{{lobbyChat}}</pre>-->
+                    <div class="message" ng-repeat="msg in gameRoomChat.messages">
+                        <div class="info">
+                            <span class="nickname">
+                                {{msg.from}}
+                            </span>
+                            <span class="time">
+                                {{msg.formatedSendTime}}
+                            </span>
+                            <span class="glyphicon glyphicon-comment"></span>
+                        </div>
+                        
+                        <div class="content">
+                            {{msg.content}}
+                        </div>
+                    </div>
                 </div>
+                
                 <form role="form">
                     <div class="input-group" style="margin-top:5%">
                         <input type="text" class="form-control" placeholder="Your message" ng-model="gameRoomChatOut.content">
