@@ -201,8 +201,11 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
         message.formatedSendTime = formatTime(new Date(message.sendTime));
         $scope.lobbyChat.messages.push(message);
         
+        if (message.from === $rootScope.user.nickname) {
+            $scope.lobbyChatOut.content = '';
+        }
+        
         if ($scope.lobbyChat.isAutoScroll) {
-//            $('.chat')[0].scrollTop = $('.chat')[0].scrollHeight;
             $('.chat').animate(
                 {scrollTop: $('.chat')[0].scrollHeight}, 
                 'fast',
@@ -215,7 +218,6 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
                 }
             );
         }
-    
     });
     
     // ---- U ----
