@@ -9,17 +9,19 @@
     <script src="../javascripts/jquery.min.js"></script>
     <script src="../javascripts/bootstrap.min.js"></script>
     <script src="../javascripts/angular.min.js"></script>
-
-    <script src="../javascripts/pages/account.js"></script>
+	<script src="../javascripts/ngStorage.min.js"></script>
+    
+	<script src="../javascripts/pages/translate.js"></script>
+	<script src="../javascripts/pages/account.js"></script>
 </head>
 
 <body>
-    <div ng-app="account" ng-controller="accountController" class="container-fruid">
+    <div ng-app="account" ng-controller="accountController" class="container-fluid">
         <div ng-include="'../header.html'"></div>
 		<br>
 		<center>
 		<table>
-			<tr>
+			<!--tr>
 				<td>{{str_selectLanguage}}</td>
 				<td>
 				<select ng-model="language" ng-change="translate()">
@@ -27,7 +29,7 @@
 					<option value='Chinese'>中文</option>
 				</select>
 				</td>
-			</tr>
+			</tr-->
 			<tr>
 				<td rowspan=2 valign="top">{{str_selectCommand}}</td>
 				<td>

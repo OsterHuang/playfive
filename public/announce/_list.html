@@ -2,11 +2,11 @@
 	<div class="container-fluid">
         <button class="btn btn-link" type="button" ng-click="createAnnounce(announce)"  ng-show="user.role === 'admin'">
             <span class="glyphicon glyphicon-plus"></span>
-            新增/Add
+            {{str_add}}
         </button>
         <button class="btn btn-link" type="button" ng-click="getList()">
             <span class="glyphicon glyphicon-repeat"></span>
-            取得最新公告/Refresh
+            {{str_refresh}}
             <img src="../images/fbloader.gif" ng-show="progressing" class="announce-list-progressing-hide"/>
         </button>
         
@@ -14,9 +14,9 @@
 			<thead>
                 <tr>
                     <td style="width:40px"></td>
-                    <td align=center>編號 / number</td>
-                    <td align=center>標題 / title</td>
-                    <td align=center>日期 / date</td>
+                    <td align=center>{{str_number}}</td>
+                    <td align=center>{{str_title}}</td>
+                    <td align=center>{{str_date}}</td>
                 </tr>
 			</thead>
 			<tbody ng-repeat="announce in displayList">
@@ -38,7 +38,7 @@
                     <td colspan="4" style="text-align:left">
                         <!-- <a href="/announce/edit.html?number={{announce.number}}" ng-show="user.role === 'admin'">編輯/Edit</a><br> -->
                         <button class="btn btn-default" type="button" ng-click="editAnnounce(announce)"  ng-show="user.role === 'admin'">
-                            編輯/Edit
+                            {{str_edit}}
                             <span class="glyphicon glyphicon-edit"></span>
                         </button>
                         <div ng-bind-html="announce.content"></div>

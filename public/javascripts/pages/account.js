@@ -6,9 +6,7 @@ account.controller('accountController', function ($scope, $http, $localStorage, 
 	
 	if(typeof $localStorage.language == 'undefined')
 		$localStorage.language = 'English';
-	
 	$scope.language = $localStorage.language;
-	
 	window.translate($scope, $localStorage.language, 'create.html');
 	
 	$scope.command = 'reset';
@@ -175,12 +173,9 @@ account.controller('accountController', function ($scope, $http, $localStorage, 
         });
     }
 
-	$scope.translate = function(){
-		$localStorage.language = $scope.language;
-		window.translate($scope, $scope.language, 'create.html');
-		
-		console.log('scope.lang:', $scope.language);
-		console.log('locals.lang:', $localStorage.language);
+	$scope.translate = function(language){
+		$localStorage.language = language;
+		window.translate($scope, language, 'create.html');
 	}
 	/*$scope.translate = function(){
 		switch($scope.language){

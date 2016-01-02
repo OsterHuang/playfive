@@ -73,7 +73,11 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
         $window.location = '/login.html';
         return;
     }
-    
+    if(typeof $localStorage.language == 'undefined')
+		$localStorage.language = 'English';
+	$scope.language = $localStorage.language;
+	window.translate($scope, $scope.language, 'main.html');
+	
     $rootScope.message = null;
     $rootScope.lobbyChat = '';
     $rootScope.modal = {};
@@ -189,4 +193,8 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
         $rootScope.user.myProgressingGame = null;
     });
     
+	$scope.translate = function(language){
+		$localStorage.language = language;
+		window.translate($scope, language, 'main.html');
+	}
 });

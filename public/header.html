@@ -4,13 +4,22 @@
         <div style="color:white; font-size:28px; font-weight:bold; margin:10px; cursor:pointer" onclick="location.href='/main.html'">Play5 Online</div>
     </div>
 
-    <div style="float:right; text-align:right; margin-right:10px; " ng-show="user">
-        <div style="margin-top:20px; display:inline-block;">
-                <span style="color:white; font-size:16px; cursor:pointer" ng-click="showProfile()">{{user.nickname}}</span>
-        </div>
-        <button class="btn" style="margin-top:0px" ng-click="logout()">
-            <span class="glyphicon glyphicon-log-out"></span>
-        </button>
+    <div style="float:right; text-align:right; margin-right:10px; ">
+   		<div style="margin-top:20px; display: inline-block;">
+			{{str_selectLanguage}} 
+			<select ng-model="language" ng-change="translate(language)">
+				<option value='English'>English</option>
+				<option value='Chinese'>中文</option>
+			</select>
+		</div>
+		<div ng-show="user" style="display: inline-block">
+			<div style="margin-top:20px; display:inline-block;">
+					<span style="color:white; font-size:16px; cursor:pointer" ng-click="showProfile()">{{user.nickname}}</span>
+			</div>
+			<button class="btn" style="margin-top:0px" ng-click="logout()">
+				<span class="glyphicon glyphicon-log-out"></span>
+			</button>
+		</div>
     </div>
     
     <!--

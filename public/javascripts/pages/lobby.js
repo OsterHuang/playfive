@@ -1,8 +1,12 @@
 
-lobbyPage = angular.module('lobbyPage', []);
+lobbyPage = angular.module('lobbyPage', ['ngStorage']);
 
-lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $document, $window, $localStorage, socket) {
-    
+lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $localStorage, $document, $window, $localStorage, socket) {
+ 	/*if(typeof $localStorage.language == 'undefined')
+		$localStorage.language = 'English';
+	$scope.language = $localStorage.language;
+	window.translate($scope, $scope.language, 'main.html');*/
+
     $scope.lobbyChat = {
         content:'',
         messages:[],
@@ -244,4 +248,8 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $do
         console.log('No my game here.', $rootScope.user);
     }
     
+	/*$scope.translate = function(language){
+		$localStorage.language = language;
+		window.translate($scope, language, 'main.html');
+	}*/
 });

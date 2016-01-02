@@ -1,5 +1,11 @@
-announceList = angular.module('announceList', ['ngSanitize', 'ngAnimate']);
-announceList.controller('announceListController', function ($rootScope, $scope, $http, $window) {
+announceList = angular.module('announceList', ['ngSanitize', 'ngAnimate', 'ngStorage']);
+announceList.controller('announceListController', function ($rootScope, $scope, $http, $localStorage, $window) {
+
+	if(typeof $localStorage.language == 'undefined')
+		$localStorage.language = 'English';
+	$scope.language = $localStorage.language;
+	window.translate($scope, $localStorage.language, 'announce.html');
+
     $("#message").hide();
 	$scope.page = 1;
 	$scope.annPerPage = 10;
@@ -109,5 +115,10 @@ announceList.controller('announceListController', function ($rootScope, $scope, 
         $scope.getList();
     });
     
+	$scope.translate = function(language){
+		$localStorage.language = language;
+		window.translate($scope, language, 'announce.html');
+	}
+	
 	$scope.getList();
 });
