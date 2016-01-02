@@ -84,6 +84,8 @@ function translate($scope, language, filename){
 			$scope.str_rated = '計分對局';
 			$scope.str_notRated = '非計分對局';
 			$scope.str_5thQuantity = '第五手數量';
+			$scope.str_doubleClick = '雙擊落子';
+			$scope.str_confirmCheck = '確認落子';
 			$scope.str_whosTurn = '正在思考中...';
 			$scope.str_theGameIsFinished = '對局已結束';
 			$scope.str_offerDraw = '提和';
@@ -130,6 +132,8 @@ function translate($scope, language, filename){
 			$scope.str_rated = 'Rated';
 			$scope.str_notRated = 'Not Rated';
 			$scope.str_5thQuantity = '5th Quantity';
+			$scope.str_doubleClick = 'Double Click';
+			$scope.str_confirmCheck = 'Comfirm Check';
 			$scope.str_whosTurn = 'is thinking...';
 			$scope.str_theGameIsFinished = 'The game is finished.';
 			$scope.str_offerDraw = 'Draw';
