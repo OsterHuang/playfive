@@ -31,7 +31,8 @@ loginPage.controller('loginController', function ($rootScope, $scope, $http, $wi
             } else {
                 $scope.message = null;
                 $localStorage.token = response.token;
-				$localStorage.language = response.language;
+				if(typeof $localStorage.language == 'undefined')
+					$localStorage.language = response.language;
                 $window.location = '/main.html';
             }
             
