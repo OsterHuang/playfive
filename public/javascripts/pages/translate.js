@@ -94,6 +94,7 @@ function translate($scope, language, filename){
 			$scope.str_quit = '離開';
 			$scope.str_channelNumber = '對局';
 			$scope.str_channel = '聊天室';
+			$scope.str_isMakingAlts = '正在思考打點...';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -142,6 +143,7 @@ function translate($scope, language, filename){
 			$scope.str_quit = 'Quit';
 			$scope.str_channelNumber = 'Game NO.';
 			$scope.str_channel = 'Channel';
+			$scope.str_isMakingAlts = 'is making alternatives...';
 		break;
 		}
 	}
