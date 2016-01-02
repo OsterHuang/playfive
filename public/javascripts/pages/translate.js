@@ -137,4 +137,26 @@ function translate($scope, language, filename){
 		break;
 		}
 	}
+	else if(filename=='login.html'){
+		switch(language){
+		case 'Chinese':
+			$scope.str_username = '帳號';
+			$scope.str_password = '密碼';
+			$scope.str_login = '登入';
+			$scope.str_notAMemberYet = '還不是會員嗎';
+			$scope.str_joinNow = '加入我們';
+			$scope.str_accountProblems = '帳號問題';
+			//$scope.str_ = '';
+		break;
+		case 'English':
+		default:
+			$scope.str_username = 'Username';
+			$scope.str_password = 'Password';
+			$scope.str_login = 'Login';
+			$scope.str_notAMemberYet = 'Not a Member yet';
+			$scope.str_joinNow = 'Join Now';
+			$scope.str_accountProblems = 'Account Problems';
+		break;
+		}
+	}
 }

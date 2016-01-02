@@ -1,6 +1,11 @@
 loginPage = angular.module('loginPage', ['ngStorage']);
 loginPage.controller('loginController', function ($rootScope, $scope, $http, $window, $localStorage) {
     
+	if(typeof $localStorage.language == 'undefined')
+		$localStorage.language = 'English';
+	$scope.language = $localStorage.language;
+	window.translate($scope, $localStorage.language, 'login.html');
+	
     $("#message").hide();
     
     $scope.hideMessage = function() {
@@ -42,4 +47,10 @@ loginPage.controller('loginController', function ($rootScope, $scope, $http, $wi
     $scope.applyNewAccount = function() {
         $window.location = '/account/create.html';
     };
+
+	$scope.translate = function(language){
+		$localStorage.language = language;
+		window.translate($scope, language, 'login.html');
+	}
+	
 });

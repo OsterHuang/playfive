@@ -2,7 +2,6 @@ account = angular.module('account', ['ngStorage']);
 account.controller('accountController', function ($scope, $http, $localStorage, $window) {
     
     $("#success-alert").hide();
-
 	
 	if(typeof $localStorage.language == 'undefined')
 		$localStorage.language = 'English';
