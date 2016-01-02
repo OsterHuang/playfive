@@ -76,12 +76,12 @@
                     <div style="margin:16px; font-size:14px" class="alert alert-warning" role="alert">
                         <span ng-show="isWhiteTurn()">
                             <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
-                            Turn
+                            {{str_whosTurn}}
                         </span>
                         
                         <span ng-show="isBlackTurn()">
                             <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
-                            Turn
+                            {{str_whosTurn}}
                         </span>
 
                         <span ng-show="game.status === 'opening'" >
@@ -101,7 +101,7 @@
                         </span>
                         
                         <span ng-show="game.status === 'finished'">
-                            <span>The game is finished.</span>
+                            <span>{{str_theGameIsFinished}}</span>
                             <span>{{game.result}}</span>
                         </span>
                     </div>
@@ -117,20 +117,20 @@
         <div style="text-align:center; padding-bottom:6px; ">
             <div id="divGameAction" ng-show="game && isMyGame()" >
                 <span ng-show="game.status === 'started'">
-                    <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">Draw</button>
-                    <button class="" ng-show="isMyTurn()" ng-click="confirmPass()" >Pass</button>
+                    <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">{{str_offerDraw}}</button>
+                    <button class="" ng-show="isMyTurn()" ng-click="confirmPass()" >{{str_offerPass}}</button>
 <!--                    <button class="" ng-show="isMyTurn() && game.moves.length >= 1" ng-click="confirmUndo()">Undo</button>-->
                 </span>
                 
-                <button class="" ng-show="game.status != 'finished'" ng-click="confirmResign()" >Resign</button>
-                <button class="" ng-show="game.status === 'finished'" ng-click="quitGame()">Quit</button>
+                <button class="" ng-show="game.status != 'finished'" ng-click="confirmResign()" >{{str_resign}}</button>
+                <button class="" ng-show="game.status === 'finished'" ng-click="quitGame()">{{str_quit}}</button>
                 
                 <button class="" ng-show="game.status === 'opening' && game.tempBlack.username === user.username" ng-click="undoOpening()">Undo</button>
                 
             </div>
             
             <div id="divWatchAction" ng-show="game && !isMyGame()">
-                <button class="" ng-click="quitWatchedGame()">Quit</button>
+                <button class="" ng-click="quitWatchedGame()">{{str_quit}}</button>
             </div>
         </div>
         
@@ -265,7 +265,7 @@
     
     <div class="col-sm-3  full-height">
         <div class="panel panel-default full-height">
-            <h4 class="panel-title">Game No.{{game.seq}} Channel</h4>
+            <h4 class="panel-title">{{str_channelNumber}}Game No.{{game.seq}} {{str_channel}}</h4>
             <div class="panel-body full-height">
                 <div style="width:100%; height:90%;">
                     <pre style="height: 100%">{{gameRoomChat}}</pre>
@@ -274,7 +274,7 @@
                     <div class="input-group" style="margin-top:5%">
                         <input type="text" class="form-control" placeholder="Your message" ng-model="gameRoomChatOut.content">
                         <span class="input-group-btn">
-                            <button class="btn btn-default" type="submit" ng-click="chatInGame()">Send</button>
+                            <button class="btn btn-default" type="submit" ng-click="chatInGame()">{{str_send}}</button>
                         </span>
                     </div>
                 </form>

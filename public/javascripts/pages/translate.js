@@ -81,6 +81,17 @@ function translate($scope, language, filename){
 			$scope.str_yourMessage = '在此輸入訊息...';
 			$scope.str_gameNumber = '對局編號';
 			$scope.str_amountOfMoves = '手數';
+			$scope.str_rated = '計分對局';
+			$scope.str_notRated = '非計分對局';
+			$scope.str_5thQuantity = '第五手數量';
+			$scope.str_whosTurn = '正在思考中...';
+			$scope.str_theGameIsFinished = '對局已結束';
+			$scope.str_offerDraw = '提和';
+			$scope.str_offerPass = '虛手';
+			$scope.str_resign = '認輸';
+			$scope.str_quit = '離開';
+			$scope.str_channelNumber = '對局';
+			$scope.str_channel = '聊天室';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -116,6 +127,17 @@ function translate($scope, language, filename){
 			$scope.str_yourMessage = 'Your Message...';
 			$scope.str_gameNumber = 'Game NO.';
 			$scope.str_amountOfMoves = 'Move';
+			$scope.str_rated = 'Rated';
+			$scope.str_notRated = 'Not Rated';
+			$scope.str_5thQuantity = '5th Quantity';
+			$scope.str_whosTurn = 'is thinking...';
+			$scope.str_theGameIsFinished = 'The game is finished.';
+			$scope.str_offerDraw = 'Draw';
+			$scope.str_offerPass = 'Pass';
+			$scope.str_resign = 'Resign';
+			$scope.str_quit = 'Quit';
+			$scope.str_channelNumber = 'Game NO.';
+			$scope.str_channel = 'Channel';
 		break;
 		}
 	}
