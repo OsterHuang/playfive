@@ -29,8 +29,8 @@ gamePage.directive('focusOnShow', function($timeout) {
 });
 
 gamePage.controller('gameController', function ($rootScope, $scope, $http, $window, $timeout, $interval, socket) {
-    
 
+    
     // ----
     // Util
     // ----
@@ -406,6 +406,10 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     $scope.board.grids = [$scope.board.size];
     $scope.board.xAxis = [$scope.board.size];
     $scope.board.txtAltQty = null;
+    
+    $scope.sounds = {
+        going:new Audio('../../sounds/stone.wav')
+    }
 
     //　----
     //  User Interaction
@@ -799,18 +803,15 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     
     socket.on('game-going-receive', function(game) {
         console.log('On going');
+        
         $scope.isLocked = false;
-//        if (moves.length > $scope.game.moves.length) { //Undo
-//            var lastMove = $scope.game.moves.pop();
-//            console.log(' Undo move: ', lastMove);
-//            $scope.board.grids[lastMove.ordinate.y][lastMove.ordinate.x].move = null;
-//        }
-//        $scope.calculateBothTimeLeft();
         $scope.game = game;
         $scope.resetTimeLeft(game);
 //        $scope.calculateBothTimeLeft();
 //        $scope.timeLeft.basicTimeup = false;
         $scope.arrangeMoves();
+        
+        $scope.sounds.going.play();
     });
     
     socket.on('game-undo-receive', function(undoMove) {
