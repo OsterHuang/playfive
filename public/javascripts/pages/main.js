@@ -5,7 +5,10 @@ playfiveApp = angular.module('playfiveApp',
                               'ngStorage', 'ngAnimate', 'ngSanitize']);
 
 playfiveApp.factory('socket', function ($rootScope) {
-  var socket = io.connect('http://' + server_host + ':3030/');
+  var socket = io.connect(
+    'http://' + server_host + ':3030/',
+    {'force new connection': true}
+  );
   return {
         on: function (eventName, callback) {
             function wrapper() {
