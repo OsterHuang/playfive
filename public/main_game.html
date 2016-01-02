@@ -61,12 +61,12 @@
                         
                     </div>
                     
-                    <div ng-show="isMyGame()" class="btn-group" role="group" aria-label="..." style="width:100%">
-                        <button class="btn btn-default" ng-click="toggleToDoubleClick(true)">
+                    <div ng-show="isMyGame()" class="btn-group btn-group-xs" role="group" aria-label="..." style="width:100%">
+                        <button class="btn btn-default btn-xs" ng-click="toggleToDoubleClick(true)">
                             <span class="glyphicon glyphicon-ok" ng-show="isDoubleClick"></span>
                             {{str_doubleClick}}
                         </button>
-                        <button class="btn btn-default" ng-click="toggleToDoubleClick(false)">
+                        <button class="btn btn-default btn-xs" ng-click="toggleToDoubleClick(false)">
                             <span class="glyphicon glyphicon-ok"  ng-hide="isDoubleClick"></span>
                             {{str_confirmCheck}}
                         </button>
@@ -176,11 +176,11 @@
                         </div>
                         
                         <!-- Click comfirm -->
-                        <div name="stoneBlackConfirm" ng-show="board.firstClickMove && game.moves.length % 2 == 0 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
+                        <div name="stoneBlackConfirm" ng-show="!isLocked && board.firstClickMove && game.moves.length % 2 == 0 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
                              class="stone black confirm" style="opacity: 0.80">
                             <span data-toggle="tooltip" data-placement="right" title="Tooltip on right">Ok?</span>
                         </div>
-                        <div name="stoneWhiteConfirm" ng-show="board.firstClickMove && game.moves.length % 2 == 1 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
+                        <div name="stoneWhiteConfirm" ng-show="!isLocked && board.firstClickMove && game.moves.length % 2 == 1 && (grid.ordinate.x == board.firstClickMove.ordinate.x && grid.ordinate.y == board.firstClickMove.ordinate.y)" 
                              class="stone white" style="opacity: 0.80">
                             <span data-toggle="tooltip" data-placement="right" title="Tooltip on right">Ok?</span>
                         </div>
@@ -217,10 +217,10 @@
             
             <!-- Game flow action -->
             <div style="margin:16px" ng-show="board.firstClickMove && !isDoubleClick && !invalidOpeningMsg">
-                <button class="btn btn-primary"  ng-click="confirmNextMove()">
+                <button class="btn btn-primary" style="width:40%" ng-click="confirmNextMove()">
                     <span class="glyphicon glyphicon-ok"></span>
                 </button>
-                <button class="btn btn-primary"  ng-click="cancelNextMove()">
+                <button class="btn btn-primary" style="width:40%" ng-click="cancelNextMove()">
                     <span class="glyphicon glyphicon-remove"></span>
                 </button>
             </div>

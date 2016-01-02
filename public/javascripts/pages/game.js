@@ -438,7 +438,10 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 //        console.log('mouseMove on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
 //                console.log('previewStoneWidth:' + $scope.board.moveStyle.width);
         //Preview stone
-        $scope.board.previewMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
+        if ($scope.isLocked)
+            $scope.board.previewMove = null;
+        else
+            $scope.board.previewMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
         
     }
 
@@ -522,11 +525,12 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             return;
         }
         
+        // ~~~~ Normal game going ~~~~
         if ($scope.isLocked == false) {
             if ($scope.isDoubleClick && $scope.board.firstClickMove && $scope.board.firstClickMove.ordinate.x == grid.ordinate.x && $scope.board.firstClickMove.ordinate.y == grid.ordinate.y) {
                 $("stonePreview").css({position:'absolute'});
-                $("stoneBlackConfirm").hide();
-                $("stoneWhiteConfirm").hide();
+                $("stoneBlackConfirm").css({position:'absolute'});
+                $("stoneWhiteConfirm").css({position:'absolute'});
                 $scope.confirmNextMove();
                 return;
             }
@@ -534,8 +538,18 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             //Showup confirm stone...
             $scope.board.firstClickMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
             $("stonePreview").css({position:'flex'});
-            $("stoneBlackConfirm").show();
-            $("stoneWhiteConfirm").show();
+            $("stoneBlackConfirm").css({position:'flex'});
+            $("stoneWhiteConfirm").css({position:'flex'});
+            
+            if (!$scope.isDoubleClick) {
+                $timeout(
+                    function() {
+                        $("html, body").animate({ scrollTop: $(document).height() }, "slow");
+                    }
+                    , 300
+                );
+            }
+            
         }
     }
     
@@ -650,7 +664,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     }
     
     $scope.chatInGame = function() {
-        socket.emit('game-room-chat-send', {from:$rootScope.user.username, gameSeq:$scope.game.seq, content:$scope.gameRoomChatOut.content});
+        socket.emit('game-room-chat-send', {from:$rootScope.user.nickname, gameSeq:$scope.game.seq, content:$scope.gameRoomChatOut.content});
     }
     $scope.onGameChatScroll = function(event) {
         $scope.gameRoomChat.isAutoScroll = false;
