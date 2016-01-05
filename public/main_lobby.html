@@ -256,34 +256,40 @@
                                     <div class="container-fluid" style="padding-left:30px">
                                         <div class="row">
                                             <label>
-                                                <input type="checkbox" ng-model="newGame.hasBasicTime" />
+                                                <input type="checkbox" ng-change="timeRuleCheck()" ng-model="newGame.hasBasicTime" />
                                                 {{str_basicTime}}
                                             </label>
                                             <span>
-                                                <input type="text" ng-model="newGame.basicTime" ng-disabled="!newGame.hasBasicTime" 
-                                                       class="form-control time-limit" size="5"/>
+                                                <input type="number" min="0"
+													ng-change="timeRuleCheck()"
+													ng-model="newGame.basicTime" ng-disabled="!newGame.hasBasicTime" 
+                                                    class="form-control time-limit" size="5" style="width:60px"/>
                                                 {{str_min}}
                                             </span>
                                         </div>
                                         <div class="row">
                                             <label>
-                                                <input type="checkbox" ng-model="newGame.hasPerMoveTime" />
+                                                <input type="checkbox" ng-change="timeRuleCheck()" ng-model="newGame.hasPerMoveTime" />
                                                 {{str_timePerMove}}
                                             </label>
                                             <span>
-                                                <input type="text" ng-model="newGame.perMoveTime" ng-disabled="!newGame.hasPerMoveTime" 
-                                                       class="form-control time-limit" size="5"></input>
-                                                {{str_seconds}}
+                                                <input type="number" min="0" 
+												ng-change="timeRuleCheck()"
+												ng-model="newGame.perMoveTime" ng-disabled="!newGame.hasPerMoveTime" 
+                                                       class="form-control time-limit" size="5" style="width:60px"></input>
+                                                {{str_seconds}}　<span ng-show="!timeRuleChecked"><font color=red>{{str_timeRuleNotValied}}</font></span>
                                             </span>
                                         </div>
                                         <div class="row">
                                             <label>
-                                                <input type="checkbox" ng-model="newGame.hasPlusTime" />
+                                                <input type="checkbox" ng-change="timeRuleCheck()" ng-model="newGame.hasPlusTime" />
                                                 {{str_plueTimePerMove}}
                                             </label>
                                             <span>
-                                                <input type="text" ng-model="newGame.perMovePlusTime" ng-disabled="!newGame.hasPlusTime" 
-                                                       class="form-control time-limit" size="5" style="text-align:right;"></input>
+                                                <input type="number" min="0"
+												ng-change="timeRuleCheck()"
+												ng-model="newGame.perMovePlusTime" ng-disabled="!newGame.hasPlusTime" 
+                                                       class="form-control time-limit" size="5" style="width:60px"></input>
                                                 {{str_seconds}}
                                             </span>
                                         </div>
@@ -306,7 +312,7 @@
                 </div>
                 
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary"  data-dismiss="modal" ng-click="confirmCreteGame()">
+                    <button type="button" ng-disabled="!timeRuleChecked" class="btn btn-primary" data-dismiss="modal" ng-click="confirmCreteGame()">
                         <span class="glyphicon glyphicon-ok"></span>
                         {{str_create}}
                     </button>

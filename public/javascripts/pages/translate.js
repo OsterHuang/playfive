@@ -73,6 +73,7 @@ function translate($scope, language, filename){
 			$scope.str_min = '分';
 			$scope.str_timePerMove = '每手限時';
 			$scope.str_seconds = '秒';
+			$scope.str_timeRuleNotValied = '時間設置不正確';
 			$scope.str_plueTimePerMove = '每手加時';
 			$scope.str_ratingGame = '計分對局';
 			$scope.str_tBlack = '持黑';
@@ -125,6 +126,7 @@ function translate($scope, language, filename){
 			$scope.str_min = 'minutes';
 			$scope.str_timePerMove = 'Time Per Move';
 			$scope.str_seconds = 'seconds';
+			$scope.str_timeRuleNotValied = 'Bad Time Rule';
 			$scope.str_plueTimePerMove = 'Plue Time Per Move';
 			$scope.str_ratingGame = 'rating game';
 			$scope.str_tBlack = 'tentative black';

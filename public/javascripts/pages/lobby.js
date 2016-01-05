@@ -3,7 +3,9 @@ lobbyPage = angular.module('lobbyPage', ['ngStorage']);
 
 lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $localStorage, $document, $window, $localStorage, socket) {
 
-    $scope.lobbyChat = {
+	$scope.timeRuleChecked = true;
+
+	$scope.lobbyChat = {
         content:'',
         messages:[],
         isAutoScroll: true
@@ -16,7 +18,9 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
         rule:'gomoku',
         isTentitiveBlack:true,
         isRating:false,
+        hasBasicTime:false,
         hasPerMoveTime:true,
+        hasPlusTime:false,
         basicTime:0,
         perMoveTime:30,
         perMovePlusTime:0
@@ -32,7 +36,60 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
         socket.emit('lobby-cancel-game', {uid:$rootScope.user.myCreatedGame.uid, creator:$rootScope.user.myCreatedGame.creator}, null);
     };
     
-    $scope.confirmCreteGame = function() {
+	window.getScopeVar = function(attr) {
+		console.log($scope[attr]);
+	};
+	
+    $scope.timeRuleCheck = function(){
+		console.log('start to check timerule.');
+		$scope.timeRuleChecked = false;
+		
+		//沒有基本時間&沒有每手時限
+		console.log('check 1');
+		if(!$scope.newGame.hasBasicTime && !$scope.newGame.hasPerMoveTime)
+			return;
+
+		var bt = window.parseInt($scope.newGame.basicTime);
+		var pmt = window.parseInt($scope.newGame.perMoveTime);
+		var pmpt = window.parseInt($scope.newGame.perMovePlusTime);
+
+	    //三者都為0
+		console.log('check 2');
+		if(bt==0 && pmt==0 && pmpt==0)
+			return;
+		
+		//有負值
+		//非整數：轉為整數後與原本不同
+		console.log('check 3.1');
+		if ($scope.newGame.hasBasicTime){
+			console.log('check 3.1.1');
+			if(bt<=0) return;
+			console.log('check 3.1.2');
+			if($scope.newGame.basicTime!=bt) return;
+		}
+        console.log('check 3.2');
+		if ($scope.newGame.hasPerMoveTime){
+			console.log('check 3.2.1');
+			if(pmt<=0) return;
+			console.log('check 3.2.2');
+			if($scope.newGame.perMoveTime!=pmt) return;
+		}
+        console.log('check 3.3');
+		if ($scope.newGame.hasPlusTime){
+			console.log('check 3.3.1');
+			if(pmpt<=0) return;
+			console.log('check 3.3.2');
+			if($scope.newGame.perMovePlusTime!=pmpt) return;
+		} 
+    
+		$scope.timeRuleChecked = true;
+
+		return;
+	}
+	
+	$scope.timeRuleCheck();
+
+	$scope.confirmCreteGame = function() {
         
         var game = {
             creator:{nickname:$rootScope.user.nickname, username:$rootScope.user.username},
@@ -53,6 +110,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
         }
         
         socket.emit('lobby-create-game', {newGame:game}, null);
+		
     };
     
     $scope.joinGame = function(game) {
