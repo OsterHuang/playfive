@@ -1,5 +1,5 @@
-var server_host = 'localhost';
-//var server_host = '128.199.91.60';
+//var server_host = 'localhost';
+var server_host = '128.199.91.60';
 playfiveApp = angular.module('playfiveApp', 
                              ['lobbyPage', 'gamePage', 'announceList', 'announceCreate', 'announceEdit', 'userProfilePage', 
                               'ngStorage', 'ngAnimate', 'ngSanitize']);

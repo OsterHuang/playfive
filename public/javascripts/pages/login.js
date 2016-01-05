@@ -1,9 +1,14 @@
 loginPage = angular.module('loginPage', ['ngStorage']);
 loginPage.controller('loginController', function ($rootScope, $scope, $http, $window, $localStorage) {
     
-	if(typeof $localStorage.language == 'undefined')
-		$localStorage.language = 'English';
-	$scope.language = $localStorage.language;
+	if(typeof $scope.language == 'undefined'){
+		if(typeof $localStorage.language == 'undefined'){
+			$localStorage.language = 'English';
+			$scope.language = 'English';
+		}
+		else $scope.language = $localStorage.language;
+	}
+		
 	window.translate($scope, $localStorage.language, 'login.html');
 	
     $("#message").hide();

@@ -85,11 +85,11 @@
                         </span>
 
                         <span ng-show="game.status === 'opening'" >
-                            {{ game.tempBlack.nickname}} is deciding opening
+                            {{ game.tempBlack.nickname}} {{str_isChoosingOpening}}
                         </span>
                         
                         <span ng-show="game.status === 'swapping'" >
-                            {{ game.white.nickname}} swap to black or not.
+                            {{ game.white.nickname}} {{str_swapOrNot}}
                         </span>
                         
                         <span ng-show="game.status === 'alt-making'" >
@@ -97,7 +97,7 @@
                         </span>
                         
                         <span ng-show="game.status === 'alt-choosing'" >
-                            {{ game.white.nickname}} is choosing alternatives.
+                            {{ game.white.nickname}} {{str_isChoosingAlts}}
                         </span>
                         
                         <span ng-show="game.status === 'finished'">

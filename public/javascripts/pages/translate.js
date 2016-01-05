@@ -56,7 +56,7 @@ function translate($scope, language, filename){
 			$scope.str_rule = '規則';
 			$scope.str_timeRule = '計時';
 			$scope.str_createGame = '建立對局';
-			$scope.str_cancelGame = '取消隊局';
+			$scope.str_cancelGame = '取消對局';
 			$scope.str_number = '編號';
 			$scope.str_creator = '建立者';
 			$scope.str_rank = '積分';
@@ -95,6 +95,9 @@ function translate($scope, language, filename){
 			$scope.str_channelNumber = '對局';
 			$scope.str_channel = '聊天室';
 			$scope.str_isMakingAlts = '正在思考打點...';
+			$scope.str_isChoosingOpening = '正在選擇開局...';
+			$scope.str_swapOrNot = '是否交換';
+			$scope.str_isChoosingAlts = '正在選擇打點...';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -144,6 +147,9 @@ function translate($scope, language, filename){
 			$scope.str_channelNumber = 'Game NO.';
 			$scope.str_channel = 'Channel';
 			$scope.str_isMakingAlts = 'is making alternatives...';
+			$scope.str_isChoosingOpening = 'is Choosing Opening...';
+			$scope.str_swapOrNot = 'swap or not';
+			$scope.str_isChoosingAlts = 'is choosing alternatives...';
 		break;
 		}
 	}
