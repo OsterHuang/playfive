@@ -170,6 +170,7 @@ function translate($scope, language, filename){
 			$scope.str_title = '標題';
 			$scope.str_date = '日期';
 			$scope.str_edit = '編輯';
+			$scope.str_category = '分類';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -180,6 +181,8 @@ function translate($scope, language, filename){
 			$scope.str_title = 'Titile';
 			$scope.str_date = 'Date';
 			$scope.str_edit = 'Edit';
+			$scope.str_category = 'Category';
+			
 		break;
 		}
 	}
