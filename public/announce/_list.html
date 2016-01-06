@@ -15,6 +15,7 @@
                 <tr>
                     <td style="width:40px"></td>
                     <td align=center>{{str_number}}</td>
+                    <td align=center>{{str_category}}</td>
                     <td align=center>{{str_title}}</td>
                     <td align=center>{{str_date}}</td>
                 </tr>
@@ -26,6 +27,9 @@
                         <span class="glyphicon glyphicon-chevron-down" ng-show="announce.expand"></span>
                         <span class="glyphicon glyphicon-chevron-up" ng-show="!announce.expand"></span>
                         {{announce.number}}
+                    </td>
+                    <td>
+                        {{announce.category}}
                     </td>
                     <td>
                         {{announce.title}}

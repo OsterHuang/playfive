@@ -25,7 +25,7 @@ router.post('/create', function(req, res, next) {
             console.log('findAndModify:', err, doc);
             req.db.collection('announce').insertOne({
                 number:doc.value.next,
-                publisher:req.body.publisher,
+                category:req.body.category,
                 title:req.body.title,
                 content:req.body.content,
                 isTop:req.body.isTop,
@@ -54,7 +54,7 @@ router.post('/edit', function(req, res, next){
 			console.log('  Update announce');
             req.db.collection('announce').update(
                 {number: req.body.number},
-                {$set:{content: req.body.content, title:req.body.title}},
+                {$set:{content: req.body.content, title:req.body.title, category: req.body.category}},
                 function(err, result){
                     if(err){
 						console.log('Update error:', err);
@@ -104,7 +104,7 @@ router.post('/getContent', function(req, res, next){
                 title: doc.title,
                 content: doc.content,
                 createdDate: doc.createdDate,
-                publisher: doc.publisher,
+                category: doc.category,
                 isTop: doc.isTop
             });
         }
@@ -112,7 +112,7 @@ router.post('/getContent', function(req, res, next){
 });
 
 router.post('/getList', function(req, res){
-    req.db.collection('announce').find({},{number:1, title:1, createdDate:1}).sort({createdDate:-1}).toArray( function(err, doc) {
+    req.db.collection('announce').find({},{number:1, category:1, title:1, createdDate:1}).sort({createdDate:-1}).toArray( function(err, doc) {
         // -dogswang- If cannot connect to db
         if (err) {
             res.status(500).json({error:err.message});

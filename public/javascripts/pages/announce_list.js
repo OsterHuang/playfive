@@ -32,7 +32,7 @@ announceList.controller('announceListController', function ($rootScope, $scope, 
             headers: {'Content-Type': 'application/json'}
         }).success(function(response) {
             ann.content = response.content;
-            ann.publisher = response.publisher;
+            ann.category = response.category;
             ann.progressing = false;
             ann.expand = 1;
         }).error(function(data, status) {

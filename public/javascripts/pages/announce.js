@@ -1,7 +1,7 @@
 announceCreate = angular.module('announceCreate', ['ngStorage']);
 announceCreate.controller('announceCreateController', function ($rootScope, $scope, $http, $localStorage, $window) {
     
-    $scope.newAnnounceInit = {publisher:'', title:'', content:'', isTop:''};
+    $scope.newAnnounceInit = {category:'', title:'', content:'', isTop:''};
     $scope.newAnnounce = angular.copy($scope.newAnnounceInit); //console.log('Copy value of newAnnounce:', $scope.newAnnounce);
     
     $scope.hideMessage = function() {
@@ -31,7 +31,7 @@ announceCreate.controller('announceCreateController', function ($rootScope, $sco
 	
     $scope.create = function() {
         var requestData = {
-            publisher:$scope.newAnnounce.publisher, 
+            category:$scope.newAnnounce.category, 
             title:$scope.newAnnounce.title, 
             content:$scope.newAnnounce.content, 
             isTop:$scope.newAnnounce.isTop, 
