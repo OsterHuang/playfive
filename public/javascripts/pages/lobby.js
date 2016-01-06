@@ -41,11 +41,9 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
 	};
 	
     $scope.timeRuleCheck = function(){
-		console.log('start to check timerule.');
 		$scope.timeRuleChecked = false;
 		
 		//沒有基本時間&沒有每手時限
-		console.log('check 1');
 		if(!$scope.newGame.hasBasicTime && !$scope.newGame.hasPerMoveTime)
 			return;
 
@@ -54,31 +52,21 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
 		var pmpt = window.parseInt($scope.newGame.perMovePlusTime);
 
 	    //三者都為0
-		console.log('check 2');
 		if(bt==0 && pmt==0 && pmpt==0)
 			return;
 		
 		//有負值
 		//非整數：轉為整數後與原本不同
-		console.log('check 3.1');
 		if ($scope.newGame.hasBasicTime){
-			console.log('check 3.1.1');
 			if(bt<=0) return;
-			console.log('check 3.1.2');
 			if($scope.newGame.basicTime!=bt) return;
 		}
-        console.log('check 3.2');
 		if ($scope.newGame.hasPerMoveTime){
-			console.log('check 3.2.1');
 			if(pmt<=0) return;
-			console.log('check 3.2.2');
 			if($scope.newGame.perMoveTime!=pmt) return;
 		}
-        console.log('check 3.3');
 		if ($scope.newGame.hasPlusTime){
-			console.log('check 3.3.1');
 			if(pmpt<=0) return;
-			console.log('check 3.3.2');
 			if($scope.newGame.perMovePlusTime!=pmpt) return;
 		} 
     
@@ -128,6 +116,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
             return;
         }
+		if($scope.lobbyChatOut.content==''){return;}
         socket.emit('lobby-chat-send', {from:$rootScope.user.nickname, content:$scope.lobbyChatOut.content});
     }
     

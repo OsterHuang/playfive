@@ -80,12 +80,14 @@
                             <td>{{g.seq}}</td>
                             <td>{{g.creator.nickname}}<span ng-show="g.creator.username == user.username">(Me)</span></td>
                             <td>
-                                {{g.rule}}
+                                {{translate_serverMsg(g.rule, language)}}
                             </td>
-                            <td>
-                                <span ng-show="g.timeRule.perBasicTime">Basic Time {{g.timeRule.basicTime}} mins.</span>
-                                <span ng-show="g.timeRule.perMoveTime">Per Move {{g.timeRule.perMoveTime}} secs.</span>
-                                <span ng-show="g.timeRule.perMovePlusTime">Plus Per Move {{g.timeRule.perMovePlusTime}} secs.</span>
+                            <td style="text-align: center;">
+                                <div style="display: inline-block; text-align: left;">
+									<span ng-show="g.timeRule.basicTime">{{str_basicTime}} {{g.timeRule.basicTime}} {{str_min}}<br></span>
+									<span ng-show="g.timeRule.perMoveTime">{{str_timePerMove}} {{g.timeRule.perMoveTime}} {{str_seconds}}<br></span>
+									<span ng-show="g.timeRule.perMovePlusTime">{{str_plusTimePerMove}} {{g.timeRule.perMovePlusTime}} {{str_seconds}}</span>
+								</div>
                             </td>
                             <td>
                                 <span class="glyphicon glyphicon-ok" ng-show="g.isRating"></span>
@@ -93,7 +95,7 @@
                             </td>
                             <td>
                                 <span ng-show="g.isTempBlack">{{g.creator.nickname}}</span>
-                                <span ng-show="!g.isTempBlack">Participant</span>
+                                <span ng-show="!g.isTempBlack">{{str_participant}}Participant</span>
                             </td>
                             <td>
                                 <span ng-show="g.isTempBlack">{{g.specificOpp.nickname}}</span>
@@ -102,7 +104,7 @@
                                 <button class="btn btn-info" ng-click="joinGame(g)" 
                                         ng-show="g.creator.username !== user.username && !g.specificOpp || user.username === g.specificOpp.username">
                                     <span class="glyphicon glyphicon-road"></span>  
-                                    Join
+                                    {{str_joinGame}}
                                 </button>
                             </td>
                         </tr>
@@ -125,12 +127,12 @@
                         <td>{{g.seq}}</td>
                         <td>{{g.creator.nickname}}<span ng-show="g.creator.username == user.username">(Me)</span></td>
                         <td>
-                            {{g.rule}}
+                            {{translate_serverMsg(g.rule, language)}}
                         </td>
                         <td>
-                            <span ng-show="g.timeRule.perBasicTime">Basic Time {{g.timeRule.perBasicTime}} mins.</span>
-                            <span ng-show="g.timeRule.perMoveTime">Per Move {{g.timeRule.perMoveTime}} secs.</span>
-                            <span ng-show="g.timeRule.perMovePlusTime">Plus Per Move {{g.timeRule.perMovePlusTime}} secs.</span>
+                            <span ng-show="g.timeRule.basicTime">{{str_basicTime}} {{g.timeRule.basicTime}} {{str_min}}.</span>
+                            <span ng-show="g.timeRule.perMoveTime">{{str_timePerMove}} {{g.timeRule.perMoveTime}} {{str_seconds}}.</span>
+                            <span ng-show="g.timeRule.perMovePlusTime">{{str_plusTimePerMove}} {{g.timeRule.perMovePlusTime}} {{str_seconds}}.</span>
                         </td>
                         <td>
                             <span class="glyphicon glyphicon-ok" ng-show="g.isRating"></span>
@@ -143,7 +145,7 @@
                         <td>
                             <button class="btn btn-info" ng-click="watchGame(g)" ng-hide="g.creator.username == user.username">
                                 <span class="glyphicon glyphicon-road"></span>  
-                                Watch
+                                {{str_watch}}
                             </button>
                         </td>
                     </tr>
@@ -283,7 +285,7 @@
                                         <div class="row">
                                             <label>
                                                 <input type="checkbox" ng-change="timeRuleCheck()" ng-model="newGame.hasPlusTime" />
-                                                {{str_plueTimePerMove}}
+                                                {{str_plusTimePerMove}}
                                             </label>
                                             <span>
                                                 <input type="number" min="0"

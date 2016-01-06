@@ -74,7 +74,7 @@ function translate($scope, language, filename){
 			$scope.str_timePerMove = '每手限時';
 			$scope.str_seconds = '秒';
 			$scope.str_timeRuleNotValied = '時間設置不正確';
-			$scope.str_plueTimePerMove = '每手加時';
+			$scope.str_plusTimePerMove = '每手加時';
 			$scope.str_ratingGame = '計分對局';
 			$scope.str_tBlack = '持黑';
 			$scope.str_opponent = '對手';
@@ -99,6 +99,9 @@ function translate($scope, language, filename){
 			$scope.str_isChoosingOpening = '正在選擇開局...';
 			$scope.str_swapOrNot = '是否交換';
 			$scope.str_isChoosingAlts = '正在選擇打點...';
+			$scope.str_joinGame = '加入';
+			$scope.str_participant = '參加者';
+			$scope.str_watchGame = '觀戰';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -127,7 +130,7 @@ function translate($scope, language, filename){
 			$scope.str_timePerMove = 'Time Per Move';
 			$scope.str_seconds = 'seconds';
 			$scope.str_timeRuleNotValied = 'Bad Time Rule';
-			$scope.str_plueTimePerMove = 'Plue Time Per Move';
+			$scope.str_plusTimePerMove = 'Plus Time Per Move';
 			$scope.str_ratingGame = 'rating game';
 			$scope.str_tBlack = 'tentative black';
 			$scope.str_opponent = 'Opponent';
@@ -152,6 +155,9 @@ function translate($scope, language, filename){
 			$scope.str_isChoosingOpening = 'is Choosing Opening...';
 			$scope.str_swapOrNot = 'swap or not';
 			$scope.str_isChoosingAlts = 'is choosing alternatives...';
+			$scope.str_joinGame = 'Join';
+			$scope.str_participant = 'Participant';
+			$scope.str_watchGame = 'Watch';
 		break;
 		}
 	}
@@ -198,5 +204,30 @@ function translate($scope, language, filename){
 			$scope.str_accountProblems = 'Account Problems';
 		break;
 		}
+	}
+}
+
+function translate_serverMsg(str, language){
+	console.log('str', str);
+	console.log('language', language);
+	if(str=='gomoku'){
+		if(language=='English') return 'Gomoku';
+		if(language=='Chinese') return '普通規則';
+	}
+	else if(str=='renju'){
+		if(language=='English') return 'Renju';
+		if(language=='Chinese') return '日式規則';
+	}
+	else if(str=='classic'){
+		if(language=='English') return 'Classic';
+		if(language=='Chinese') return '經典規則';
+	}
+	else if(str=='yamaguchi'){
+		if(language=='English') return 'Yamaguchi';
+		if(language=='Chinese') return '山口規則';
+	}
+	else{
+		if(language=='English') return 'Unknow String';
+		if(language=='Chinese') return '無法辨識的字串';
 	}
 }
