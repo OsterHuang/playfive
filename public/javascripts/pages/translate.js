@@ -111,6 +111,9 @@ function translate($scope, language, filename){
 			$scope.str_result = '結果';
 			$scope.str_record = '戰績';
 			$scope.str_last10Games = '最近10場對局';
+			$scope.str_confirmAlts = '確定打點';
+			$scope.str_confirmOpening = '確定開局';
+			$scope.str_undo = '復原';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -176,6 +179,9 @@ function translate($scope, language, filename){
 			$scope.str_result = 'Result';
 			$scope.str_record = 'Record';
 			$scope.str_last10Games = 'Last 10 Games';
+			$scope.str_confirmAlts = 'Confirm these alternatives';
+			$scope.str_confirmOpening = 'Confirm this opening';
+			$scope.str_undo = 'Undo';
 		break;
 		}
 	}
@@ -256,31 +262,36 @@ function translate_serverMsg(str, language){
 function translate_result(str, language){
 	//console.log('start to translate result');
 	if(language=='English') return str;
-	if(str=='Attains five.') return '連五勝';
-	if(str=='Draw') return '和棋';
-	var bw = str.substr(0, str.indexOf(' '));
-	var result = str.substr(str.indexOf(' '), str.length);
-	if(bw=='Black')
-		str = '黑方';
-	else if(bw=='White')
-		str = '白方';
-	else{
-		console.log('Unknown string', str);
-		return;
+	if(language=='Chinese'){
+		if(str=='Attains five.') return '連五勝';
+		if(str=='Draw') return '和棋';
+		var bw = str.substr(0, str.indexOf(' '));
+		var result = str.substr(str.indexOf(' '), str.length);
+		if(bw=='Black')
+			str = '黑方';
+		else if(bw=='White')
+			str = '白方';
+		else{
+			console.log('Unknown string', str);
+			return;
+		}
+		
+		if(result==' is double four.')
+			str += '四四禁';
+		else if(result==' is double three.')
+			str += '三三禁';
+		else if(result==' is overline.')
+			str += '長連';
+		else if(result==' time up.')
+			str += '超時';
+		else if(result==' resigned.')
+			str += '投降';
+		else str = 'Unknown String.';
+		
+		return str;
 	}
+	return 'Unknown Language';
 	
-	if(result==' is double four.')
-		str += '四四禁';
-	else if(result==' is double three.')
-		str += '三三禁';
-	else if(result==' is overline.')
-		str += '長連';
-	else if(result==' time up.')
-		str += '超時';
-	else if(result==' resigned.')
-		str += '投降';
-	else str = 'Unknown String.';
 	
-	return str;
 	
 }
