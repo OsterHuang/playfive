@@ -83,7 +83,7 @@
                                 {{translate_serverMsg(g.rule, language)}}
                             </td>
                             <td style="text-align: center;">
-                                <div style="display: inline-block; text-align: left;">
+                                <div style="display: inline-block; text-align: left;" ng-hide="g.specificOpp && g.specificOpp.nickname === user.nickname">
 									<span ng-show="g.timeRule.basicTime">{{str_basicTime}} {{g.timeRule.basicTime}} {{str_min}}<br></span>
 									<span ng-show="g.timeRule.perMoveTime">{{str_timePerMove}} {{g.timeRule.perMoveTime}} {{str_seconds}}<br></span>
 									<span ng-show="g.timeRule.perMovePlusTime">{{str_plusTimePerMove}} {{g.timeRule.perMovePlusTime}} {{str_seconds}}</span>
@@ -238,20 +238,21 @@
                                 </span>
                             </button>
                         </div>
-                        <div class="row">
-                            <label >{{str_rule}}:</label>
-                            <span style="width:100%">
-                                <input type="radio" ng-model="newGame.rule" value="gomoku" />
-                                {{str_gomokuRule}} &nbsp;
-                                <input type="radio" ng-model="newGame.rule" value="renju" />
-                                {{str_renjuRule}} &nbsp;
-                                <input type="radio" ng-model="newGame.rule" value="classic"/>
-                                {{str_classicRule}} &nbsp;
-                                <input type="radio" ng-model="newGame.rule" value="yamaguchi"/>
-                                {{str_yamaguchiRule}} &nbsp;
-                            </span>
-                        </div>
-                        <div class="row" style="border-top:1px solid #ddd; border-bottom:1px solid #ddd">
+                        <div class="container-fluid" ng-show="!newGame.specificOpp.nickname || newGame.specificOpp.nickname !== user.nickname">
+                            <div class="row">
+                                <label >{{str_rule}}:</label>
+                                <span style="width:100%">
+                                    <input type="radio" ng-model="newGame.rule" value="gomoku" />
+                                    {{str_gomokuRule}} &nbsp;
+                                    <input type="radio" ng-model="newGame.rule" value="renju" />
+                                    {{str_renjuRule}} &nbsp;
+                                    <input type="radio" ng-model="newGame.rule" value="classic"/>
+                                    {{str_classicRule}} &nbsp;
+                                    <input type="radio" ng-model="newGame.rule" value="yamaguchi"/>
+                                    {{str_yamaguchiRule}} &nbsp;
+                                </span>
+                            </div>
+                            <div class="row" style="border-top:1px solid #ddd; border-bottom:1px solid #ddd">
                                 <label>{{str_timeRule}}</label>
                                 <span>
 
@@ -298,17 +299,18 @@
                                     </div>
                                 </span>
                         </div>
-                        <div class="row">
-                            <lable>
-                                <input type="checkbox" ng-model="newGame.isTentitiveBlack" />
-                                {{str_tBlack}}?
-                            </lable>
-                        </div>
-                        <div class="row">
-                            <span>
-                                <input type="checkbox" ng-model="newGame.isRating" />
-                                {{str_ratingGame}}?
-                            </span>
+                            <div class="row">
+                                <lable>
+                                    <input type="checkbox" ng-model="newGame.isTentitiveBlack" />
+                                    {{str_tBlack}}?
+                                </lable>
+                            </div>
+                            <div class="row">
+                                <span>
+                                    <input type="checkbox" ng-model="newGame.isRating" />
+                                    {{str_ratingGame}}?
+                                </span>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -345,8 +347,14 @@
                             
                             <tr ng-repeat="u in onlineUsers | filter: chooseOppFilter">
                                 <td>
-                                    {{u.nickname}}
-                                    <button class="btn btn-default btn-xs" ng-click="chooseOpp(u)" data-dismiss="modal">
+                                    <span ng-show="u.nickname !== user.nickname">{{u.nickname}}</span>
+                                    <button class="btn btn-default btn-xs" ng-click="chooseOpp(u)" data-dismiss="modal"
+                                            ng-show="u.nickname !== user.nickname">
+                                        <span class="glyphicon glyphicon-hand-left"></span>
+                                    </button>
+                                    <button class="btn btn-warning btn-xs" ng-click="chooseOpp(u)" data-dismiss="modal"
+                                            ng-hide="u.nickname !== user.nickname">
+                                        Myself&nbsp;
                                         <span class="glyphicon glyphicon-hand-left" ></span>
                                     </button>
                                 </td>

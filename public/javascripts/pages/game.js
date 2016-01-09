@@ -549,7 +549,6 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
                     , 300
                 );
             }
-            
         }
     }
     
@@ -557,8 +556,15 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         var newMove = $scope.board.firstClickMove;
         $scope.board.firstClickMove = null;
         
-//        $scope.game.moves.push(newMove);
-//        $scope.board.grids[newMove.ordinate.y][newMove.ordinate.x].move = newMove;
+        if ($scope.game.status === 'started') {
+            $scope.isLocked = true;
+            socket.emit('game-self-going', {
+                uid:$scope.game.uid,
+                seq:$scope.game.moves.length + 1,
+                ordinate:{x:newMove.ordinate.x, y:newMove.ordinate.y}
+            });
+            return;
+        }
         
         if ($scope.game.status === 'started') {
             $scope.isLocked = true;
@@ -601,6 +607,14 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             altQty:$scope.game.altQty
         });
 		$scope.game.altQty = '';
+    }
+    
+    $scope.undoMyselfGame = function() {
+        if ($scope.game.isMySelf) {
+            socket.emit('game-self-undo', {
+                game_id:$scope.game.uid
+            });
+        }
     }
     
     $scope.undoOpening = function() {

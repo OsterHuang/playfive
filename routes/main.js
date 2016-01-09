@@ -86,64 +86,67 @@ io.on('connection', function (socket) {
     
     socket.on('lobby-create-game', function(data) {
         console.log("On lobby-game-created: (" + socket.user.username + ", " + socket.room + ")", data);
+        
+        var createGame = function(err, doc) {
+            if (err) {
+                console.log(' Find and upsert counter error - ' + err.message);
+                socket.emit('message', {message:err.message});
+                return;
+            }
+
+            console.log(' After got sequence - ' + util.inspect(doc, {showHidden: false, depth:null}));
+            //Time from string to int (unit:seconds)
+            if (data.newGame.timeRule.basicTime) {
+                data.newGame.timeRule.basicTime = parseInt(data.newGame.timeRule.basicTime, 10);
+            }
+            if (data.newGame.timeRule.perMoveTime) {
+                data.newGame.timeRule.perMoveTime = parseInt(data.newGame.timeRule.perMoveTime, 10);
+            }
+            if (data.newGame.timeRule.perMovePlusTime) {
+                data.newGame.timeRule.perMovePlusTime = parseInt(data.newGame.timeRule.perMovePlusTime, 10);
+            }
+
+            var specificOpp = null; 
+            if (data.newGame.specificOpp) {
+                specificOpp = {
+                    username:data.newGame.specificOpp.username,
+                    nickname:data.newGame.specificOpp.nickname
+                };
+            }
+
+            var newGame = {
+                seq:doc.value.next,
+                uid:hat(),
+                creator:data.newGame.creator,
+                rule:data.newGame.rule,
+                timeRule:data.newGame.timeRule,
+                boardSize:15,
+                status:'opened',
+                winner:null,
+                black:null,
+                white:null,
+                isTempBlack:data.newGame.isTentitiveBlack,
+                isRating:data.newGame.isRating,
+                isMySelf:specificOpp.username === socket.user.username,
+                tempBlack:null,
+                specificOpp:specificOpp,
+                observers:[],
+                moves:[]
+            };
+
+            m_processingGames.addGame(newGame);
+
+            io.emit('lobby-game-list', { 
+                createdGames: m_processingGames.listCreatedGames(), 
+                progressingGames: m_processingGames.listProgressingGames()});
+        }
             
         db.collection('counter').findAndModify(
             { _id: 'game' },
             ['next'],
             { $inc: { next: 1 } },
             { updatedExisting : true }, 
-            function(err, doc) {
-                if (err) {
-                    console.log(' Find and upsert counter error - ' + err.message);
-                    socket.emit('message', {message:err.message});
-                    return;
-                }
-
-                console.log(' After got sequence - ' + util.inspect(doc, {showHidden: false, depth:null}));
-                //Time from string to int (unit:seconds)
-                if (data.newGame.timeRule.basicTime) {
-                    data.newGame.timeRule.basicTime = parseInt(data.newGame.timeRule.basicTime, 10);
-                }
-                if (data.newGame.timeRule.perMoveTime) {
-                    data.newGame.timeRule.perMoveTime = parseInt(data.newGame.timeRule.perMoveTime, 10);
-                }
-                if (data.newGame.timeRule.perMovePlusTime) {
-                    data.newGame.timeRule.perMovePlusTime = parseInt(data.newGame.timeRule.perMovePlusTime, 10);
-                }
-                
-                var specificOpp = null; 
-                if (data.newGame.specificOpp) {
-                    specificOpp = {
-                        username:data.newGame.specificOpp.username,
-                        nickname:data.newGame.specificOpp.nickname
-                    };
-                }
-
-                var newGame = {
-                    seq:doc.value.next,
-                    uid:hat(),
-                    creator:data.newGame.creator,
-                    rule:data.newGame.rule,
-                    timeRule:data.newGame.timeRule,
-                    boardSize:15,
-                    status:'opened',
-                    winner:null,
-                    black:null,
-                    white:null,
-                    isTempBlack:data.newGame.isTentitiveBlack,
-                    isRating:data.newGame.isRating,
-                    tempBlack:null,
-                    specificOpp:specificOpp,
-                    observers:[],
-                    moves:[]
-                };
-
-                m_processingGames.addGame(newGame);
-
-                io.emit('lobby-game-list', { 
-                    createdGames: m_processingGames.listCreatedGames(), 
-                    progressingGames: m_processingGames.listProgressingGames()});
-            }
+            createGame
         );
         
     });
@@ -369,6 +372,51 @@ io.on('connection', function (socket) {
     
     socket.on('game-fetch-time', function(data) {
         socket.emit('game-fetch-time-receive', {currentTime:new Date()});
+    });
+    
+    socket.on('game-self-going', function(data) {
+        console.log("On going: (" + socket.user.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.uid);
+        console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        if (!game.isMySelf) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        
+        game.moves.push({
+            seq: data.seq,
+            ordinate: data.ordinate
+        });
+        
+        io.sockets["in"]('room_' + game.seq).emit('game-going-receive', game);
+    });
+    
+    socket.on('game-self-undo', function(data) {
+        console.log("On undo: (" + socket.user.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.game_id);
+        console.log(" Game undo: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        if (!game.isMySelf) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        if (game.black.username != socket.user.username && game.white.username != socket.user.username) {
+            console.log(' Not the user game.');
+            socket.emit('message', {message:'This is not your game.'});
+            return;
+        }
+        
+        var undoMove = game.moves.pop();
+        
+        io.sockets["in"]('room_' + game.seq).emit('game-undo-receive', undoMove);
     });
     
     socket.on('game-going', function(data) {
@@ -735,6 +783,10 @@ io.on('connection', function (socket) {
         var inGameList = [];
         
         for (var i in progressingGames) {
+            if (progressingGames[i].isMySelf) {
+                continue; //Do not calculate the timeout
+            }
+            
             var timing = calculateTimeLeft(progressingGames[i])
             if (timing.availableTimeLeft <= 0) {
                 gameTimeout(progressingGames[i], timing);
@@ -856,6 +908,9 @@ function calculateTimeLeft(pGame) {
 }
 
 function gameTimeout(pGame, pTiming) {
+    if (pGame.isMySelf)
+        return;
+    
     pGame.status = 'finished';
     pGame.winner = pTiming.isBlacksTurn ? pGame.white : pGame.black;
     pGame.result = (pTiming.isBlacksTurn ? 'Black' : 'White') + ' time up.';

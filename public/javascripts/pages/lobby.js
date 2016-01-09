@@ -18,6 +18,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
         rule:'gomoku',
         isTentitiveBlack:true,
         isRating:false,
+        isMySelf:false,
         hasBasicTime:false,
         hasPerMoveTime:true,
         hasPlusTime:false,
@@ -197,8 +198,8 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
     }
     
     $scope.chooseOppFilter = function(itUser) {
-        if (itUser.username === $rootScope.user.username)
-            return false;
+//        if (itUser.username === $rootScope.user.username)
+//            return false;
         
         if (itUser.nickname.indexOf($scope.searchOpp.any) > -1) {
             return true;
