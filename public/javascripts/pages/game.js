@@ -600,6 +600,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             moves:$scope.game.moves,
             altQty:$scope.game.altQty
         });
+		$scope.game.altQty = '';
     }
     
     $scope.undoOpening = function() {

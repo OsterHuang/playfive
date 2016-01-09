@@ -59,10 +59,9 @@ function translate($scope, language, filename){
 			$scope.str_cancelGame = '取消對局';
 			$scope.str_number = '編號';
 			$scope.str_creator = '建立者';
-			$scope.str_rank = '積分';
 			$scope.str_onlyWith = '指定對手';
 			$scope.str_onlineUsers = '線上使用者';
-			$scope.str_awaitingGames = '等待中對局';
+			$scope.str_awaitingGames = '開始對局';
 			$scope.str_ongoingGames = '進行中對局';
 			$scope.str_announcements = '公佈欄';
 			$scope.str_gomokuRule = '普通規則';
@@ -102,6 +101,16 @@ function translate($scope, language, filename){
 			$scope.str_joinGame = '加入';
 			$scope.str_participant = '參加者';
 			$scope.str_watchGame = '觀戰';
+			$scope.str_userInfo = '使用者資訊';
+			$scope.str_profile = '檔案';
+			$scope.str_username = '使用者名稱';
+			$scope.str_email = 'E-mail';
+			$scope.str_black = '黑方';
+			$scope.str_white = '白方';
+			$scope.str_moves = '手數';
+			$scope.str_result = '結果';
+			$scope.str_record = '戰績';
+			$scope.str_last10Games = '最近10場對局';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -115,10 +124,9 @@ function translate($scope, language, filename){
 			$scope.str_cancelGame = 'Cancel Game';
 			$scope.str_number = 'Number';
 			$scope.str_creator = 'Creator';
-			$scope.str_rank = 'Rank';
 			$scope.str_onlyWith = 'Only With';
 			$scope.str_onlineUsers = 'Online Users';
-			$scope.str_awaitingGames = 'Awaiting Games';
+			$scope.str_awaitingGames = 'Start To Play';
 			$scope.str_ongoingGames = 'Ongoing Games';
 			$scope.str_announcements = 'Announcements';
 			$scope.str_gomokuRule = 'Gomoku';
@@ -158,6 +166,16 @@ function translate($scope, language, filename){
 			$scope.str_joinGame = 'Join';
 			$scope.str_participant = 'Participant';
 			$scope.str_watchGame = 'Watch';
+			$scope.str_userInfo = 'User Information';
+			$scope.str_profile = 'Profile';
+			$scope.str_username = 'Username';
+			$scope.str_email = 'E-mail';
+			$scope.str_black = 'Black';
+			$scope.str_white = 'White';
+			$scope.str_moves = 'Moves';
+			$scope.str_result = 'Result';
+			$scope.str_record = 'Record';
+			$scope.str_last10Games = 'Last 10 Games';
 		break;
 		}
 	}
@@ -233,4 +251,36 @@ function translate_serverMsg(str, language){
 		if(language=='English') return 'Unknow String';
 		if(language=='Chinese') return '無法辨識的字串';
 	}
+}
+
+function translate_result(str, language){
+	//console.log('start to translate result');
+	if(language=='English') return str;
+	if(str=='Attains five.') return '連五勝';
+	if(str=='Draw') return '和棋';
+	var bw = str.substr(0, str.indexOf(' '));
+	var result = str.substr(str.indexOf(' '), str.length);
+	if(bw=='Black')
+		str = '黑方';
+	else if(bw=='White')
+		str = '白方';
+	else{
+		console.log('Unknown string', str);
+		return;
+	}
+	
+	if(result==' is double four.')
+		str += '四四禁';
+	else if(result==' is double three.')
+		str += '三三禁';
+	else if(result==' is overline.')
+		str += '長連';
+	else if(result==' time up.')
+		str += '超時';
+	else if(result==' resigned.')
+		str += '投降';
+	else str = 'Unknown String.';
+	
+	return str;
+	
 }
