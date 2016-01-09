@@ -14,51 +14,56 @@
                         {{str_amountOfMoves}} {{game.moves.length + 1}}  
                     </div>
                     
-<!--                    Current Time:{{timeLeft.currentTime}}-->
-
-                    <div style="border-radius: 8px; padding: 4px;"
-                         ng-class="isFinalCountDown(timeLeft.black) ? 'final-count-down' : ''">
-                        <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
-                        {{game.black.nickname}}
-                        <span class="timer" ng-class="(isBlackTurn() ? 'timer myturn' : 'timer')">
-                            {{timeLeft.black.countDownString}}
-                        </span>
+                    <div ng-show="game.isMySelf">
+                        Play with self.
                     </div>
 
-                    <div style="border-radius: 8px; padding: 4px;"
-                         ng-class="isFinalCountDown(timeLeft.white)  ? 'final-count-down' : ''">
-                        <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
-                        {{game.white.nickname}}
-                        <span class="timer" ng-class="(isWhiteTurn() ? 'timer myturn' : 'timer')">
-                            {{timeLeft.white.countDownString}}
-                        </span>
-                    </div> 
-
-                    <div>
-                        <span ng-show="game.isRating"><span class="glyphicon glyphicon-ok"></span>
-                            {{str_rated}}
-                        </span>
-                        <span ng-show="!game.isRating"><span class="glyphicon glyphicon-remove"></span>
-                            {{str_notRated}}
-                        </span>
-                    </div>
-
-                    <div>
-                        <span class="glyphicon glyphicon-blackboard"></span>
-                        <span>
-                            {{game.rule}}
-                        </span>
-                    </div>
-                    
-                    <div ng-show="game.rule === 'yamaguchi' || game.rule === 'classic'">
-                        <span class="glyphicon glyphicon-hand-right" ></span>
-                        <span>
-                            {{str_5thQuantity}}:{{game.altQty}}
-                            <span class="badge" ng-repeat="move5th in game.alts" style="margin-left:4px">
-                                {{toReadable(move5th.ordinate)}}
+                    <div ng-hide="game.isMySelf">
+                        <div style="border-radius: 8px; padding: 4px;"
+                             ng-class="isFinalCountDown(timeLeft.black) ? 'final-count-down' : ''">
+                            <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
+                            {{game.black.nickname}}
+                            <span class="timer" ng-class="(isBlackTurn() ? 'timer myturn' : 'timer')">
+                                {{timeLeft.black.countDownString}}
                             </span>
-                        </span>
-                        
+                        </div>
+
+                        <div style="border-radius: 8px; padding: 4px;"
+                             ng-class="isFinalCountDown(timeLeft.white)  ? 'final-count-down' : ''"
+                             ng-hide="game.isMySelf">
+                            <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
+                            {{game.white.nickname}}
+                            <span class="timer" ng-class="(isWhiteTurn() ? 'timer myturn' : 'timer')">
+                                {{timeLeft.white.countDownString}}
+                            </span>
+                        </div> 
+
+                        <div>
+                            <span ng-show="game.isRating"><span class="glyphicon glyphicon-ok"></span>
+                                {{str_rated}}
+                            </span>
+                            <span ng-show="!game.isRating"><span class="glyphicon glyphicon-remove"></span>
+                                {{str_notRated}}
+                            </span>
+                        </div>
+
+                        <div>
+                            <span class="glyphicon glyphicon-blackboard"></span>
+                            <span>
+                                {{game.rule}}
+                            </span>
+                        </div>
+
+                        <div ng-show="game.rule === 'yamaguchi' || game.rule === 'classic'">
+                            <span class="glyphicon glyphicon-hand-right" ></span>
+                            <span>
+                                {{str_5thQuantity}}:{{game.altQty}}
+                                <span class="badge" ng-repeat="move5th in game.alts" style="margin-left:4px">
+                                    {{toReadable(move5th.ordinate)}}
+                                </span>
+                            </span>
+
+                        </div>
                     </div>
                     
                     <div ng-show="isMyGame()" class="btn-group btn-group-xs" role="group" aria-label="..." style="width:100%">
@@ -118,14 +123,14 @@
             <div id="divGameAction" ng-show="game && isMyGame()" >
                 <span ng-show="game.status === 'started'">
                     <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">{{str_offerDraw}}</button>
-                    <button class="" ng-show="isMyTurn()" ng-click="confirmPass()" >{{str_offerPass}}</button>
-<!--                    <button class="" ng-show="isMyTurn() && game.moves.length >= 1" ng-click="confirmUndo()">Undo</button>-->
+                    <button class="" ng-show="!game.isMySelf && isMyTurn()" ng-click="confirmPass()" >{{str_offerPass}}</button>
+                    <button class="" ng-show="game.isMySelf && isMyTurn() && game.moves.length >= 1" ng-click="undoMyselfGame()">{{str_undo}}</button>
                 </span>
                 
                 <button class="" ng-show="game.status != 'finished'" ng-click="confirmResign()" >{{str_resign}}</button>
                 <button class="" ng-show="game.status === 'finished'" ng-click="quitGame()">{{str_quit}}</button>
                 
-                <button class="" ng-show="game.status === 'opening' && game.tempBlack.username === user.username" ng-click="undoOpening()">Undo</button>
+                <button class="" ng-show="game.status === 'opening' && game.tempBlack.username === user.username" ng-click="undoOpening()">{{str_undo}}</button>
                 
             </div>
             
