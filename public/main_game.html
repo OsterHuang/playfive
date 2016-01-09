@@ -234,13 +234,13 @@
                        ng-model="board.txtAltQty" ng-model-options="{debounce:400}" 
                        ng-change="changeOnAltQty()" ng-show="game.rule === 'yamaguchi'" focus-on-show/>
                 <button class="btn btn-success"  ng-click="confirmOpening()" ng-disabled="game.rule === 'yamaguchi' && !game.altQty">
-                    <span class="glyphicon glyphicon-thumbs-up" >Confirm this opening</span>
+                    <span class="glyphicon glyphicon-thumbs-up" >{{str_confirmOpening}}</span>
                 </button>
             </div>
             
             <div style="margin:16px" ng-show="game.status === 'alt-making' && (game.rule === 'classic' || game.rule === 'yamaguchi') && game.alts.length == game.altQty && isMyTurn()">
                 <button class="btn btn-success"  ng-click="confirmAlternatives()">
-                    <span class="glyphicon glyphicon-thumbs-up">Confirm these alternatives.</span>
+                    <span class="glyphicon glyphicon-thumbs-up">{{str_confirmAlts}}.</span>
                 </button>
             </div>
             
