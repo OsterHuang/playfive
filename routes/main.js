@@ -419,6 +419,22 @@ io.on('connection', function (socket) {
         io.sockets["in"]('room_' + game.seq).emit('game-undo-receive', undoMove);
     });
     
+    socket.on('game-self-finish', function(data) {
+        console.log("On game-self-finish: (" + socket.user.username + ", " + socket.room + ")", data);
+        var game = m_processingGames.findGame(data.game_id);
+        console.log(" Game-self-finish: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        console.log("On resign: (" + socket.user.username + ", " + socket.room + ")", data);
+        var me = m_onlineUsers.findUser(data.username);
+        var game = m_processingGames.findGame(data.game_id);
+        console.log(" Game: " + util.inspect(game, {showHidden: false, depth: null}));
+        
+        game.status = 'finished';
+        game.result = me.username + ' Finish the game.';
+                
+        io.sockets["in"](socket.room).emit('game-finished', game);
+    });
+    
     socket.on('game-going', function(data) {
         console.log("On going: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);

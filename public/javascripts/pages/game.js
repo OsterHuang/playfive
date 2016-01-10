@@ -617,6 +617,28 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         }
     }
     
+    $scope.finishMyselfGame = function() {
+        if ($scope.game.isMySelf) {
+            
+            $rootScope.modal.title = 'Finish Confirm';
+            $rootScope.modal.message = 'Do you want to finish the game?';
+            $rootScope.modal.button1Label = 'Yes';
+            $rootScope.modal.button2Label = 'No';
+            $rootScope.modal.clickButton1 = function() {
+                socket.emit('game-self-finish', {
+                    username:$rootScope.user.username,
+                    game_id:$scope.game.uid
+                });
+            }
+            $rootScope.modal.clickButton2 = function() {
+                //Nothing here
+            }
+            $('#modalDialog').modal({
+                keyboard: true
+            });
+        }
+    }
+    
     $scope.undoOpening = function() {
         var undoMove = $scope.game.moves.pop();
         $scope.clearGridMoves();
