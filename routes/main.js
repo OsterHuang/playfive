@@ -86,7 +86,7 @@ io.on('connection', function (socket) {
     
     socket.on('lobby-create-game', function(data) {
         console.log("On lobby-game-created: (" + socket.user.username + ", " + socket.room + ")", data);
-        
+        //throw new Error('Oster Testing');
         var createGame = function(err, doc) {
             if (err) {
                 console.log(' Find and upsert counter error - ' + err.message);
@@ -127,7 +127,7 @@ io.on('connection', function (socket) {
                 white:null,
                 isTempBlack:data.newGame.isTentitiveBlack,
                 isRating:data.newGame.isRating,
-                isMySelf:specificOpp.username === socket.user.username,
+                isMySelf:specificOpp && (specificOpp.username === socket.user.username),
                 tempBlack:null,
                 specificOpp:specificOpp,
                 observers:[],
@@ -375,9 +375,9 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-self-going', function(data) {
-        console.log("On going: (" + socket.user.username + ", " + socket.room + ")", data);
+        console.log("On game-self-going: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
-        console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
+        console.log(" game-self-going: " + util.inspect(game, {showHidden: false, depth: null}));
         
         if (!game.isMySelf) {
             console.log(' Not the user game.');
@@ -399,9 +399,9 @@ io.on('connection', function (socket) {
     });
     
     socket.on('game-self-undo', function(data) {
-        console.log("On undo: (" + socket.user.username + ", " + socket.room + ")", data);
+        console.log("On game-self-undo: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.game_id);
-        console.log(" Game undo: " + util.inspect(game, {showHidden: false, depth: null}));
+        console.log(" Game-self-undo: " + util.inspect(game, {showHidden: false, depth: null}));
         
         if (!game.isMySelf) {
             console.log(' Not the user game.');
@@ -487,6 +487,7 @@ io.on('connection', function (socket) {
         console.log("On draw-request: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.uid);
+        
         console.log(" game-draw-request: ", game);
         var blackUser = m_onlineUsers.findUser(game.black.username);
         var whiteUser = m_onlineUsers.findUser(game.white.username);
@@ -518,15 +519,16 @@ io.on('connection', function (socket) {
     socket.on('game-draw-reject', function(data) {
         console.log("On drawReject: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
-        var game = m_processingGames.findGame(move.game_id);
+        var game = m_processingGames.findGame(data.game_id);
+        
         console.log(" Game: " + util.inspect(game, {showHidden: false, depth: null}));
-        var blackUser = m_onlineUsers.findUser(game.black);
-        var whiteUser = m_onlineUsers.findUser(game.white);
+        var blackUser = m_onlineUsers.findUser(game.black.username);
+        var whiteUser = m_onlineUsers.findUser(game.white.username);
                 
-        if (blackUser.username == me.username) {
-            io.to(whiteUser.socketId).emit('game-draw-rejected', whiteUser.username);
+        if (blackUser.username === me.username) {
+            io.to(whiteUser.socketId).emit('game-draw-rejected', me.username);
         } else if (whiteUser.username == me.username) {
-            io.to(blackUser.socketId).emit('game-draw-rejected', blackUser.username);
+            io.to(blackUser.socketId).emit('game-draw-rejected', me.username);
         }
     });
     

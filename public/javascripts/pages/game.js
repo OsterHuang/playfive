@@ -556,7 +556,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         var newMove = $scope.board.firstClickMove;
         $scope.board.firstClickMove = null;
         
-        if ($scope.game.status === 'started') {
+        if ($scope.game.isMySelf && $scope.game.status === 'started') {
             $scope.isLocked = true;
             socket.emit('game-self-going', {
                 uid:$scope.game.uid,
@@ -836,6 +836,15 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
                 game_id:$scope.game.uid
             });
         }
+        $('#modalDialog').on('hidden.bs.modal', function () {
+            console.log('emit game-draw-reject', game);
+            socket.emit('game-draw-reject', {
+                username:$rootScope.user.username,
+                game_id:$scope.game.uid
+            });
+            $('#modalDialog').unbind();
+        });
+        
         $('#modalDialog').modal({
             keyboard: true
         });
