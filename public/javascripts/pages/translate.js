@@ -113,7 +113,7 @@ function translate($scope, language, filename){
 			$scope.str_last10Games = '最近10場對局';
 			$scope.str_confirmAlts = '確定打點';
 			$scope.str_confirmOpening = '確定開局';
-			$scope.str_undo = '復原';
+			$scope.str_undo = '悔棋';
 			//$scope.str_ = '';
 		break;
 		case 'English':

@@ -72,23 +72,17 @@
                         <input type="text" ng-model="email" class="form-control" placeholder="E-mail" required/>
                     </span>
                 </span>
-				<!--<span class="form-group">
-                    <label class="col-sm-2 control-label">帳號 / Account</label>
-                    <span class="col-sm-10">
-                        <input type="text" ng-model="username" class="form-control" placeholder="Username" required/>
-                    </span>
-                </span>-->
-                <span class="form-group" ng-show="command=='renew'">
+			    <span class="form-group" ng-show="command=='renew'">
                     <label class="col-sm-2 control-label">{{str_oldPassword}}</label>
                     <span class="col-sm-10">
-                        <input type="text" ng-model="password" class="form-control" placeholder="Original Password" required/>
+                        <input type="password" ng-model="password" class="form-control" placeholder="Original Password" required/>
                     </span>
                 </span>
 				<span class="form-group" ng-show="command=='renew'">
                     <label class="col-sm-2 control-label">{{str_newPassword}}</label>
                     <span class="col-sm-10">
                         <input
-							type="text"
+							type="password"
 							ng-model="newPsd"
 							class="form-control" placeholder="New Password" required/>
                     </span>
@@ -96,7 +90,7 @@
                 <span class="form-group" ng-show="command=='renew'">
                     <label class="col-sm-2 control-label">{{str_newPassword2}}</label>
                     <span class="col-sm-10">
-                        <input type="text" ng-model="newPsd2" class="form-control" placeholder="Repeat New Password" required/>
+                        <input type="password" ng-model="newPsd2" class="form-control" placeholder="Repeat New Password" required/>
                     </span>
                 </span>
 				<div class="container" style="text-align:center">
