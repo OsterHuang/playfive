@@ -3,8 +3,6 @@ lobbyPage = angular.module('lobbyPage', ['ngStorage']);
 
 lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $localStorage, $document, $window, $localStorage, socket) {
 
-	$scope.timeRuleChecked = true;
-
 	$scope.lobbyChat = {
         content:'',
         messages:[],
@@ -42,38 +40,35 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $lo
 	};
 	
     $scope.timeRuleCheck = function(){
-		$scope.timeRuleChecked = false;
+		$scope.timeRuleChecked = 'pass';
 		
 		//沒有基本時間&沒有每手時限
-		if(!$scope.newGame.hasBasicTime && !$scope.newGame.hasPerMoveTime)
-			return;
+		if(!$scope.newGame.hasBasicTime && !$scope.newGame.hasPerMoveTime){
+			$scope.timeRuleChecked = 'tError-noStartTime';
+		}
+		else{
+			var bt = window.parseInt($scope.newGame.basicTime);
+			var pmt = window.parseInt($scope.newGame.perMoveTime);
+			var pmpt = window.parseInt($scope.newGame.perMovePlusTime);
 
-		var bt = window.parseInt($scope.newGame.basicTime);
-		var pmt = window.parseInt($scope.newGame.perMoveTime);
-		var pmpt = window.parseInt($scope.newGame.perMovePlusTime);
-
-	    //三者都為0
-		if(bt==0 && pmt==0 && pmpt==0)
-			return;
+			//有負值
+			//非整數：轉為整數後與原本不同
+			if ($scope.newGame.hasBasicTime){
+				if(bt<1) $scope.timeRuleChecked = 'tError-noBasicTime';
+				if($scope.newGame.basicTime!=bt) $scope.timeRuleChecked = 'tError-notInt-bt';
+			}
+			if ($scope.newGame.hasPerMoveTime){
+				if(pmt<5) $scope.timeRuleChecked = 'tError-morePerMoveTime';
+				if($scope.newGame.perMoveTime!=pmt) $scope.timeRuleChecked = 'tError-notInt-pmt';
+			}
+			if ($scope.newGame.hasPlusTime){
+				if(pmpt<5) $scope.timeRuleChecked = 'tError-morePlusTime';
+				if($scope.newGame.perMovePlusTime!=pmpt) $scope.timeRuleChecked = 'tError-notInt-pt';
+			} 
 		
-		//有負值
-		//非整數：轉為整數後與原本不同
-		if ($scope.newGame.hasBasicTime){
-			if(bt<=0) return;
-			if($scope.newGame.basicTime!=bt) return;
+			console.log('$scope.timeRuleChecked', $scope.timeRuleChecked);
+			return;
 		}
-		if ($scope.newGame.hasPerMoveTime){
-			if(pmt<=0) return;
-			if($scope.newGame.perMoveTime!=pmt) return;
-		}
-		if ($scope.newGame.hasPlusTime){
-			if(pmpt<=0) return;
-			if($scope.newGame.perMovePlusTime!=pmpt) return;
-		} 
-    
-		$scope.timeRuleChecked = true;
-
-		return;
 	}
 	
 	$scope.timeRuleCheck();

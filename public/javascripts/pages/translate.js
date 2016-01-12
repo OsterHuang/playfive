@@ -115,6 +115,11 @@ function translate($scope, language, filename){
 			$scope.str_confirmOpening = '確定開局';
 			$scope.str_undo = '悔棋';
 			$scope.str_announceList = '公告清單';
+			$scope.str_noStartTime = '請至少勾選一項';
+			$scope.str_noBasicTime = '最短基本時限：1 分鐘';
+			$scope.str_morePerMoveTime = '最短每手時限：5 秒';
+			$scope.str_morePlusTime = '最短每手加秒： 5 秒';
+			$scope.str_notInt = '請輸入整數';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -184,6 +189,11 @@ function translate($scope, language, filename){
 			$scope.str_confirmOpening = 'Confirm this opening';
 			$scope.str_undo = 'Undo';
 			$scope.str_announceList = 'Announce List';
+			$scope.str_noStartTime = 'Please choose one at least.';
+			$scope.str_noBasicTime = 'minimum: 1 minute';
+			$scope.str_morePerMoveTime = 'minimum: 5 seconds';
+			$scope.str_morePlusTime = 'minimum: 5 seconds';
+			$scope.str_notInt = 'Please input integer.';
 		break;
 		}
 	}

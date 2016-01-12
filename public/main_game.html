@@ -236,9 +236,29 @@
             </div>
             
             <div style="margin:16px" ng-show="isOpeningEnd()">
-                <input type="text" size="8" style="text-align:right; width:auto; display:inline; padding:6px 4px" class="form-control" placeholder="5th Qty" 
+                
+				<!--input type="text" size="8" style="text-align:right; width:auto; display:inline; padding:6px 4px" class="form-control" placeholder="5th Qty" 
                        ng-model="board.txtAltQty" ng-model-options="{debounce:400}" 
-                       ng-change="changeOnAltQty()" ng-show="game.rule === 'yamaguchi'" focus-on-show/>
+                       ng-change="changeOnAltQty()" ng-show="game.rule === 'yamaguchi'" focus-on-show/-->
+                <select type="select" style="width:auto; display:inline; padding:6px 4px" class="form-control"
+                       ng-model="board.txtAltQty"
+                       ng-change="changeOnAltQty()" ng-show="game.rule === 'yamaguchi'" focus-on-show>
+					<option value="1">1</option>
+					<option value="2">2</option>
+					<option value="3">3</option>
+					<option value="4">4</option>
+					<option value="5">5</option>
+					<option value="6">6</option>
+					<option value="7">7</option>
+					<option value="8">8</option>
+					<option value="9">9</option>
+					<option value="10">10</option>
+					<option value="11">11</option>
+					<option value="12">12</option>
+					<option value="13">13</option>
+					<option value="14">14</option>
+					<option value="15">15</option>
+				</select>
                 <button class="btn btn-success"  ng-click="confirmOpening()" ng-disabled="game.rule === 'yamaguchi' && !game.altQty">
                     <span class="glyphicon glyphicon-thumbs-up" >{{str_confirmOpening}}</span>
                 </button>

@@ -145,7 +145,7 @@
                         <td>
                             <button class="btn btn-info" ng-click="watchGame(g)" ng-hide="g.creator.username == user.username">
                                 <span class="glyphicon glyphicon-road"></span>  
-                                {{str_watch}}
+                                {{str_watchGame}}
                             </button>
                         </td>
                     </tr>
@@ -266,8 +266,11 @@
                                                 <input type="number" min="0"
 													ng-change="timeRuleCheck()"
 													ng-model="newGame.basicTime" ng-disabled="!newGame.hasBasicTime" 
-                                                    class="form-control time-limit" size="5" style="width:60px"/>
+                                                    class="form-control time-limit" size="6" style="width:60px"/>
                                                 {{str_min}}
+												<span ng-show="timeRuleChecked=='tError-noStartTime'"><font color=red>{{str_noStartTime}}</font></span>
+												<span ng-show="timeRuleChecked=='tError-noBasicTime'"><font color=red>{{str_noBasicTime}}</font></span>
+												<span ng-show="timeRuleChecked=='tError-notInt-bt'"><font color=red>{{str_notInt}}</font></span>
                                             </span>
                                         </div>
                                         <div class="row">
@@ -279,8 +282,11 @@
                                                 <input type="number" min="0" 
 												ng-change="timeRuleCheck()"
 												ng-model="newGame.perMoveTime" ng-disabled="!newGame.hasPerMoveTime" 
-                                                       class="form-control time-limit" size="5" style="width:60px"></input>
-                                                {{str_seconds}}　<span ng-show="!timeRuleChecked"><font color=red>{{str_timeRuleNotValied}}</font></span>
+                                                       class="form-control time-limit" size="6" style="width:60px"></input>
+                                                {{str_seconds}}
+												<span ng-show="timeRuleChecked=='tError-noStartTime'"><font color=red>{{str_noStartTime}}</font></span>
+												<span ng-show="timeRuleChecked=='tError-moreBasicTime'"><font color=red>{{str_morePerMoveTime}}</font></span>
+												<span ng-show="timeRuleChecked=='tError-notInt-pmt'"><font color=red>{{str_notInt}}</font></span>
                                             </span>
                                         </div>
                                         <div class="row">
@@ -292,8 +298,10 @@
                                                 <input type="number" min="0"
 												ng-change="timeRuleCheck()"
 												ng-model="newGame.perMovePlusTime" ng-disabled="!newGame.hasPlusTime" 
-                                                       class="form-control time-limit" size="5" style="width:60px"></input>
+                                                       class="form-control time-limit" size="6" style="width:60px"></input>
                                                 {{str_seconds}}
+												<span ng-show="timeRuleChecked=='tError-morePlusTime'"><font color=red>{{str_morePlusTime}}</font></span>
+												<span ng-show="timeRuleChecked=='tError-notInt-pt'"><font color=red>{{str_notInt}}</font></span>
                                             </span>
                                         </div>
                                     </div>
@@ -316,7 +324,7 @@
                 </div>
                 
                 <div class="modal-footer">
-                    <button type="button" ng-disabled="!timeRuleChecked" class="btn btn-primary" data-dismiss="modal" ng-click="confirmCreteGame()">
+                    <button type="button" ng-disabled="timeRuleChecked!='pass'" class="btn btn-primary" data-dismiss="modal" ng-click="confirmCreteGame()">
                         <span class="glyphicon glyphicon-ok"></span>
                         {{str_create}}
                     </button>
