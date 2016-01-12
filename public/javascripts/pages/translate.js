@@ -114,6 +114,7 @@ function translate($scope, language, filename){
 			$scope.str_confirmAlts = '確定打點';
 			$scope.str_confirmOpening = '確定開局';
 			$scope.str_undo = '悔棋';
+			$scope.str_announceList = '公告清單';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -182,6 +183,7 @@ function translate($scope, language, filename){
 			$scope.str_confirmAlts = 'Confirm these alternatives';
 			$scope.str_confirmOpening = 'Confirm this opening';
 			$scope.str_undo = 'Undo';
+			$scope.str_announceList = 'Announce List';
 		break;
 		}
 	}
@@ -235,8 +237,7 @@ function translate($scope, language, filename){
 }
 
 function translate_serverMsg(str, language){
-	console.log('str', str);
-	console.log('language', language);
+	//console.log('bug? 好像會一直呼叫');
 	if(str=='gomoku'){
 		if(language=='English') return 'Gomoku';
 		if(language=='Chinese') return '普通規則';

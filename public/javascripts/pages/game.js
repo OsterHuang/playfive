@@ -241,6 +241,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             //console.log();
             var stones5 = $scope.game.moves.slice();
             stones5.push({seq:5, ordinate:$scope.game.alts[i].ordinate});
+			console.log('stones5 are:', stones5);
             var symPts = symFinder(stones5);
             console.log(" Find points from  ", pOrdinate, symPts);
             Array.prototype.push.apply(symPoints, symPts);
@@ -606,7 +607,8 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             moves:$scope.game.moves,
             altQty:$scope.game.altQty
         });
-		$scope.game.altQty = '';
+		
+		$scope.board.txtAltQty = null;
     }
     
     $scope.undoMyselfGame = function() {
@@ -676,6 +678,9 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             uid:$scope.game.uid,
             alt:$scope.gridAltChosen.alt
         });
+		//Clear dirty data
+		$scope.board.txtAltQty = null; 
+		$scope.gridAltChosen = null;
     }
     
     $scope.cancelAltChosen = function() {
