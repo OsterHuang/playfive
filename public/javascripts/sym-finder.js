@@ -37,7 +37,7 @@ function symFinder(stones){
 		console.log('Xb=',Xb,'Yb=',Yb,'Xw=',Xw,'Yw=',Yw);
 		
 		if((Xb==Xw && Xw==0) || (Yb==Yw && Yw==0) || (Xb==0 && Yw==0) || (Xw==0 && Yb==0)){
-			consol.log('恆星對稱白4');
+			console.log('恆星對稱白4');
 			//線對稱, 上下or左右  ex.松月天地雙止 || 恆星對稱白4
 			var tempX = 2*p-x;
 			var tempY = y;

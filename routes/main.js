@@ -51,12 +51,12 @@ router.get('/', function(req, res, next) {
   res.render('index', { title: 'Express' });
 });
 
-io.on('connection', function (socket) {
+io.on('connection', function (socket, connectedAckFunction) {
     console.log("New Connection:" + socket.id);
     
     socket.emit('connected');
     
-    socket.on('online', function(user) {
+    socket.on('online', function(user, ackFunction) {
         console.log("Socket on online() ", user);
         var alreadyInUser = m_onlineUsers.findUser('' + user.username);
         console.log("User List: " + util.inspect(m_onlineUsers.listUsers(), {showHidden: false, depth: null}));
@@ -82,9 +82,11 @@ io.on('connection', function (socket) {
         
         io.emit('lobby-user-list', { onlineUsers: m_onlineUsers.listUsers() });
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
+        
+        ackFunction({ack:'online'});
     });
     
-    socket.on('lobby-create-game', function(data) {
+    socket.on('lobby-create-game', function(data, ackFunction) {
         console.log("On lobby-game-created: (" + socket.user.username + ", " + socket.room + ")", data);
         //throw new Error('Oster Testing');
         var createGame = function(err, doc) {
@@ -149,15 +151,18 @@ io.on('connection', function (socket) {
             createGame
         );
         
+        ackFunction({ack:'lobby-create-game'});
     });
     
-    socket.on('lobby-cancel-game', function(data) {
+    socket.on('lobby-cancel-game', function(data, ackFunction) {
         console.log("On lobby-cancel-game: (" + socket.user.username + ", " + socket.room + ")", data);
         m_processingGames.removeGame(data.uid);
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
+        
+        ackFunction({ack:'lobby-cancel-game'});
     });
     
-    socket.on('lobby-start-game', function(data) {
+    socket.on('lobby-start-game', function(data, ackFunction) {
         console.log("On lobby-start-game: (" + socket.user.username + ", " + socket.room + ")", data);
         
         var joinGame = m_processingGames.findGame(data.joinGame.uid); 
@@ -195,9 +200,11 @@ io.on('connection', function (socket) {
         
         console.log('After Start-game: ' + util.inspect(joinGame, {showHidden: false, depth:null}));
         io.emit('lobby-game-list', { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()});
+        
+        ackFunction({ack:'lobby-start-game'});
     });
     
-    socket.on('lobby-join-game', function(data) {
+    socket.on('lobby-join-game', function(data, ackFunction) {
         console.log("On lobby-join-game: (" + socket.user.username + ", " + socket.room + ")", data);
         var joinGame = m_processingGames.findGame(data.joinGame.uid); 
         joinGame.responseTime = new Date();
@@ -205,9 +212,11 @@ io.on('connection', function (socket) {
         socket.room = 'room_' + joinGame.seq;
         socket.join(socket.room);
         socket.emit('game-join', joinGame);
+        
+        ackFunction({ack:'lobby-join-game'});
     });
     
-    socket.on('lobby-watch-game', function(data) {
+    socket.on('lobby-watch-game', function(data, ackFunction) {
         console.log("On lobby-watch-game: (" + socket.user.username + ", " + socket.room + ")", data);
         
         var watchGame = m_processingGames.findGame(data.watchGame.uid); 
@@ -217,9 +226,10 @@ io.on('connection', function (socket) {
         socket.join(socket.room);
         
         socket.emit('lobby-watched-game', watchGame);
+        ackFunction({ack:'lobby-watch-game'});
     });
     
-    socket.on('lobby-chat-send', function(data) {
+    socket.on('lobby-chat-send', function(data, ackFunction) {
         console.log("On lobby-chat-send: (" + socket.user.username + ")" + util.inspect(data, {showHidden: false, depth:null}));
         
         var alreadyInUser = m_onlineUsers.findUser('' + socket.user.username);
@@ -228,10 +238,11 @@ io.on('connection', function (socket) {
         
         data.sendTime = new Date();
         io.sockets.emit('lobby-chat-receive', data);
+        ackFunction({ack:'lobby-chat-send'});
     });
     
     // ---- Admin Function ----
-    socket.on('lobby-kick-user', function(pUser) {
+    socket.on('lobby-kick-user', function(pUser, ackFunction) {
         console.log("On lobby-kick-user ", pUser, socket.user);
         if (socket.user.role != 'admin') {
             return;
@@ -258,9 +269,11 @@ io.on('connection', function (socket) {
                 io.sockets.connected[alreadyInUser.socketId].disconnect();
             }
         );
+        
+        ackFunction({ack:'lobby-kick-user'});
     });
     
-    socket.on('lobby-ban-user', function(pUser) {
+    socket.on('lobby-ban-user', function(pUser, ackFunction) {
         console.log("On lobby-ban-user ", pUser, socket.user);
         if (socket.user.role != 'admin') {
             return;
@@ -287,9 +300,11 @@ io.on('connection', function (socket) {
                 io.sockets.connected[alreadyInUser.socketId].disconnect();
             }
         );
+        
+        ackFunction({ack:'lobby-ban-user'});
     });
     
-    socket.on('lobby-mute-user', function(pUser) {
+    socket.on('lobby-mute-user', function(pUser, ackFunction) {
         console.log("On lobby-mute-user ", pUser, socket.user);
         if (socket.user.role != 'admin') {
             return;
@@ -322,9 +337,11 @@ io.on('connection', function (socket) {
                 }
             }
         );
+        
+        ackFunction({ack:'lobby-mute-user'});
     });
     
-    socket.on('lobby-unmute-user', function(pUser) {
+    socket.on('lobby-unmute-user', function(pUser, ackFunction) {
         console.log("On lobby-unmute-user ", pUser, socket.user);
         if (socket.user.role != 'admin') {
             return;
@@ -357,9 +374,11 @@ io.on('connection', function (socket) {
                 }
             }
         );
+        
+        ackFunction({ack:'lobby-unmute-user'});
     });
     
-    socket.on('game-room-chat-send', function(data) {
+    socket.on('game-room-chat-send', function(data, ackFunction) {
         console.log("On game-room-chat-send: (" + socket.user.username + ", " + socket.room + ")", data);
         
         var alreadyInUser = m_onlineUsers.findUser('' + socket.user.username);
@@ -368,13 +387,16 @@ io.on('connection', function (socket) {
         
         data.sendTime = new Date();
         io.sockets["in"]('room_' + data.gameSeq).emit('game-room-chat-receive', data);
+        
+        ackFunction({ack:'game-room-chat-send'});
     });
     
-    socket.on('game-fetch-time', function(data) {
+    socket.on('game-fetch-time', function(data, ackFunction) {
         socket.emit('game-fetch-time-receive', {currentTime:new Date()});
+        ackFunction({ack:'game-fetch-time'});
     });
     
-    socket.on('game-self-going', function(data) {
+    socket.on('game-self-going', function(data, ackFunction) {
         console.log("On game-self-going: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" game-self-going: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -396,9 +418,10 @@ io.on('connection', function (socket) {
         });
         
         io.sockets["in"]('room_' + game.seq).emit('game-going-receive', game);
+        ackFunction({ack:'game-self-going'});
     });
     
-    socket.on('game-self-undo', function(data) {
+    socket.on('game-self-undo', function(data, ackFunction) {
         console.log("On game-self-undo: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.game_id);
         console.log(" Game-self-undo: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -417,9 +440,10 @@ io.on('connection', function (socket) {
         var undoMove = game.moves.pop();
         
         io.sockets["in"]('room_' + game.seq).emit('game-undo-receive', undoMove);
+        ackFunction({ack:'game-self-undo'});
     });
     
-    socket.on('game-self-finish', function(data) {
+    socket.on('game-self-finish', function(data, ackFunction) {
         console.log("On game-self-finish: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.game_id);
         console.log(" Game-self-finish: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -433,9 +457,10 @@ io.on('connection', function (socket) {
         game.result = me.username + ' Finish the game.';
                 
         io.sockets["in"](socket.room).emit('game-finished', game);
+        ackFunction({ack:'game-self-finish'});
     });
     
-    socket.on('game-going', function(data) {
+    socket.on('game-going', function(data, ackFunction) {
         console.log("On going: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -464,6 +489,30 @@ io.on('connection', function (socket) {
             ordinate: data.ordinate
         });
         
+        // -- Double pass to draw? --
+        //Is pass one time or pass double time
+        if (!data.ordinate) { //Pass from client
+            //Double pass will draw the game...
+            if (game.isPassed) {
+                game.status = 'finished';
+                game.result = 'Draw';
+
+                saveGame(game);
+
+                console.log(' Change game status to draw:', game);
+
+                io.sockets["in"](socket.room).emit('game-finished', game);
+                ackFunction({ack:'game-pass-to-draw'});
+                return;
+            }
+            
+            game.isPassed = true;
+            
+        } else {
+            //clear first time pass flag...
+            game.isPassed = false;    
+        }
+        
         var isRenju = (game.rule === 'gomoku' ? false : true);
         var finishedResult = forbiddenFinder.isGameFinished(trimPassedMoves(game.moves), game.boardSize, isRenju, false);
         if (finishedResult.isFinished) {
@@ -477,9 +526,11 @@ io.on('connection', function (socket) {
         } else {
             io.sockets["in"]('room_' + game.seq).emit('game-going-receive', game);
         }
+        
+        ackFunction({ack:'game-going'});
     });
     
-    socket.on('game-undo', function(data) {
+    socket.on('game-undo', function(data, ackFunction) {
 //        console.log("On undo: (" + socket.user.username + ", " + socket.room + ")", data);
 //        var game = m_processingGames.findGame(data.game_id);
 //        console.log(" Game undo: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -497,9 +548,10 @@ io.on('connection', function (socket) {
 //        var undoMove = game.moves.pop();
 //        
 //        io.sockets["in"]('room_' + game.seq).emit('game-undo-receive', undoMove);
+        ackFunction({ack:'game-undo'});
     });
     
-    socket.on('game-draw-request', function(data) {
+    socket.on('game-draw-request', function(data, ackFunction) {
         console.log("On draw-request: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.uid);
@@ -513,9 +565,11 @@ io.on('connection', function (socket) {
         } else if (whiteUser.username == me.username) {
             io.to(blackUser.socketId).emit('game-draw-request-receive', blackUser.username);
         }
+        
+        ackFunction({ack:'game-draw-request'});
     });
               
-    socket.on('game-draw-accept', function(data) {
+    socket.on('game-draw-accept', function(data, ackFunction) {
         console.log("On drawAccept: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
@@ -530,9 +584,10 @@ io.on('connection', function (socket) {
         console.log(' Change game status to draw:', game);
                 
         io.sockets["in"](socket.room).emit('game-finished', game);
+        ackFunction({ack:'game-draw-accept'});
     });
         
-    socket.on('game-draw-reject', function(data) {
+    socket.on('game-draw-reject', function(data, ackFunction) {
         console.log("On drawReject: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
@@ -546,9 +601,11 @@ io.on('connection', function (socket) {
         } else if (whiteUser.username == me.username) {
             io.to(blackUser.socketId).emit('game-draw-rejected', me.username);
         }
+        
+        ackFunction({ack:'lobby-create-game'});
     });
     
-    socket.on('game-resign', function(data) {
+    socket.on('game-resign', function(data, ackFunction) {
         console.log("On resign: (" + socket.user.username + ", " + socket.room + ")", data);
         var me = m_onlineUsers.findUser(data.username);
         var game = m_processingGames.findGame(data.game_id);
@@ -561,12 +618,14 @@ io.on('connection', function (socket) {
         saveGame(game);
                 
         io.sockets["in"](socket.room).emit('game-finished', game);
+        ackFunction({ack:'game-resign'});
     });
     
-    socket.on('game-leave', function(data) {
+    socket.on('game-leave', function(data, ackFunction) {
         console.log("On game-leave: (" + socket.user.username + ", " + socket.room + ")", data);
         socket.leave(socket.room); //Leave game room
         socket.emit('game-leaved');
+        ackFunction({ack:'game-leave'});
     });
     
     socket.on('disconnect', function() {
@@ -610,7 +669,7 @@ io.on('connection', function (socket) {
       ...Reverse flow of game-status by undo event at seq
       ... opening / game-undo 
     **/
-    socket.on('game-chosen-open', function(data) {
+    socket.on('game-chosen-open', function(data, ackFunction) {
         console.log("On game-chosen-open: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" Game going: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -647,9 +706,10 @@ io.on('connection', function (socket) {
             game.altQty = data.altQty;
         
         io.sockets["in"]('room_' + game.seq).emit('game-chosen-open-receive', game);
+        ackFunction({ack:'game-chosen-open'});
     });
     
-    socket.on('game-swapped', function(data) {
+    socket.on('game-swapped', function(data, ackFunction) {
         console.log("On game-swapped: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         
@@ -672,9 +732,6 @@ io.on('connection', function (socket) {
         game.status = 'swapped';
         if (data.isSwapped) {
             console.log('Before swap, black / white ', game.black, game.white);
-            var tempBlack = game.black;
-            game.black = game.white;
-            game.white = tempBlack;
             
             //is timeout?
             var uTime = calculateTimeLeft(game);
@@ -683,15 +740,28 @@ io.on('connection', function (socket) {
                 io.sockets["in"]('room_' + game.seq).emit('game-finished', game);
                 return;
             }
-        gameContinue(game, uTime);
+            gameContinue(game, uTime);
+            
+            //Swap person
+            var tempBlack = game.black;
+            game.black = game.white;
+            game.white = tempBlack;
             
             console.log('After swap, black / white ', game.black, game.white);
+            
+            console.log('Before swap, blackTimeLeft/whiteTimeLeft ', game.blackTimeLeft, game.whiteTimeLeft);
+            //Swap timeleft
+            var tempTimeLeft = JSON.parse(JSON.stringify(game.blackTimeLeft));
+            game.blackTimeLeft = JSON.parse(JSON.stringify(game.whiteTimeLeft));
+            game.whiteTimeLeft = tempTimeLeft;
+            console.log('After swap, blackTimeLeft/whiteTimeLeft ', game.blackTimeLeft, game.whiteTimeLeft);           
         }
         
         io.sockets["in"]('room_' + game.seq).emit('game-swapped-receive', game);
+        ackFunction({ack:'game-swapped'});
     });
     
-    socket.on('game-alt-making', function(data) {
+    socket.on('game-alt-making', function(data, ackFunction) {
         console.log("On game-alt-making: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" game-alt-making: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -722,9 +792,10 @@ io.on('connection', function (socket) {
         game.status = 'alt-making';
         
         io.sockets["in"]('room_' + game.seq).emit('game-alt-making-receive', game);
+        ackFunction({ack:'lobby-create-game'});
     });
     
-    socket.on('game-alt-choosing', function(data) {
+    socket.on('game-alt-choosing', function(data, ackFunction) {
         console.log("On game-alt-choosing: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" game-alt-choosing: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -752,9 +823,10 @@ io.on('connection', function (socket) {
         game.status = 'alt-choosing';
         
         io.sockets["in"]('room_' + game.seq).emit('game-alt-choosing-receive', game);
+        ackFunction({ack:'game-alt-choosing'});
     });
     
-    socket.on('game-alt-chosen', function(data) {
+    socket.on('game-alt-chosen', function(data, ackFunction) {
         console.log("On alt-chosen: (" + socket.user.username + ", " + socket.room + ")", data);
         var game = m_processingGames.findGame(data.uid);
         console.log(" Game alt-chosen: " + util.inspect(game, {showHidden: false, depth: null}));
@@ -793,38 +865,42 @@ io.on('connection', function (socket) {
         }
         
         io.sockets["in"]('room_' + game.seq).emit('game-alt-chosen-receive', game);
+        ackFunction({ack:'game-alt-chosen'});
     });
     
-    // ---- Check timeout every 5 seconds ----
-    function tickTimeout() {
-        var progressingGames = m_processingGames.listProgressingGames();
-        var inGameList = [];
-        
-        for (var i in progressingGames) {
-            if (progressingGames[i].isMySelf) {
-                continue; //Do not calculate the timeout
-            }
-            
-            var timing = calculateTimeLeft(progressingGames[i])
-            if (timing.availableTimeLeft <= 0) {
-                gameTimeout(progressingGames[i], timing);
-                io.sockets["in"]('room_' + progressingGames[i].seq).emit('game-finished', progressingGames[i]);
-                
-                //Array.prototype.push.apply(inGameList, io.sockets.clients('room_' + progressingGames[i].seq))
-            }
+    //connectedAckFunction({ack:'connection'});
+    
+});
+
+// ---- Check timeout every 5 seconds ----
+function tickTimeout() {
+    var progressingGames = m_processingGames.listProgressingGames();
+    var inGameList = [];
+
+    for (var i in progressingGames) {
+        if (progressingGames[i].isMySelf) {
+            continue; //Do not calculate the timeout
         }
-        
-        if (inGameList.length > 0) {
-            //clients = io.sockets.clients();
-            //console.log(' sockets', util.inspect(io.sockets, {showHidden: false, depth: null}));
-            //console.log(' inGameList', util.inspect(inGamesList, {showHidden: false, depth: null}));
-            io.emit('lobby-game-list-refresh', 
-                { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()}
-            );
+
+        var timing = calculateTimeLeft(progressingGames[i])
+        if (timing.availableTimeLeft <= 0) {
+            gameTimeout(progressingGames[i], timing);
+            io.sockets["in"]('room_' + progressingGames[i].seq).emit('game-finished', progressingGames[i]);
+
+            //Array.prototype.push.apply(inGameList, io.sockets.clients('room_' + progressingGames[i].seq))
         }
     }
-    setInterval(tickTimeout, 5000)
-});
+
+    if (inGameList.length > 0) {
+        //clients = io.sockets.clients();
+        //console.log(' sockets', util.inspect(io.sockets, {showHidden: false, depth: null}));
+        //console.log(' inGameList', util.inspect(inGamesList, {showHidden: false, depth: null}));
+        io.emit('lobby-game-list-refresh', 
+            { createdGames: m_processingGames.listCreatedGames(), progressingGames: m_processingGames.listProgressingGames()}
+        );
+    }
+}
+setInterval(tickTimeout, 5000);
 
 function trimPassedMoves(pMoves) {
     var trimedMoves = [];
