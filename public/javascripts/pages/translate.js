@@ -1,4 +1,5 @@
 function translate($scope, language, filename){
+	console.log('有被直行兩次嗎?');
 	if(filename=='create.html'){
 		switch(language){
 			case 'Chinese':
@@ -246,7 +247,29 @@ function translate($scope, language, filename){
 	}
 }
 
-function translate_serverMsg(str, language){
+var translate_serverMsg = function(){
+	console.log('會叫幾次呢?');
+	console.log(new Date);
+	var i=0;
+	var langs = {
+		English: i++,
+		Chinese: i
+	};
+
+	var dict = {
+		gomoku: ['Gomoku', '普通規則'],
+		renju: ['Renju', '日式規則'],
+		classic: ['Classic', '經典規則'],
+		yamaguchi: ['Yamaguchi', '山口規則']
+	};
+	
+	return function(str, language) {
+		return dict[str][langs[language]];
+	};
+}();
+
+/*
+function translate_serverMsg_backup(str, language){
 	//console.log('bug? 好像會一直呼叫');
 	if(str=='gomoku'){
 		if(language=='English') return 'Gomoku';
@@ -269,7 +292,7 @@ function translate_serverMsg(str, language){
 		if(language=='Chinese') return '無法辨識的字串';
 	}
 }
-
+*/
 function translate_result(str, language){
 	//console.log('start to translate result');
 	if(language=='English') return str;
@@ -301,7 +324,8 @@ function translate_result(str, language){
 		
 		return str;
 	}
-	return 'Unknown Language';
+	console.log('Unknown Language');
+	return str;
 	
 	
 	

@@ -1,6 +1,6 @@
 announceList = angular.module('announceList', ['ngSanitize', 'ngAnimate', 'ngStorage']);
 announceList.controller('announceListController', function ($rootScope, $scope, $http, $localStorage, $window) {
-
+	console.log('????');
 	if(typeof $localStorage.language == 'undefined')
 		$localStorage.language = 'English';
 	$scope.language = $localStorage.language;
@@ -115,10 +115,14 @@ announceList.controller('announceListController', function ($rootScope, $scope, 
         $scope.getList();
     });
     
-	$scope.translate = function(language){
-		$localStorage.language = language;
-		window.translate($scope, language, 'announce.html');
+	$scope.translate = function(){
+		$scope.language = $localStorage.language;
+		window.translate($scope, $localStorage.language, 'announce.html');
+		console.log('scope.language', $scope.language);
+		console.log('localStorage.language', $localStorage.language);
 	}
+
+	$scope.$on('translate', $scope.translate);
 	
 	$scope.getList();
 });

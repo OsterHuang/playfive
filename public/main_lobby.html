@@ -127,7 +127,7 @@
                         <td>{{g.seq}}</td>
                         <td>{{g.creator.nickname}}<span ng-show="g.creator.username == user.username">(Me)</span></td>
                         <td>
-                            {{translate_serverMsg(g.rule, language)}}
+                            {{translate_serverMsg(g.rule)}}
                         </td>
                         <td>
                             <span ng-show="g.timeRule.basicTime">{{str_basicTime}} {{g.timeRule.basicTime}} {{str_min}}.</span>

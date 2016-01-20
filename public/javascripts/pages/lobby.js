@@ -1,7 +1,7 @@
 
 lobbyPage = angular.module('lobbyPage', ['ngStorage']);
 
-lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $localStorage, $document, $window, $localStorage, socket) {
+lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $document, $window, $localStorage, socket) {
 
 	$scope.lobbyChat = {
         content:'',
