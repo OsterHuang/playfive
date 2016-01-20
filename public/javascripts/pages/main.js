@@ -1,5 +1,5 @@
-//var server_host = 'localhost';
-var server_host = '128.199.91.60';
+var server_host = 'localhost';
+//var server_host = '128.199.91.60';
 playfiveApp = angular.module('playfiveApp', 
                              ['lobbyPage', 'gamePage', 'announceList', 'announceCreate', 'announceEdit', 'userProfilePage', 
                               'ngStorage', 'ngAnimate', 'ngSanitize']);
@@ -68,7 +68,6 @@ playfiveApp.factory('socket', function ($rootScope) {
         }
     };
 });*/
-
 
 playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http, $window, 
         $timeout, $localStorage, socket) {    
@@ -198,6 +197,18 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
     
 	$scope.translate = function(language){
 		$localStorage.language = language;
-		window.translate($scope, language, 'main.html');
+		window.translate($scope, $localStorage.language, 'main.html');
+		
+		$scope.$broadcast('translate');
+		
+		window.translate($scope, $localStorage.language, 'announce.html');
+	}
+	
+	$scope.translate_serverMsg = function(str){
+		return window.translate_serverMsg(str, $localStorage.language);
+	}
+	
+	$scope.translate_result = function(str){
+		return window.translate_result(str, $localStorage.language);
 	}
 });
