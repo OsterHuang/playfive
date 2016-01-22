@@ -272,7 +272,9 @@ router.post('/reverify', function(req, res) {
 });
 
 router.post('/reset', function(req, res) {
-    // -Oster- Should check request parameters....
+    
+	console.log('reset 1');
+	// -Oster- Should check request parameters....
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
 		
     if(typeof req.body.username != 'undefined')
@@ -283,7 +285,8 @@ router.post('/reset', function(req, res) {
         console.log('no username & email');
         return;
     }
-
+	console.log('reset 2');
+	
     req.db.collection('user').findOne(
         restrict,
         function(err, doc){
@@ -297,6 +300,8 @@ router.post('/reset', function(req, res) {
                 console.log("帳號或email不存在。");
                 return;
             }
+			console.log('reset 3');
+	
             // -dogswang- 更新verifycode
             randomcode = genRandomCode();
             req.db.collection('user').update(
@@ -361,7 +366,7 @@ function send_verify_code(address, username, randomcode){
 	// -dogswang- 寄送確認信
 	var mailsender   = require("emailjs/email");
 	var server  = mailsender.server.connect({
-	   user:    "play5-admin@play5.org", 
+	   user:    "play5-admin@renju.org.tw", 
 	   password:"koko0206", 
 	   host:    "sp21.g-dns.com", 
 	   ssl:     true
@@ -375,7 +380,7 @@ function send_verify_code(address, username, randomcode){
 	;
 	server.send({
 	   text:    mailContent,
-	   from:    "admin@play5 <play5-admin@play5.org>", 
+	   from:    "admin@play5 <play5-admin@renju.org.tw>", 
 	   to:      address,
 	   cc:      "",
 	   subject: "play5 認證信 (verification mail from play5)"
@@ -386,7 +391,7 @@ function send_reset_code(address, username, randomcode){
 	// -dogswang- 寄送確認信
 	var mailsender   = require("emailjs/email");
 	var server  = mailsender.server.connect({
-	   user:    "play5-admin@play5.org", 
+	   user:    "play5-admin@renju.org.tw", 
 	   password:"koko0206", 
 	   host:    "sp21.g-dns.com", 
 	   ssl:     true
@@ -400,7 +405,7 @@ function send_reset_code(address, username, randomcode){
 	;
 	server.send({
 	   text:    mailContent,
-	   from:    "admin@play5 <play5-admin@play5.org>", 
+	   from:    "admin@play5 <play5-admin@renju.org.tw>", 
 	   to:      address,
 	   cc:      "",
 	   subject: "play5 請確認是否重設密碼 (Do you really want to reset your password in play5?)"
