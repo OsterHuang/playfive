@@ -43,6 +43,11 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             messages:[],
             isAutoScroll: true
         };
+        
+        //Clear opening data
+        $scope.gridAltChosen = null;
+        $scope.board.txtAltQty = null;
+        
         $interval.cancel($scope.timeLeft.counting);
         $interval.cancel($scope.timeLeft.syncing);
     }
@@ -495,7 +500,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
                 $scope.game.alts.splice(idx, 1);
                 grid.alt = null;
                 return;
-            } else if ($scope.game.status === 'alt-choosing') {
+            } else if ($scope.game.status === 'alt-choosing' && $scope.game.white.username === $rootScope.user.username) {
                 grid.alt.chosen = true;
                 $scope.gridAltChosen = grid;
                 return;
@@ -542,14 +547,14 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             $("stoneBlackConfirm").css({position:'flex'});
             $("stoneWhiteConfirm").css({position:'flex'});
             
-            if (!$scope.isDoubleClick) {
-                $timeout(
-                    function() {
-                        $("html, body").animate({ scrollTop: $(document).height() }, "slow");
-                    }
-                    , 300
-                );
-            }
+//            if (!$scope.isDoubleClick) {
+//                $timeout(
+//                    function() {
+//                        $("html, body").animate({ scrollTop: $(document).height() }, "slow");
+//                    }
+//                    , 300
+//                );
+//            }
         }
     }
     
@@ -678,9 +683,6 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             uid:$scope.game.uid,
             alt:$scope.gridAltChosen.alt
         });
-		//Clear dirty data
-		$scope.board.txtAltQty = null; 
-		$scope.gridAltChosen = null;
     }
     
     $scope.cancelAltChosen = function() {
@@ -984,6 +986,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         console.log('On swapped', game);
         $scope.game = game;
         $scope.resetTimeLeft(game);
+        $scope.calculateBothTimeLeft();
     });
     
     socket.on('game-alt-making-receive', function(game) {

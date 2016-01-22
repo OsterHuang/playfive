@@ -4,7 +4,7 @@ playfiveApp = angular.module('playfiveApp',
                              ['lobbyPage', 'gamePage', 'announceList', 'announceCreate', 'announceEdit', 'userProfilePage', 
                               'ngStorage', 'ngAnimate', 'ngSanitize']);
 
-playfiveApp.factory('socket', function ($rootScope, $timeout) {
+playfiveApp.factory('socket', function ($rootScope) {
   var socket = io.connect(
     'http://' + server_host + ':3030/',
     {'force new connection': true}
@@ -26,29 +26,8 @@ playfiveApp.factory('socket', function ($rootScope, $timeout) {
         },
  
         emit: function (eventName, data, callback) {
-//            var actionTime = new Date();
-//            var ackTime = null;
-//            
-//            $timeout(
-//                function () {
-//                    if (!ackTime) {
-//                        console.log('No ack from ' + eventName);
-//                        socket.disconnect();
-//                        socket = io.connect(
-//                            'http://' + server_host + ':3030/',
-//                            {'force new connection': true}
-//                        );
-//                    }
-//                }, 
-//                4000
-//            );  
-            
-            socket.emit(eventName, data, function (data) {
+            socket.emit(eventName, data, function () {
                 var args = arguments;
-                
-//                var ackTime = new Date();
-//                console.log('Callback from emit....', data);
-                
                 $rootScope.$apply(function () {
                     if(callback) {
                         callback.apply(socket, args);
@@ -161,7 +140,8 @@ playfiveApp.controller('playfiveController', function ($rootScope, $scope, $http
                      role:$rootScope.user.role,
                      status:$rootScope.user.status,
                      rating:$rootScope.user.rating         
-                    }
+                    }, 
+                    null
                 );
             }
             

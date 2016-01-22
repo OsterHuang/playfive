@@ -11,7 +11,7 @@
                 <div class="game-info row">
 
                     <div>
-                        {{str_amountOfMoves}} {{game.moves.length + 1}}  
+                        {{str_amountOfMoves}} {{game.moves.length + 1}}
                     </div>
                     
                     <div ng-show="game.isMySelf">
@@ -79,6 +79,7 @@
                     
 
                     <div style="margin:16px; font-size:14px" class="alert alert-warning" role="alert">
+                        
                         <span ng-show="isWhiteTurn()">
                             <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
                             {{str_whosTurn}}
@@ -87,6 +88,11 @@
                         <span ng-show="isBlackTurn()">
                             <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
                             {{str_whosTurn}}
+                        </span>
+                        
+                        <span ng-hide="game.moves.length == 0 || game.moves[game.moves.length - 1].ordinate"
+                              class="badge">
+                            {{game.moves.length}}-{{str_offerPass}}
                         </span>
 
                         <span ng-show="game.status === 'opening'" >
@@ -118,25 +124,54 @@
 
     <div class="col-sm-6">
         
-        <!-- Action -->
-        <div style="text-align:center; padding-bottom:6px; ">
-            <div id="divGameAction" ng-show="game && isMyGame()" >
-                <span ng-show="game.status === 'started'">
-                    <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">{{str_offerDraw}}</button>
-                    <button class="" ng-show="!game.isMySelf && isMyTurn()" ng-click="confirmPass()" >{{str_offerPass}}</button>
-                    <button class="" ng-show="game.isMySelf && isMyTurn() && game.moves.length >= 1" ng-click="undoMyselfGame()">{{str_undo}}</button>
-                </span>
-                
-                <button class="" ng-show="!game.isMySelf && game.status != 'finished'" ng-click="confirmResign()" >{{str_resign}}</button>
-                <button class="" ng-show="game.isMySelf && game.status != 'finished'" ng-click="finishMyselfGame()" >Finish</button>
-                <button class="" ng-show="game.status === 'finished'" ng-click="quitGame()">{{str_quit}}</button>
-                
-                <button class="" ng-show="game.status === 'opening' && game.tempBlack.username === user.username" ng-click="undoOpening()">{{str_undo}}</button>
-                
+        
+        
+        <!-- Game flow action -->
+        <div style="min-height:40px; text-align:center">
+            <div ng-show="board.firstClickMove && !isDoubleClick && !invalidOpeningMsg">
+                <button class="btn btn-primary" style="width:40%" ng-click="confirmNextMove()">
+                    <span class="glyphicon glyphicon-ok"></span>
+                </button>
+                <button class="btn btn-primary" style="width:40%" ng-click="cancelNextMove()">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
             </div>
-            
-            <div id="divWatchAction" ng-show="game && !isMyGame()">
-                <button class="" ng-click="quitWatchedGame()">{{str_quit}}</button>
+
+            <div ng-show="invalidOpeningMsg" class="alert alert-danger" role="alert">
+                {{invalidOpeningMsg}}
+            </div>
+
+            <div ng-show="isOpeningEnd()">
+                <input type="number" size="8" style="text-align:right; width:auto; display:inline; padding:6px 4px" class="form-control" placeholder="5th Qty" 
+                       ng-model="board.txtAltQty" ng-model-options="{debounce:400}" 
+                       ng-change="changeOnAltQty()" ng-show="game.rule === 'yamaguchi'" focus-on-show/>
+                <button class="btn btn-success"  ng-click="confirmOpening()" ng-disabled="game.rule === 'yamaguchi' && !game.altQty">
+                    <span class="glyphicon glyphicon-thumbs-up" >{{str_confirmOpening}}</span>
+                </button>
+            </div>
+
+            <div ng-show="game.status === 'alt-making' && (game.rule === 'classic' || game.rule === 'yamaguchi') && game.alts.length == game.altQty && isMyTurn()">
+                <button class="btn btn-success"  ng-click="confirmAlternatives()">
+                    <span class="glyphicon glyphicon-thumbs-up">{{str_confirmAlts}}.</span>
+                </button>
+            </div>
+
+            <div ng-show="game.status === 'swapping' && isMyTurn()">
+                <button class="btn btn-default"  ng-click="confirmSwap(true)">
+                    <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
+                </button>
+                <button class="btn btn-default"  ng-click="confirmSwap(false)">
+                    <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
+                </button>
+            </div>
+
+            <div ng-show="game.status === 'alt-choosing' && gridAltChosen">
+                <button class="btn btn-default"  ng-click="confirmAltChosen()">
+                    <span class="glyphicon glyphicon-ok"></span>
+                </button>
+                <button class="btn btn-default"  ng-click="cancelAltChosen()">
+                    <span class="glyphicon glyphicon-remove"></span>
+                </button>
             </div>
         </div>
         
@@ -219,75 +254,31 @@
                     </td>
                     <td></td>
                 </tr>
-            </table>
-            
-            <!-- Game flow action -->
-            <div style="margin:16px" ng-show="board.firstClickMove && !isDoubleClick && !invalidOpeningMsg">
-                <button class="btn btn-primary" style="width:40%" ng-click="confirmNextMove()">
-                    <span class="glyphicon glyphicon-ok"></span>
-                </button>
-                <button class="btn btn-primary" style="width:40%" ng-click="cancelNextMove()">
-                    <span class="glyphicon glyphicon-remove"></span>
-                </button>
-            </div>
-            
-            <div style="margin:16px" ng-show="invalidOpeningMsg" class="alert alert-danger" role="alert">
-                {{invalidOpeningMsg}}
-            </div>
-            
-            <div style="margin:16px" ng-show="isOpeningEnd()">
+            </table>      
+        </div>
+        
+        <!-- Action -->
+        <div style="text-align:center; padding-top:6px; padding-bottom:6px">
+            <div id="divGameAction" ng-show="game && isMyGame()" >
+                <span ng-show="game.status === 'started'">
+                    <button class="" ng-show="!isMyTurn()" ng-click="confirmDrawRequest()">{{str_offerDraw}}</button>
+                    <button class="" ng-show="!game.isMySelf && isMyTurn()" ng-click="confirmPass()" >{{str_offerPass}}</button>
+                    <button class="" ng-show="game.isMySelf && isMyTurn() && game.moves.length >= 1" ng-click="undoMyselfGame()">{{str_undo}}</button>
+                </span>
                 
-				<!--input type="text" size="8" style="text-align:right; width:auto; display:inline; padding:6px 4px" class="form-control" placeholder="5th Qty" 
-                       ng-model="board.txtAltQty" ng-model-options="{debounce:400}" 
-                       ng-change="changeOnAltQty()" ng-show="game.rule === 'yamaguchi'" focus-on-show/-->
-                <select type="select" style="width:auto; display:inline; padding:6px 4px" class="form-control"
-                       ng-model="board.txtAltQty"
-                       ng-change="changeOnAltQty()" ng-show="game.rule === 'yamaguchi'" focus-on-show>
-					<option value="1">1</option>
-					<option value="2">2</option>
-					<option value="3">3</option>
-					<option value="4">4</option>
-					<option value="5">5</option>
-					<option value="6">6</option>
-					<option value="7">7</option>
-					<option value="8">8</option>
-					<option value="9">9</option>
-					<option value="10">10</option>
-					<option value="11">11</option>
-					<option value="12">12</option>
-					<option value="13">13</option>
-					<option value="14">14</option>
-					<option value="15">15</option>
-				</select>
-                <button class="btn btn-success"  ng-click="confirmOpening()" ng-disabled="game.rule === 'yamaguchi' && !game.altQty">
-                    <span class="glyphicon glyphicon-thumbs-up" >{{str_confirmOpening}}</span>
-                </button>
+                <button class="" ng-show="!game.isMySelf && game.status != 'finished'" ng-click="confirmResign()" >{{str_resign}}</button>
+                <button class="" ng-show="game.isMySelf && game.status != 'finished'" ng-click="finishMyselfGame()" >Finish</button>
+                <button class="" ng-show="game.status === 'finished'" ng-click="quitGame()">{{str_quit}}</button>
+                
+                <button class="" ng-show="game.status === 'opening' && game.tempBlack.username === user.username" ng-click="undoOpening()">{{str_undo}}</button>
+                
             </div>
             
-            <div style="margin:16px" ng-show="game.status === 'alt-making' && (game.rule === 'classic' || game.rule === 'yamaguchi') && game.alts.length == game.altQty && isMyTurn()">
-                <button class="btn btn-success"  ng-click="confirmAlternatives()">
-                    <span class="glyphicon glyphicon-thumbs-up">{{str_confirmAlts}}.</span>
-                </button>
-            </div>
-            
-            <div style="margin:16px" ng-show="game.status === 'swapping' && isMyTurn()">
-                <button class="btn btn-default"  ng-click="confirmSwap(true)">
-                    <img src="./images/board/black.png" style="width:20px; vertical-align:bottom" />
-                </button>
-                <button class="btn btn-default"  ng-click="confirmSwap(false)">
-                    <img src="./images/board/white.png" style="width:20px; vertical-align:bottom" />
-                </button>
-            </div>
-            
-            <div style="margin:16px" ng-show="game.status === 'alt-choosing' && gridAltChosen">
-                <button class="btn btn-default"  ng-click="confirmAltChosen()">
-                    <span class="glyphicon glyphicon-ok"></span>
-                </button>
-                <button class="btn btn-default"  ng-click="cancelAltChosen()">
-                    <span class="glyphicon glyphicon-remove"></span>
-                </button>
+            <div id="divWatchAction" ng-show="game && !isMyGame()">
+                <button class="" ng-click="quitWatchedGame()">{{str_quit}}</button>
             </div>
         </div>
+        
     </div>
     
     <div class="col-sm-3  full-height">
