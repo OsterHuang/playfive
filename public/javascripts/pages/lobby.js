@@ -239,11 +239,16 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $do
         socket.emit('lobby-join-game', {joinGame:data});
     });  
     
-    socket.on('lobby-chat-receive', function(message) {
+    $scope.sounds = {
+        msgPop:new Audio('../../sounds/undo.wav'),
+    }
+	
+	socket.on('lobby-chat-receive', function(message) {
         console.log('On lobby-chat-receive', message);
         message.formatedSendTime = formatTime(new Date(message.sendTime));
         $scope.lobbyChat.messages.push(message);
-        
+        $scope.sounds.msgPop.play();
+		
         if (message.from === $rootScope.user.nickname) {
             $scope.lobbyChatOut.content = '';
         }

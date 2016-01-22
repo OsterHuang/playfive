@@ -361,13 +361,13 @@ function send_verify_code(address, username, randomcode){
 	// -dogswang- 寄送確認信
 	var mailsender   = require("emailjs/email");
 	var server  = mailsender.server.connect({
-	   user:    "play5-admin@renju.org.tw", 
+	   user:    "play5-admin@play5.org", 
 	   password:"koko0206", 
 	   host:    "sp21.g-dns.com", 
 	   ssl:     true
 	});
 	// send the message and get a callback with an error or details of the message that was sent
-	var verifyurl = "http://128.199.91.60:3000/account/verify?account="+ username +"&code="+ randomcode;
+	var verifyurl = "http://play5.org/account/verify?account="+ username +"&code="+ randomcode;
 	var mailContent = 
 		"請拜訪 " + verifyurl 
 		+ " 啟用您的帳號。Please visit " 
@@ -375,7 +375,7 @@ function send_verify_code(address, username, randomcode){
 	;
 	server.send({
 	   text:    mailContent,
-	   from:    "admin@play5 <play5-admin@renju.org.tw>", 
+	   from:    "admin@play5 <play5-admin@play5.org>", 
 	   to:      address,
 	   cc:      "",
 	   subject: "play5 認證信 (verification mail from play5)"
@@ -386,13 +386,13 @@ function send_reset_code(address, username, randomcode){
 	// -dogswang- 寄送確認信
 	var mailsender   = require("emailjs/email");
 	var server  = mailsender.server.connect({
-	   user:    "play5-admin@renju.org.tw", 
+	   user:    "play5-admin@play5.org", 
 	   password:"koko0206", 
 	   host:    "sp21.g-dns.com", 
 	   ssl:     true
 	});
 	// send the message and get a callback with an error or details of the message that was sent
-	var verifyurl = "http://128.199.91.60:3000/account/reset?account="+ username +"&code="+ randomcode;
+	var verifyurl = "http://play5.org/account/reset?account="+ username +"&code="+ randomcode;
 	var mailContent = 
 		"我們收到您重設"+ username +"之密碼的要求，如果您確定要修改您在play5的密碼，請點 "+ verifyurl + " ，謝謝。"
 		+ "We receive an request to reset your password in Play5. If you really want to reset your password, please visit "
@@ -400,7 +400,7 @@ function send_reset_code(address, username, randomcode){
 	;
 	server.send({
 	   text:    mailContent,
-	   from:    "admin@play5 <play5-admin@renju.org.tw>", 
+	   from:    "admin@play5 <play5-admin@play5.org>", 
 	   to:      address,
 	   cc:      "",
 	   subject: "play5 請確認是否重設密碼 (Do you really want to reset your password in play5?)"

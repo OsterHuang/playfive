@@ -422,7 +422,9 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     $scope.board.txtAltQty = null;
     
     $scope.sounds = {
-        going:new Audio('../../sounds/stone.wav')
+		msgPop:new Audio('../../sounds/undo.wav'),
+        going:new Audio('../../sounds/stone.wav'),
+		gameover:new Audio('../../sounds/gameover.wav')
     }
 
     //　----
@@ -910,6 +912,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 
         $scope.arrangeMoves();
         
+		console.log('$scope.sounds:', $scope.sounds);
         $scope.sounds.going.play();
     });
     
@@ -936,6 +939,9 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             },
             5
         );
+		
+		console.log('$scope.sounds:', $scope.sounds);
+		$scope.sounds.gameover.play();
     });
     
     socket.on('game-leaved', function() {
@@ -943,11 +949,12 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $rootScope.user.myProgressingGame = null;
     });
     
-    socket.on('game-room-chat-receive', function(message) {
+	socket.on('game-room-chat-receive', function(message) {
         console.log('On game-room-chat-receive', message);
         message.formatedSendTime = formatTime(new Date(message.sendTime));
         $scope.gameRoomChat.messages.push(message);
-        
+        $scope.sounds.msgPop.play();
+		
         if (message.from === $rootScope.user.nickname) {
             $scope.gameRoomChatOut.content = '';
         }

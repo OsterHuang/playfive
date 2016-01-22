@@ -60,6 +60,7 @@ function symFinder(stones){
 			arr[2] = {ordinate: {x: (p+q-y), y: (p+q-x)}};
 			return arr;
 		}
+		return arr;
 	}
 	else{
 		if(a==0){ //對稱軸垂直，為左右對稱

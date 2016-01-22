@@ -137,9 +137,9 @@
                 </button>
             </div>
 
-            <div ng-show="invalidOpeningMsg" class="alert alert-danger" role="alert">
+            <!--div ng-show="invalidOpeningMsg" class="alert alert-danger" role="alert">
                 {{invalidOpeningMsg}}
-            </div>
+            </div-->
 
             <div ng-show="isOpeningEnd()">
                 <input type="number" size="8" style="text-align:right; width:auto; display:inline; padding:6px 4px" class="form-control" placeholder="5th Qty" 
@@ -311,7 +311,7 @@
                 
                 <form role="form">
                     <div class="input-group" style="margin-top:5%">
-                        <input type="text" class="form-control" placeholder="Your message" ng-model="gameRoomChatOut.content">
+                        <input type="text" class="form-control" placeholder="{{str_yourMessage}}" ng-model="gameRoomChatOut.content">
                         <span class="input-group-btn">
                             <button class="btn btn-default" type="submit" ng-click="chatInGame()">{{str_send}}</button>
                         </span>
