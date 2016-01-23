@@ -267,7 +267,7 @@
                 </span>
                 
                 <button class="" ng-show="!game.isMySelf && game.status != 'finished'" ng-click="confirmResign()" >{{str_resign}}</button>
-                <button class="" ng-show="game.isMySelf && game.status != 'finished'" ng-click="finishMyselfGame()" >Finish</button>
+                <button class="" ng-show="game.isMySelf && game.status != 'finished'" ng-click="finishMyselfGame()" >{{str_finish}}</button>
                 <button class="" ng-show="game.status === 'finished'" ng-click="quitGame()">{{str_quit}}</button>
                 
                 <button class="" ng-show="game.status === 'opening' && game.tempBlack.username === user.username" ng-click="undoOpening()">{{str_undo}}</button>

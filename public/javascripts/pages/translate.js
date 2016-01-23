@@ -121,6 +121,7 @@ function translate($scope, language, filename){
 			$scope.str_morePerMoveTime = '最短每手時限：5 秒';
 			$scope.str_morePlusTime = '最短每手加秒： 5 秒';
 			$scope.str_notInt = '請輸入整數';
+			$scope.str_finish = '結束';
 			//$scope.str_ = '';
 		break;
 		case 'English':
@@ -195,6 +196,7 @@ function translate($scope, language, filename){
 			$scope.str_morePerMoveTime = 'minimum: 5 seconds';
 			$scope.str_morePlusTime = 'minimum: 5 seconds';
 			$scope.str_notInt = 'Please input integer.';
+			$scope.str_finish = 'Finish';
 		break;
 		}
 	}

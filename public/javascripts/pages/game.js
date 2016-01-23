@@ -710,7 +710,9 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     }
     
     $scope.chatInGame = function() {
-        socket.emit('game-room-chat-send', {from:$rootScope.user.nickname, gameSeq:$scope.game.seq, content:$scope.gameRoomChatOut.content});
+        console.log('$scope.gameRoomChatOut: ', $scope.gameRoomChatOut);
+		if($scope.gameRoomChatOut.content != '')
+			socket.emit('game-room-chat-send', {from:$rootScope.user.nickname, gameSeq:$scope.game.seq, content:$scope.gameRoomChatOut.content});
     }
     $scope.onGameChatScroll = function(event) {
         $scope.gameRoomChat.isAutoScroll = false;
