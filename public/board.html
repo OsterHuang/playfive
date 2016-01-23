@@ -3,10 +3,11 @@
     
 <head>
     <meta charset="utf-8">
-    <title>Analysis Board</title>
+    <title>Board for Share</title>
+    <link rel="stylesheet" href="stylesheets/bootstrap.min.css">
     <script src="./javascripts/jquery.min.js"></script>
     <script src="./javascripts/play5board.js"></script>
-    
+    <script src="./javascripts/bootstrap.min.js"></script>
     <script>
         $(document).ready(function() {
             var play5board = document.getElementById('divGameBoardAnalysis').play5board;
@@ -22,9 +23,13 @@
 		<div id="divGameBoardAnalysis" class="play5board" pb-width="400" pb-editable="true">
         </div>
 		<br>
-		<div id="url4Share" style="width:400px; word-break:break-all"></div>
+		<div id="url4Share" style="width:432px; word-break:break-all"></div>
 		<br>
-		<div style="width:400px;">Visit <a href='http://play5.org/'>http://play5.org/</a> to play Gomoku/Renju NOW!!</div>
+		<div style="width:432px; text-align:right">
+		<button class="btn" onclick="location.href='http://play5.org'">
+			<span class="glyphicon glyphicon-share"></span>  play5.org
+		</button>
+		</div>
 		
 </body>
     

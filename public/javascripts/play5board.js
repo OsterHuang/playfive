@@ -606,6 +606,7 @@ function toMovesObj(rawString, boardSize) {
     if (!rawString || rawString.trim().length == 0)
         return [];
     
+	rawString = unescape(rawString);
     var rawMovesString = rawString.split(/[ ,]+/);
     var moves = [];
     
