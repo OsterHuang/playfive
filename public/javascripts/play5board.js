@@ -311,6 +311,18 @@
             for (var i = 0; i < parentObj.moves.length; i++) {
                 parentObj.paintOneMove(parentObj.moves[i]);
             }
+			
+			var movesUrl = 'http://play5.org/board.html?moves=';
+			
+			for(var i=0; i < parentObj.moves.length; i++) {
+				//console.log(parentObj.moves[i].ordinate);
+				console.log(toReadableOrdinate(parentObj.moves[i].ordinate, parentObj.boardSize));
+				movesUrl += toReadableOrdinate(parentObj.moves[i].ordinate, parentObj.boardSize);
+				if(i!=parentObj.moves.length-1)
+					movesUrl += ',';
+				console.log('movesUrl:', movesUrl);
+				document.getElementById('url4Share').innerHTML = movesUrl;
+			}
         };
                     
         this.paintOneMove = function(pMove) {
