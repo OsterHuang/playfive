@@ -38,6 +38,7 @@
         this.element = element;
         this.previewWhite;
         this.previewBlack;
+        this.panelUrl;
         this.panelNav;
         this.panelTrace;
         
@@ -160,6 +161,7 @@
 //                            parentObj.paintOneTraceMove(newMove);
                             parentObj.repaintMoves();
                             parentObj.repaintTraceMoves();
+                            parentObj.renewExportString();
                             
                             return;
                         }
@@ -175,6 +177,7 @@
                             
                             parentObj.repaintMoves();
                             parentObj.repaintTraceMoves();
+                            parentObj.renewExportString();
                         }
                     }
                 }
@@ -223,6 +226,85 @@
             
         };
         
+        this.paintUrlArea = function() {
+            // Create Div element
+            var xDiv = document.createElement("div");
+            parentObj.element.appendChild(xDiv);
+            xDiv.style.backgroundColor = "#F9F9F9";
+            xDiv.style.padding = "4px";
+            
+            xDiv.style.borderStyle = "solid";
+            xDiv.style.borderWidth = "1px"
+            xDiv.style.borderColor = "#B2B2B2";
+            xDiv.style.borderRadius = "6px"
+//            xDiv.style.position = "absolute";
+            xDiv.style.display = "none";
+            xDiv.style.width = parentObj.boardWidth;
+            xDiv.style.color =  "#3C3030";
+            xDiv.style.fontFamily = "monospace"
+            
+            parentObj.panelUrl = xDiv;   
+            
+            // Create Select all Button
+            var xSelectAll = document.createElement("div");
+            xSelectAll.innerHTML = "&boxbox;";
+            xSelectAll.style.cursor = "pointer";
+            xSelectAll.style.float = "left";
+            xSelectAll.style.color = "#666666";
+            
+            xSelectAll.style.borderStyle = "solid";
+            xSelectAll.style.borderWidth = "1px"
+            xSelectAll.style.borderColor = "#B2B2B2";
+            xSelectAll.style.borderRadius = "6px";
+            xSelectAll.style.width = "30px";
+            
+            
+            xSelectAll.onmouseover = function(event) {
+                xSelectAll.style.backgroundColor = "#CCCCCC";
+            }
+            xSelectAll.onmouseout = function(event) {
+                xSelectAll.style.backgroundColor = "white";
+            }
+            
+            parentObj.panelUrl.appendChild(xSelectAll);
+            
+            // Create Text Area
+            var xSpanUrl = document.createElement("textarea");
+            parentObj.panelUrl.appendChild(xSpanUrl);
+            parentObj.panelUrl.spanUrl = xSpanUrl;
+            parentObj.panelUrl.spanUrl.style.width = parentObj.boardWidth + "px";
+            parentObj.panelUrl.spanUrl.style.resize = "none";
+            parentObj.panelUrl.spanUrl.style.overflow = "hidden";
+            
+            // Select all button action to select ALL url
+//            xSelectAll.onclick = function(event) {
+            xSelectAll.onclick = function(event) {
+                // Deselect all
+                if (document.selection) document.selection.empty(); 
+                else if (window.getSelection) window.getSelection().removeAllRanges();
+                
+                if (document.selection) {
+                    var range = document.body.createTextRange();
+                    range.moveToElementText(parentObj.panelUrl.spanUrl);
+                    range.select();
+                }
+                else if (window.getSelection) {
+                    var range = document.createRange();
+                    range.selectNode(parentObj.panelUrl.spanUrl);
+                    window.getSelection().addRange(range);
+                }
+            }
+            
+            // -- URL function --
+            parentObj.panelUrl.setText = function(urlString) {
+                parentObj.panelUrl.spanUrl.value = urlString;
+                //Auto grow hiehgt
+                parentObj.panelUrl.spanUrl.style.height = "auto";
+                parentObj.panelUrl.spanUrl.style.height = parentObj.panelUrl.spanUrl.scrollHeight+'px';
+            }
+            
+        }
+        
         this.paintNavPanel = function() {
             var xDiv = document.createElement("div");
             parentObj.element.appendChild(xDiv);
@@ -256,13 +338,37 @@
             xDiv.appendChild(xBtnEnd);
             xBtnEnd.innerHTML = "&gt;&gt;";
             xBtnEnd.onclick = function(event) {parentObj.navigateToEnd()};
+            
+            // -- Button Export
+            var xBtnExport = parentObj.createNavButton();
+            xDiv.appendChild(xBtnExport);
+            xBtnExport.innerHTML = "&#8632;";
+            xBtnExport.style.marginLeft = "20px";
+            xBtnExport.onclick = function(event) {
+                if (parentObj.panelUrl.isShow) {
+                    parentObj.panelUrl.style.display = "none";
+                    parentObj.panelUrl.isShow = false;
+                } else {
+                    parentObj.panelUrl.style.display = "block";
+                    parentObj.panelUrl.isShow = true;
+                    
+                    parentObj.renewExportString();
+                }
+                
+                parentObj.panelUrl.spanUrl.style.height = "auto";
+                parentObj.panelUrl.spanUrl.style.height = parentObj.panelUrl.spanUrl.scrollHeight+'px';
+            };
  
-            // -- Button reload
+            // -- Button reload confirm
             var xBtnReload = parentObj.createNavButton();
             xDiv.appendChild(xBtnReload);
-            xBtnReload.innerHTML = "&#9851;";
-            xBtnReload.onclick = function(event) {parentObj.reloadMoves();}
-            
+            xBtnReload.innerHTML = "&#x21bb;";
+            xBtnReload.style.float = "right";
+            xBtnReload.onclick = function(event) {
+                var confirmed = confirm("Reload ？");
+                if (confirmed)
+                    parentObj.reloadMoves();
+            }
             
             var xDivCollapse = document.createElement("div");
             xDiv.appendChild(xDivCollapse);
@@ -311,18 +417,7 @@
             for (var i = 0; i < parentObj.moves.length; i++) {
                 parentObj.paintOneMove(parentObj.moves[i]);
             }
-			
-			var movesUrl = 'http://play5.org/board.html?moves=';
-			
-			for(var i=0; i < parentObj.moves.length; i++) {
-				//console.log(parentObj.moves[i].ordinate);
-				console.log(toReadableOrdinate(parentObj.moves[i].ordinate, parentObj.boardSize));
-				movesUrl += toReadableOrdinate(parentObj.moves[i].ordinate, parentObj.boardSize);
-				if(i!=parentObj.moves.length-1)
-					movesUrl += ',';
-				console.log('movesUrl:', movesUrl);
-				document.getElementById('url4Share').innerHTML = movesUrl;
-			}
+            
         };
                     
         this.paintOneMove = function(pMove) {
@@ -359,7 +454,7 @@
             stone.seq = stoneSeq;
 
             var grid = document.getElementById(parentObj.element.id + '_x' + stone.move.ordinate.x + '_y' + stone.move.ordinate.y);
-            console.log(' - find grid by id - ' + parentObj.element.id + '_x' + stone.move.ordinate.x + '_y' + stone.move.ordinate.y);
+            //console.log(' - find grid by id - ' + parentObj.element.id + '_x' + stone.move.ordinate.x + '_y' + stone.move.ordinate.y);
             grid.appendChild(stone);
             grid.stone = stone;
             stone.grid = grid; 
@@ -418,6 +513,22 @@
                     parentObj.moves[i].stone.style.display = 'none';
                 }
             }
+            this.renewExportString();
+        }
+        
+        this.renewExportString = function() {
+			var movesUrl = document.location.origin + document.location.pathname + '?moves=';
+			
+			for(var i = 0; i < parentObj.showingSeq; i++) {
+//				console.log(toReadableOrdinate(parentObj.moves[i].ordinate, parentObj.boardSize));
+				movesUrl += toReadableOrdinate(parentObj.moves[i].ordinate, parentObj.boardSize);
+				if(i != parentObj.showingSeq - 1)
+					movesUrl += ',';
+//				console.log('movesUrl:', movesUrl);
+//				document.getElementById('url4Share').innerHTML = movesUrl;
+			}
+            
+            this.panelUrl.setText(movesUrl);
         }
         
         
@@ -494,9 +605,12 @@
     Play5Board.prototype.display = function() {
         this.paintBoard();
         this.paintMoves();
+        this.paintUrlArea();
         this.paintNavPanel();
         this.paintTracePanel();
         this.paintTraceMoves();
+        
+        this.renewExportString();
     };
 
     /**
@@ -545,6 +659,7 @@
         this.showingSeq = this.moves.length;
         this.repaintMoves();
         this.repaintTraceMoves();
+        this.renewExportString();
     }
     
     Play5Board.prototype.showOrHideNumber = function(isShow) {
