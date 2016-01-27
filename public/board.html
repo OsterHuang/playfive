@@ -14,13 +14,77 @@
             play5board.setMoves(toMovesObj(rawString, play5board.getBoardSize()));
             play5board.reloadMoves();
         });
+        
+        function gotoPlay5() {
+            showMessage();
+            //location.href='http://play5.org/main.html';
+        }
+        
+        function showMessage() {
+            $('.message').fadeIn(1000).delay(2000).fadeOut(750, "linear");
+        }
     </script>
+    
+    <style>
+        @media (min-width: 600px) {
+          
+        }
+        
+        
+        .header {
+            font-family: "Helvetica Neue",Helvetica,Arial,sans-serif;
+            font-size: 14px;
+            line-height: 1.42857143;
+        }
+        
+        .header .maintext {
+            color:white; font-size:28px; font-weight:bold; margin:10px; cursor:pointer;
+        }
+        
+        .header .subtext {
+            color: white;
+            font-size: 12px;
+            font-family: fantasy;
+            align-content: flex-start;
+            position: absolute;
+        }
+        
+        .message {
+            margin:30px;
+            padding:6px;
+            background-color:#F4F4F4;
+            border:1px solid #D4D4D4;
+            border-radius: 10px;
+            color: #524E4E;
+            position:absolute;
+            opacity: 0.9;
+            display:none;
+        }
+    </style>
 </head>
     
-<body>
-        
-		<div id="divGameBoardAnalysis" class="play5board" pb-width="400" pb-editable="true">
+<body style="margin:0px">
+    
+    <div class="header" style="background-color:#337ab7; height:60px">
+        <div style="float:left">
+            <div class="maintext" onclick="gotoPlay5()">
+                play5.org
+            </div>
         </div>
+        
+        <div class="subtext">
+            Share your game / 分享你的棋局 on 
+        </div>
+        
+        <div class="message">
+            Something surprise... <br /> 將會給你一個驚喜
+        </div>
+    </div>
+    
+    
+        
+    <div id="divGameBoardAnalysis" class="play5board" pb-width="400" pb-editable="true" style="margin:20px">
+    </div>
 </body>
     
 </html>
