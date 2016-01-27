@@ -12,7 +12,7 @@ router.get('/', function(req, res, next) {
 
 router.post('/createAccount', function(req, res, next) {
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
-		
+	console.log('*******req is: ', req.headers);
     var randomcode = genRandomCode();
     req.db.collection('user').insertOne({
         username:req.body.username,
@@ -272,7 +272,9 @@ router.post('/reverify', function(req, res) {
 });
 
 router.post('/reset', function(req, res) {
-    // -Oster- Should check request parameters....
+    
+	console.log('reset 1');
+	// -Oster- Should check request parameters....
     console.log(" Request data: " + util.inspect(req.body, {showHidden: false, depth: null}));
 		
     if(typeof req.body.username != 'undefined')
@@ -283,7 +285,8 @@ router.post('/reset', function(req, res) {
         console.log('no username & email');
         return;
     }
-
+	console.log('reset 2');
+	
     req.db.collection('user').findOne(
         restrict,
         function(err, doc){
@@ -297,6 +300,8 @@ router.post('/reset', function(req, res) {
                 console.log("帳號或email不存在。");
                 return;
             }
+			console.log('reset 3');
+	
             // -dogswang- 更新verifycode
             randomcode = genRandomCode();
             req.db.collection('user').update(
@@ -367,7 +372,7 @@ function send_verify_code(address, username, randomcode){
 	   ssl:     true
 	});
 	// send the message and get a callback with an error or details of the message that was sent
-	var verifyurl = "http://128.199.91.60:3000/account/verify?account="+ username +"&code="+ randomcode;
+	var verifyurl = "http://play5.org/account/verify?account="+ username +"&code="+ randomcode;
 	var mailContent = 
 		"請拜訪 " + verifyurl 
 		+ " 啟用您的帳號。Please visit " 
@@ -392,7 +397,7 @@ function send_reset_code(address, username, randomcode){
 	   ssl:     true
 	});
 	// send the message and get a callback with an error or details of the message that was sent
-	var verifyurl = "http://128.199.91.60:3000/account/reset?account="+ username +"&code="+ randomcode;
+	var verifyurl = "http://play5.org/account/reset?account="+ username +"&code="+ randomcode;
 	var mailContent = 
 		"我們收到您重設"+ username +"之密碼的要求，如果您確定要修改您在play5的密碼，請點 "+ verifyurl + " ，謝謝。"
 		+ "We receive an request to reset your password in Play5. If you really want to reset your password, please visit "

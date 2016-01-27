@@ -85,13 +85,17 @@ router.post('/login', function(req, res, next) {
                         return; 
 
                     } else {
-                        res.status(200).json({
+                        if(typeof document.language == 'undefined')
+							document.language = 'English';
+						res.status(200).json({
                             result:'success',
                             message:'Login success.',
-                            token:token
+                            token:token,
+							language:document.language
                         });
 
-                        console.log(results);
+                        console.log('language is:', document.language);
+						console.log(results);
                     }
                 }
             );

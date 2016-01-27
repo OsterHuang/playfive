@@ -12,3 +12,48 @@
     margin-top:8px;
     margin-bottom:8px;
 }
+
+.chat {
+    /*
+    padding: 1px;
+    background: #f4f4f4;
+    border-radius: 4px;
+    border:solid #cccccc 1px;*/
+    overflow:scroll;
+}
+
+.chat .message {
+    padding:4px;
+    background-color:white;
+    box-shadow: 1px 1px 2px 1px #888;
+    margin-top: 4px;
+    margin-bottom: 6px;
+    margin-left:4px;
+    margin-right:4px;
+    border-radius: 4px;
+    
+    word-wrap: break-word;
+}
+
+.chat .message:hover{
+    background-color:#EEEEEE;
+}
+
+.chat .message .info {
+    border-bottom: solid 1px #cccccc;
+}
+
+.chat .message .nickname {
+    color:#333333;
+    font-synthesis: weight;
+}
+
+.chat .message .content {
+    color:#666666;
+}
+
+.chat .message .time {
+    font-size:10px;
+    float:right;
+    color:cornflowerblue;
+}

@@ -1,0 +1,41 @@
+
+<div class="container-fluid">
+    <form novalidate class="form-horizontal">
+        <span class="form-group">
+            <span class="col-sm-2"></span>
+            <label class="col-sm-2 control-label">分類</label>
+            <span class="col-sm-6">
+                <input type="text" ng-model="newAnnounce.category" class="form-control" placeholder="Category" required/> 
+            </span>
+            <span class="col-sm-2"></span>
+        </span>
+        <span class="form-group">
+            <span class="col-sm-2"></span>
+            <label class="col-sm-2 control-label">標題</label>
+            <span class="col-sm-6">
+                <input type="text" ng-model="newAnnounce.title" class="form-control" placeholder="Title" required/> 
+            </span>
+            <span class="col-sm-2"></span>
+        </span>
+
+        <span class="form-group">
+            <span class="col-sm-2"></span>
+            <label class="col-sm-2 control-label">內容</label>
+            <span class="col-sm-6">
+                <textarea ng-model="newAnnounce.content" rows="10" class="form-control" placeholder="Content"></textarea>
+            </span>
+            <span class="col-sm-2"></span>
+        </span>
+
+        <div style="margin-left:50%; margin-right:50%; text-align:center; display:table">
+            <button class="btn" ng-click="create()">                    
+                新增 / Create
+                <span class="glyphicon glyphicon-plus"></span>
+            </button>
+            <button class="btn btn-link" ng-click="backToList()" ng-show="creatingAnnounce">                    
+                回列表
+                <span class="glyphicon glyphicon-list-alt"></span>
+            </button>
+        </div>
+    </form>
+</div>

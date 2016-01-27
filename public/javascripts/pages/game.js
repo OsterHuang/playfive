@@ -29,8 +29,8 @@ gamePage.directive('focusOnShow', function($timeout) {
 });
 
 gamePage.controller('gameController', function ($rootScope, $scope, $http, $window, $timeout, $interval, socket) {
-    
 
+    
     // ----
     // Util
     // ----
@@ -38,7 +38,16 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $scope.isLocked = false;
         $scope.isShowNumber = false;
         $scope.gameRoomChatOut = {content:''};
-        $scope.gameRoomChat = '';
+        $scope.gameRoomChat = {
+            content:'',
+            messages:[],
+            isAutoScroll: true
+        };
+        
+        //Clear opening data
+        $scope.gridAltChosen = null;
+        $scope.board.txtAltQty = null;
+        
         $interval.cancel($scope.timeLeft.counting);
         $interval.cancel($scope.timeLeft.syncing);
     }
@@ -237,6 +246,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             //console.log();
             var stones5 = $scope.game.moves.slice();
             stones5.push({seq:5, ordinate:$scope.game.alts[i].ordinate});
+			console.log('stones5 are:', stones5);
             var symPts = symFinder(stones5);
             console.log(" Find points from  ", pOrdinate, symPts);
             Array.prototype.push.apply(symPoints, symPts);
@@ -360,6 +370,9 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     $scope.arrangeMoves = function() {
         for (var i in $scope.game.moves) {
             var movei = $scope.game.moves[i];
+            if (!movei.ordinate)
+                continue;
+            
             var gridi = $scope.board.grids[movei.ordinate.y][movei.ordinate.x]
             gridi.move = movei;
         }
@@ -379,10 +392,15 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     // ----
     $scope.isLocked = false;
     $scope.isShowNumber = false;
+    $scope.isDoubleClick = true;
     $scope.invalidOpeningMsg = null;
     
     $scope.gameRoomChatOut = {content:''};
-    $scope.gameRoomChat = '';
+    $scope.gameRoomChat = {
+        content:'',
+        messages:[],
+        isAutoScroll: true
+    };
     $scope.game = {moves:[], black:{}, white:{}, boardSize:15, alts:[]};
     
     $scope.timeLeft = {
@@ -402,20 +420,37 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     $scope.board.grids = [$scope.board.size];
     $scope.board.xAxis = [$scope.board.size];
     $scope.board.txtAltQty = null;
+    
+    $scope.sounds = {
+		msgPop:new Audio('../../sounds/undo.wav'),
+        going:new Audio('../../sounds/stone.wav'),
+		gameover:new Audio('../../sounds/gameover.wav')
+    }
 
     //　----
     //  User Interaction
     //  ----
+    $scope.mouseOnWholeBoard = function() {
+        if ($scope.isMyTurn() && !($scope.game.status === 'alt-choosing') && !($scope.game.status === 'opening' && $scope.game.moves.length >= 3)) {
+            $('#divGameBoard').css( 'cursor', 'pointer' );
+        } else {
+            $('#divGameBoard').css( 'cursor', 'not-allowed' );
+        }
+    }
+    
+    $scope.mouseOutWholeBoard = function() {
+        $('#divGameBoard').css( 'cursor', 'default' );
+    }
+    
     $scope.mouseOnBoard = function(grid) {
 //        console.log('mouseMove on (' + grid.ordinate.x + ', ' + grid.ordinate.y + ')');
 //                console.log('previewStoneWidth:' + $scope.board.moveStyle.width);
         //Preview stone
-        $scope.board.previewMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
-        if ($scope.isMyTurn() && !($scope.game.status === 'alt-choosing') && !($scope.game.status === 'opening' && $scope.game.moves.length >= 3)) {
-            $scope.board.previewMove.class = "preview-enabled";
-        } else {
-            $scope.board.previewMove.class = "preview-disabled";
-        }
+        if ($scope.isLocked)
+            $scope.board.previewMove = null;
+        else
+            $scope.board.previewMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
+        
     }
 
     $scope.mouseOutBoard = function(grid) {
@@ -467,7 +502,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
                 $scope.game.alts.splice(idx, 1);
                 grid.alt = null;
                 return;
-            } else if ($scope.game.status === 'alt-choosing') {
+            } else if ($scope.game.status === 'alt-choosing' && $scope.game.white.username === $rootScope.user.username) {
                 grid.alt.chosen = true;
                 $scope.gridAltChosen = grid;
                 return;
@@ -483,7 +518,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             
             var symMessage = $scope.validateSymmetric(grid.ordinate);
             if ($scope.invalidOpeningMsg) {//Validate fails
-                $rootScope.meesage = $scope.invalidOpeningMsg;
+                $rootScope.message = $scope.invalidOpeningMsg;
                 $("#message").alert();
                 $("#message").fadeTo(5000, 500).slideUp(500, function() {});
                 return;
@@ -498,16 +533,46 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             return;
         }
         
-        if ($scope.isLocked == false)
+        // ~~~~ Normal game going ~~~~
+        if ($scope.isLocked == false) {
+            if ($scope.isDoubleClick && $scope.board.firstClickMove && $scope.board.firstClickMove.ordinate.x == grid.ordinate.x && $scope.board.firstClickMove.ordinate.y == grid.ordinate.y) {
+                $("stonePreview").css({position:'absolute'});
+                $("stoneBlackConfirm").css({position:'absolute'});
+                $("stoneWhiteConfirm").css({position:'absolute'});
+                $scope.confirmNextMove();
+                return;
+            }
+            
+            //Showup confirm stone...
             $scope.board.firstClickMove = {seq:$scope.game.moves.length + 1, ordinate:{x:grid.ordinate.x, y:grid.ordinate.y}};
+            $("stonePreview").css({position:'flex'});
+            $("stoneBlackConfirm").css({position:'flex'});
+            $("stoneWhiteConfirm").css({position:'flex'});
+            
+//            if (!$scope.isDoubleClick) {
+//                $timeout(
+//                    function() {
+//                        $("html, body").animate({ scrollTop: $(document).height() }, "slow");
+//                    }
+//                    , 300
+//                );
+//            }
+        }
     }
     
     $scope.confirmNextMove = function() {
         var newMove = $scope.board.firstClickMove;
         $scope.board.firstClickMove = null;
         
-//        $scope.game.moves.push(newMove);
-//        $scope.board.grids[newMove.ordinate.y][newMove.ordinate.x].move = newMove;
+        if ($scope.game.isMySelf && $scope.game.status === 'started') {
+            $scope.isLocked = true;
+            socket.emit('game-self-going', {
+                uid:$scope.game.uid,
+                seq:$scope.game.moves.length + 1,
+                ordinate:{x:newMove.ordinate.x, y:newMove.ordinate.y}
+            });
+            return;
+        }
         
         if ($scope.game.status === 'started') {
             $scope.isLocked = true;
@@ -549,6 +614,38 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             moves:$scope.game.moves,
             altQty:$scope.game.altQty
         });
+		
+		$scope.board.txtAltQty = null;
+    }
+    
+    $scope.undoMyselfGame = function() {
+        if ($scope.game.isMySelf) {
+            socket.emit('game-self-undo', {
+                game_id:$scope.game.uid
+            });
+        }
+    }
+    
+    $scope.finishMyselfGame = function() {
+        if ($scope.game.isMySelf) {
+            
+            $rootScope.modal.title = 'Finish Confirm';
+            $rootScope.modal.message = 'Do you want to finish the game?';
+            $rootScope.modal.button1Label = 'Yes';
+            $rootScope.modal.button2Label = 'No';
+            $rootScope.modal.clickButton1 = function() {
+                socket.emit('game-self-finish', {
+                    username:$rootScope.user.username,
+                    game_id:$scope.game.uid
+                });
+            }
+            $rootScope.modal.clickButton2 = function() {
+                //Nothing here
+            }
+            $('#modalDialog').modal({
+                keyboard: true
+            });
+        }
     }
     
     $scope.undoOpening = function() {
@@ -613,11 +710,33 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     }
     
     $scope.chatInGame = function() {
-        socket.emit('game-room-chat-send', {from:$rootScope.user.username, gameSeq:$scope.game.seq, content:$scope.gameRoomChatOut.content});
+        console.log('$scope.gameRoomChatOut: ', $scope.gameRoomChatOut);
+		if($scope.gameRoomChatOut.content != '')
+			socket.emit('game-room-chat-send', {from:$rootScope.user.nickname, gameSeq:$scope.game.seq, content:$scope.gameRoomChatOut.content});
+    }
+    $scope.onGameChatScroll = function(event) {
+        $scope.gameRoomChat.isAutoScroll = false;
+        $("#btnGameChatBecomeAutoScroll").show();
+    }
+    
+    $scope.becomeGameChatAutoScroll = function() {
+        $('#gameRoomChat').animate(
+            {scrollTop: $('#gameRoomChat')[0].scrollHeight}, 
+            'fast',
+            function() {
+                $scope.gameRoomChat.isAutoScroll = true;
+                $("#btnGameChatBecomeAutoScroll").hide();
+                console.log('Become auto scroll:', $scope.gameRoomChat.isAutoScroll);
+            }
+        );
     }
     
     $scope.showStudyBoard = function() {
         window.open("analysis-board.html?moves=" + toMovesString($scope.game.moves, $scope.board.size), "StudyBoard", "height=600, width=600");
+    }
+    
+    $scope.toggleToDoubleClick = function() {
+        $scope.isDoubleClick = ($scope.isDoubleClick ? false : true);
     }
     
     // ---- Game Action ---- Draw, Resign, Undo, Quit
@@ -629,7 +748,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $rootScope.modal.button2Label = 'No';
         $rootScope.modal.clickButton1 = function() {
             socket.emit('game-going', {
-                game_id:$rootScope.game.uid,
+                uid:$scope.game.uid,
                 seq:$scope.game.moves.length + 1,
                 ordinate:null
             });
@@ -650,7 +769,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $rootScope.modal.clickButton1 = function() {
             socket.emit('game-draw-request', {
                 username:$rootScope.user.username,
-                game_id:$scope.game.uid
+                uid:$scope.game.uid
             });
         }
         $rootScope.modal.clickButton2 = function() {
@@ -750,6 +869,15 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
                 game_id:$scope.game.uid
             });
         }
+        $('#modalDialog').on('hidden.bs.modal', function () {
+            console.log('emit game-draw-reject', game);
+            socket.emit('game-draw-reject', {
+                username:$rootScope.user.username,
+                game_id:$scope.game.uid
+            });
+            $('#modalDialog').unbind();
+        });
+        
         $('#modalDialog').modal({
             keyboard: true
         });
@@ -777,18 +905,17 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
     
     socket.on('game-going-receive', function(game) {
         console.log('On going');
+        
         $scope.isLocked = false;
-//        if (moves.length > $scope.game.moves.length) { //Undo
-//            var lastMove = $scope.game.moves.pop();
-//            console.log(' Undo move: ', lastMove);
-//            $scope.board.grids[lastMove.ordinate.y][lastMove.ordinate.x].move = null;
-//        }
-//        $scope.calculateBothTimeLeft();
         $scope.game = game;
         $scope.resetTimeLeft(game);
 //        $scope.calculateBothTimeLeft();
 //        $scope.timeLeft.basicTimeup = false;
+
         $scope.arrangeMoves();
+        
+		console.log('$scope.sounds:', $scope.sounds);
+        $scope.sounds.going.play();
     });
     
     socket.on('game-undo-receive', function(undoMove) {
@@ -814,6 +941,9 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
             },
             5
         );
+		
+		console.log('$scope.sounds:', $scope.sounds);
+		$scope.sounds.gameover.play();
     });
     
     socket.on('game-leaved', function() {
@@ -821,10 +951,29 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         $rootScope.user.myProgressingGame = null;
     });
     
-    socket.on('game-room-chat-receive', function(message) {
+	socket.on('game-room-chat-receive', function(message) {
         console.log('On game-room-chat-receive', message);
-        $scope.gameRoomChat = $scope.gameRoomChat + message.from + ':' + message.content + '\n';
-        $scope.gameRoomChatOut.content = '';
+        message.formatedSendTime = formatTime(new Date(message.sendTime));
+        $scope.gameRoomChat.messages.push(message);
+        $scope.sounds.msgPop.play();
+		
+        if (message.from === $rootScope.user.nickname) {
+            $scope.gameRoomChatOut.content = '';
+        }
+        
+        if ($scope.gameRoomChat.isAutoScroll) {
+            $('#gameRoomChat').animate(
+                {scrollTop: $('#gameRoomChat')[0].scrollHeight}, 
+                'fast',
+                function() {
+                    $("#gameRoomChat").scroll(function(event) {
+                        $scope.onGameChatScroll(event);
+                    });
+                    $scope.gameRoomChat.isAutoScroll = true;
+                    $("#btnGameChatBecomeAutoScroll").hide();
+                }
+            );
+        }
     });
     
     socket.on('game-fetch-time-receive', function(data) {
@@ -846,6 +995,7 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
         console.log('On swapped', game);
         $scope.game = game;
         $scope.resetTimeLeft(game);
+        $scope.calculateBothTimeLeft();
     });
     
     socket.on('game-alt-making-receive', function(game) {
@@ -878,8 +1028,12 @@ gamePage.controller('gameController', function ($rootScope, $scope, $http, $wind
 function toMovesString(pMoves, pBoardSize) {
     var moveString = '';
     for (var i = 0; i < pMoves.length; i++) {
-        moveString = moveString.concat(toReadableFromOrigX(pMoves[i].ordinate.x));
-        moveString = moveString.concat(toReadableFromOrigY(pMoves[i].ordinate.y, pBoardSize));
+        if (!pMoves[i].ordinate) {
+            moveString = moveString.concat('--');
+        } else {
+            moveString = moveString.concat(toReadableFromOrigX(pMoves[i].ordinate.x));
+            moveString = moveString.concat(toReadableFromOrigY(pMoves[i].ordinate.y, pBoardSize));
+        }
         
         moveString = moveString.concat(',');
     }

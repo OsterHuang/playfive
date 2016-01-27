@@ -1,10 +1,17 @@
-announce = angular.module('announce', ['ngSanitize']);
-announce.controller('announceController', function ($rootScope, $scope, $http, $window) {
+announceList = angular.module('announceList', ['ngSanitize', 'ngAnimate', 'ngStorage']);
+announceList.controller('announceListController', function ($rootScope, $scope, $http, $localStorage, $window) {
+	console.log('????');
+	if(typeof $localStorage.language == 'undefined')
+		$localStorage.language = 'English';
+	$scope.language = $localStorage.language;
+	window.translate($scope, $localStorage.language, 'announce.html');
+
     $("#message").hide();
 	$scope.page = 1;
 	$scope.annPerPage = 10;
 	$scope.annList;
 	$scope.displayList;
+    $scope.progressing = false;
 	
     $scope.hideMessage = function() {
         $("#message").hide();
@@ -15,45 +22,51 @@ announce.controller('announceController', function ($rootScope, $scope, $http, $
 			ann.expand = 0;
 			return;
 		}
-		ann.expand = 1;
+        
+        ann.progressing = true;
+        
 		$http({
-				url: '/announce/getContent',
-				method: 'POST',
-				data: JSON.stringify({number: ann.number}),
-				headers: {'Content-Type': 'application/json'}
-			}).success(function(response) {
-				ann.content = response.content;
-				ann.publisher = response.publisher;
-			}).error(function(data, status) {
-				console.log('Error ' + status + '. ' + data);
+            url: '/announce/getContent',
+            method: 'POST',
+            data: JSON.stringify({number: ann.number}),
+            headers: {'Content-Type': 'application/json'}
+        }).success(function(response) {
+            ann.content = response.content;
+            ann.category = response.category;
+            ann.progressing = false;
+            ann.expand = 1;
+        }).error(function(data, status) {
+            ann.progressing = false;
+            console.log('Error ' + status + '. ' + data);
 		});
 	}
 	
 	$scope.getList = function(){
+        $scope.progressing = true;
+        
 		$http({
-				url: '/announce/getList',
-				method: 'POST',
-				headers: {'Content-Type': 'application/json'}
-			}).success(function(response) {
-				$scope.totalAnnounce = response.length; //response長度=總公告數量
-				$scope.totalPages = Math.ceil($scope.totalAnnounce/$scope.annPerPage); //計算頁數
-				
-				//修改時間格式
-				$scope.annList = response;
-				angular.forEach($scope.annList, function(value, key) {
-					value.formatedCreatedDate = formatDate(new Date(value.createdDate));
-					value.expand = 0;
-				});
-				
-				//切割, 取得要顯示的公告
-				$scope.displayList = response.slice(($scope.page-1)*$scope.annPerPage, ($scope.page*$scope.annPerPage));
-			}).error(function(data, status) {
-				console.log('Error ' + status + '. ' + data);
+            url: '/announce/getList',
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'}
+        }).success(function(response) {
+            $scope.progressing = false;    
+
+            $scope.totalAnnounce = response.length; //response長度=總公告數量
+            $scope.totalPages = Math.ceil($scope.totalAnnounce/$scope.annPerPage); //計算頁數
+
+            //修改時間格式
+            $scope.annList = response;
+            angular.forEach($scope.annList, function(value, key) {
+                value.formatedCreatedDate = formatDate(new Date(value.createdDate));
+                value.expand = 0;
+            });
+
+            //切割, 取得要顯示的公告
+            $scope.displayList = response.slice(($scope.page-1)*$scope.annPerPage, ($scope.page*$scope.annPerPage));
+        }).error(function(data, status) {
+            $scope.progressing = false; 
+            console.log('Error ' + status + '. ' + data);
 		});
-	}
-	
-	$scope.format = function (pDate) {
-		return new Date(pDate).format('yyyy-MM-dd');
 	}
 	
 	$scope.changePage = function(n){
@@ -91,7 +104,25 @@ announce.controller('announceController', function ($rootScope, $scope, $http, $
         $rootScope.$broadcast('inquiry-announce', $rootScope.editingAnnounce);
     }
     
-    //
+    $scope.createAnnounce = function() {
+        $rootScope.creatingAnnounce = true;
+        $rootScope.$broadcast('create-announce', $rootScope.editingAnnounce);
+    }
     
+    //
+    $scope.$on('refresh-announce-list', function(event) {
+        console.log('On refresh-announce-list event');
+        $scope.getList();
+    });
+    
+	$scope.translate = function(){
+		$scope.language = $localStorage.language;
+		window.translate($scope, $localStorage.language, 'announce.html');
+		console.log('scope.language', $scope.language);
+		console.log('localStorage.language', $localStorage.language);
+	}
+
+	$scope.$on('translate', $scope.translate);
+	
 	$scope.getList();
 });

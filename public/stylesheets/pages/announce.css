@@ -1,15 +1,20 @@
 .announce-list-show-hide {
   padding:4px;
   /*border:1px solid #eee;*/
-    position:relative;
+  position:relative;
+    overflow: hidden;
 }
 
 .announce-list-show-hide {
   -webkit-transition:all linear 0.5s;
+  -moz-transition:all linear 0.5s;
   transition:all linear 0.5;
 }
 
 .announce-list-show-hide.ng-hide {
+  -webkit-transition:all linear 0.2s;
+  -moz-transition:all linear 0.2s;
+  transition:all linear 0.2;
   opacity:0;
 }
 
@@ -24,11 +29,11 @@
 
 .announce-edit-show-hide {
   -webkit-transition:all linear 0.5s;
+  -moz-transition:all linear 0.5s;
   transition:all linear 0.5s;
-    
-    left:0;
-  
+  left:0;
 }
+
 
 .announce-edit-show-hide.ng-hide {
   opacity:0;
@@ -37,31 +42,22 @@
 }
 
 
-
-.animate-show.ng-hide-add, 
-.animate-show.ng-hide-remove {
-  -webkit-transition:all linear 0.5s;
-  -moz-transition:all linear 0.5s;
-  -o-transition:all linear 0.5s;
-  transition:all linear 0.5s;
-  display:block!important;
-}
-
-.animate-show.ng-hide-add.ng-hide-add-active,
-.animate-show.ng-hide-remove {
-  line-height:0;
+.announce-progressing-show-hide.ng-hide {
   opacity:0;
-  padding:0 10px;
+    animation-delay: 0.5s;
+    left:100%;
 }
 
-.animate-show.ng-hide-add,
-.animate-show.ng-hide-remove.ng-hide-remove-active {
-  line-height:20px;
-  opacity:1;
-  padding:10px;
-  border:1px solid black;
-    transition-delay: 0.5s;
-  background:white;
+.announce-progressing-show-hide {
+  margin:4px;
+  float:right;
+}
+
+.announce-progressing-show-hide {
+  -webkit-transition:all linear 1.5s;
+  -moz-transition:all linear 1.5s;
+  transition:all linear 1.5s;
+  opacity:0;
 }
 
 .check-element {

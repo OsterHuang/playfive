@@ -1,9 +1,13 @@
 
-lobbyPage = angular.module('lobbyPage', []);
+lobbyPage = angular.module('lobbyPage', ['ngStorage']);
 
-lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $window, $localStorage, socket) {
-    
-    $scope.lobbyChat = '';
+lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $document, $window, $localStorage, socket) {
+
+	$scope.lobbyChat = {
+        content:'',
+        messages:[],
+        isAutoScroll: true
+    };
     $scope.lobbyChatOut = {content:''};
     
     $scope.searchOpp = {any:''} 
@@ -12,7 +16,10 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         rule:'gomoku',
         isTentitiveBlack:true,
         isRating:false,
+        isMySelf:false,
+        hasBasicTime:false,
         hasPerMoveTime:true,
+        hasPlusTime:false,
         basicTime:0,
         perMoveTime:30,
         perMovePlusTime:0
@@ -28,7 +35,45 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         socket.emit('lobby-cancel-game', {uid:$rootScope.user.myCreatedGame.uid, creator:$rootScope.user.myCreatedGame.creator}, null);
     };
     
-    $scope.confirmCreteGame = function() {
+	window.getScopeVar = function(attr) {
+		console.log($scope[attr]);
+	};
+	
+    $scope.timeRuleCheck = function(){
+		$scope.timeRuleChecked = 'pass';
+		
+		//沒有基本時間&沒有每手時限
+		if(!$scope.newGame.hasBasicTime && !$scope.newGame.hasPerMoveTime){
+			$scope.timeRuleChecked = 'tError-noStartTime';
+		}
+		else{
+			var bt = window.parseInt($scope.newGame.basicTime);
+			var pmt = window.parseInt($scope.newGame.perMoveTime);
+			var pmpt = window.parseInt($scope.newGame.perMovePlusTime);
+
+			//有負值
+			//非整數：轉為整數後與原本不同
+			if ($scope.newGame.hasBasicTime){
+				if(bt<1) $scope.timeRuleChecked = 'tError-noBasicTime';
+				if($scope.newGame.basicTime!=bt) $scope.timeRuleChecked = 'tError-notInt-bt';
+			}
+			if ($scope.newGame.hasPerMoveTime){
+				if(pmt<5) $scope.timeRuleChecked = 'tError-morePerMoveTime';
+				if($scope.newGame.perMoveTime!=pmt) $scope.timeRuleChecked = 'tError-notInt-pmt';
+			}
+			if ($scope.newGame.hasPlusTime){
+				if(pmpt<5) $scope.timeRuleChecked = 'tError-morePlusTime';
+				if($scope.newGame.perMovePlusTime!=pmpt) $scope.timeRuleChecked = 'tError-notInt-pt';
+			} 
+		
+			console.log('$scope.timeRuleChecked', $scope.timeRuleChecked);
+			return;
+		}
+	}
+	
+	$scope.timeRuleCheck();
+
+	$scope.confirmCreteGame = function() {
         
         var game = {
             creator:{nickname:$rootScope.user.nickname, username:$rootScope.user.username},
@@ -49,6 +94,7 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         }
         
         socket.emit('lobby-create-game', {newGame:game}, null);
+		
     };
     
     $scope.joinGame = function(game) {
@@ -66,7 +112,8 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
             return;
         }
-        socket.emit('lobby-chat-send', {from:$rootScope.user.username, content:$scope.lobbyChatOut.content});
+		if($scope.lobbyChatOut.content==''){return;}
+        socket.emit('lobby-chat-send', {from:$rootScope.user.nickname, content:$scope.lobbyChatOut.content});
     }
     
     $scope.confirmKick = function(pUser) {
@@ -121,6 +168,23 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         socket.emit('lobby-unmute-user', pUser);
     }
     
+    $scope.onChatScroll = function(event) {
+        $scope.lobbyChat.isAutoScroll = false;
+        $("#btnBecomeAutoScroll").show();
+    }
+    
+    $scope.becomeAutoScroll = function() {
+        $('.chat').animate(
+            {scrollTop: $('.chat')[0].scrollHeight}, 
+            'fast',
+            function() {
+                $scope.lobbyChat.isAutoScroll = true;
+                $("#btnBecomeAutoScroll").hide();
+                console.log('Become auto scroll:', $scope.lobbyChat.isAutoScroll);
+            }
+        );
+    }
+    
     // ---- Choose Opponent ----
     $scope.openChooseOppDialog = function() {
         $('#chooseOppDialog').modal({
@@ -129,8 +193,8 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
     }
     
     $scope.chooseOppFilter = function(itUser) {
-        if (itUser.username === $rootScope.user.username)
-            return false;
+//        if (itUser.username === $rootScope.user.username)
+//            return false;
         
         if (itUser.nickname.indexOf($scope.searchOpp.any) > -1) {
             return true;
@@ -175,11 +239,33 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         socket.emit('lobby-join-game', {joinGame:data});
     });  
     
-    socket.on('lobby-chat-receive', function(message) {
+    $scope.sounds = {
+        msgPop:new Audio('../../sounds/undo.wav'),
+    }
+	
+	socket.on('lobby-chat-receive', function(message) {
         console.log('On lobby-chat-receive', message);
-        $scope.lobbyChat = $scope.lobbyChat + message.from + ':' + message.content + '\n';
-        if (message.from === $rootScope.user.username)
+        message.formatedSendTime = formatTime(new Date(message.sendTime));
+        $scope.lobbyChat.messages.push(message);
+        $scope.sounds.msgPop.play();
+		
+        if (message.from === $rootScope.user.nickname) {
             $scope.lobbyChatOut.content = '';
+        }
+        
+        if ($scope.lobbyChat.isAutoScroll) {
+            $('.chat').animate(
+                {scrollTop: $('.chat')[0].scrollHeight}, 
+                'fast',
+                function() {
+                    $(".chat").scroll(function(event) {
+                        $scope.onChatScroll(event);
+                    });
+                    $scope.lobbyChat.isAutoScroll = true;
+                    $("#btnBecomeAutoScroll").hide();
+                }
+            );
+        }
     });
     
     // ---- U ----
@@ -208,4 +294,8 @@ lobbyPage.controller('lobbyController', function ($rootScope, $scope, $http, $wi
         console.log('No my game here.', $rootScope.user);
     }
     
+	/*$scope.translate = function(language){
+		$localStorage.language = language;
+		window.translate($scope, language, 'main.html');
+	}*/
 });

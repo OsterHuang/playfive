@@ -1396,6 +1396,9 @@ ForbiddenFinder.prototype.isGameFinished = function (moves, boardSize, isRenju, 
     
     // Set Information
     var lastMove = moves[moves.length - 1];
+    if (!lastMove) { //First move is passed... so the moves is empty...
+        return {isFinished:false};
+    }
     var isBlack = lastMove.seq % 2 == 1 ? true : false;
     
     for (var i = 0; i < moves.length - 1; i++) {

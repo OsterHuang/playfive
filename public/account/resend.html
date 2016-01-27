@@ -5,90 +5,114 @@
 <head>
     <link rel="stylesheet" href="../stylesheets/bootstrap.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
-    
+
     <script src="../javascripts/jquery.min.js"></script>
     <script src="../javascripts/bootstrap.min.js"></script>
     <script src="../javascripts/angular.min.js"></script>
+	<script src="../javascripts/ngStorage.min.js"></script>
     
-    <script src="../javascripts/pages/account.js"></script>
+	<script src="../javascripts/pages/translate.js"></script>
+	<script src="../javascripts/pages/account.js"></script>
 </head>
 
 <body>
-    <div ng-app="account" ng-controller="accountController" class="container-fruid">
+    <div ng-app="account" ng-controller="accountController" class="container-fluid">
         <div ng-include="'../header.html'"></div>
+		<br>
+		<center>
+		<table>
+			<!--tr>
+				<td>{{str_selectLanguage}}</td>
+				<td>
+				<select ng-model="language" ng-change="translate()">
+					<option value='English'>English</option>
+					<option value='Chinese'>中文</option>
+				</select>
+				</td>
+			</tr-->
+			<tr>
+				<td rowspan=2 valign="top">{{str_selectCommand}}</td>
+				<td>
+					<label style="font-weight: normal;"><input type=radio ng-model="command" value="resend">{{str_resend}}</label><br>
+					<label style="font-weight: normal;"><input type=radio ng-model="command" value="renew">{{str_renew}}</label><br>
+					<label style="font-weight: normal;"><input type=radio ng-model="command" value="reset">{{str_reset}}</label>
+				</td>
+			</tr>
+			<tr>
+				<td>
+				</td>
+			</tr>
+		</table>
+		</center>
+
 		<div class="container" style="text-align:center">
-            <h3>重寄認證信 / Resend Verification Mail * 重設密碼 / Reset Password</h3>
-            <!--<div class="alert alert-success" id="success-alert" style="position:absolute; z-index:99;">-->
+            <h3>
+				<div ng-show="command=='resend'">{{str_resend}}</div>
+				<div ng-show="command=='reset'">{{str_reset_title}}</div>
+				<div ng-show="command=='renew'">{{str_renew}}</div>
+			</h3>
             <div class="alert alert-success" id="success-alert">
                 <button type="button" class="close-message" ng-click="hideMessage()">x</button>
                 <strong>{{messageTitle}}</strong>
                 {{messageContent}}
             </div>
         </div>
-        <center>請輸入帳號 或 email / please provide your username or email</center>
+        <div ng-show="command=='resend' || command=='reset'" align="center">{{str_usernameOrEmail}}</div>
         <div class="container">
             <form novalidate class="form-horizontal">
                 <span class="form-group">
-                    <label class="col-sm-2 control-label">帳號 / Account</label>
+                    <label class="col-sm-2 control-label">{{str_username}}</label>
                     <span class="col-sm-10">
-                        <input type="text" ng-model="username" class="form-control" placeholder="Username" required/> 
+                        <input type="text" ng-model="username" class="form-control" placeholder="Username" required/>
                     </span>
                 </span>
-                <span class="form-group">
-                    <label class="col-sm-2 control-label">信箱 / email</label>
+                <span class="form-group" ng-show="command=='resend' || command=='reset'">
+                    <label class="col-sm-2 control-label">{{str_email}}</label>
                     <span class="col-sm-10">
-                        <input type="text" ng-model="email" class="form-control" placeholder="E-mail" required/> 
+                        <input type="text" ng-model="email" class="form-control" placeholder="E-mail" required/>
                     </span>
                 </span>
-            
-                <div class="container" style="text-align:center">
-                    <button class="btn" ng-disabled="!username && !email" ng-click="reverify()">                    
-                        重寄認證信 / Resend Verification Mail
+			    <span class="form-group" ng-show="command=='renew'">
+                    <label class="col-sm-2 control-label">{{str_oldPassword}}</label>
+                    <span class="col-sm-10">
+                        <input type="password" ng-model="password" class="form-control" placeholder="Original Password" required/>
+                    </span>
+                </span>
+				<span class="form-group" ng-show="command=='renew'">
+                    <label class="col-sm-2 control-label">{{str_newPassword}}</label>
+                    <span class="col-sm-10">
+                        <input
+							type="password"
+							ng-model="newPsd"
+							class="form-control" placeholder="New Password" required/>
+                    </span>
+                </span>
+                <span class="form-group" ng-show="command=='renew'">
+                    <label class="col-sm-2 control-label">{{str_newPassword2}}</label>
+                    <span class="col-sm-10">
+                        <input type="password" ng-model="newPsd2" class="form-control" placeholder="Repeat New Password" required/>
+                    </span>
+                </span>
+				<div class="container" style="text-align:center">
+                    <button ng-show="command=='resend'" class="btn" ng-disabled="!username && !email" ng-click="reverify()">
+                       {{str_resend}}
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
-                	<button class="btn" ng-disabled="!username && !email" ng-click="reset()">                    
-                        重設密碼 / Reset Password
+                	<button ng-show="command=='reset'" class="btn" ng-disabled="!username && !email" ng-click="reset()">
+                        {{str_reset_title}}
                         <span class="glyphicon glyphicon-plus"></span>
                     </button>
                 </div>
-				<center><h3>更新密碼 / Renew Password</h3></center>
-				<span class="form-group">
-                    <label class="col-sm-2 control-label">帳號 / Account</label>
-                    <span class="col-sm-10">
-                        <input type="text" ng-model="username" class="form-control" placeholder="Username" required/> 
-                    </span>
-                </span>
-                <span class="form-group">
-                    <label class="col-sm-2 control-label">舊密碼 / Original Password</label>
-                    <span class="col-sm-10">
-                        <input type="text" ng-model="password" class="form-control" placeholder="Original Password" required/> 
-                    </span>
-                </span>
-				<span class="form-group">
-                    <label class="col-sm-2 control-label">新密碼 / New Password</label>
-                    <span class="col-sm-10">
-                        <input 
-							type="text" 
-							ng-model="newPsd" 
-							class="form-control" placeholder="New Password" required/> 
-                    </span>
-                </span>
-                <span class="form-group">
-                    <label class="col-sm-2 control-label">確認新密碼 / Repeat New Password</label>
-                    <span class="col-sm-10">
-                        <input type="text" ng-model="newPsd2" class="form-control" placeholder="Repeat New Password" required/> 
-                    </span>
-                </span>
-			   	<div class="container" style="text-align:center">
-					<button class="btn" ng-disabled="!username || !password || !newPsd || newPsd!=newPsd2" ng-click="renew()">                    
-						更新密碼 / Renew Password
+			   	<div ng-show="command=='renew'" class="container" style="text-align:center">
+					<button class="btn" ng-disabled="!username || !password || !newPsd || newPsd!=newPsd2" ng-click="renew()">
+						{{str_renew}}
 						<span class="glyphicon glyphicon-plus"></span>
 					</button>
 				</div>
             </form>
         </div>
-		
+
     </div>
 </body>
-    
+
 </html>

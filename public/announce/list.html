@@ -1,34 +1,37 @@
+<!DOCTYPE html>
+
 <html>
 <head>
     <link rel="stylesheet" href="../stylesheets/bootstrap.min.css">
     <link rel="stylesheet" href="../stylesheets/style.css">
+    <link rel="stylesheet" href="../stylesheets/pages/announce.css">
     
     <script src="../javascripts/jquery.min.js"></script>
     <script src="../javascripts/bootstrap.min.js"></script>
     <script src="../javascripts/angular.min.js"></script>
 	<script src="../javascripts/angular-sanitize.min.js"></script>
+    <script src="../javascripts/angular-animate.min.js"></script>
+	<script src="../javascripts/ngStorage.min.js"></script>
 	
     <script src="../javascripts/tools.js"></script>
+    <script src="../javascripts/pages/translate.js"></script>
     <script src="../javascripts/pages/announce_list.js"></script>
 </head>
 <body>
-<script>
-//-dogswang- check admin ID
-</script>
-<div ng-app="announce" ng-controller="announceController" class="container-fruid">
-    <div ng-include="'../header.html'"></div>
-    
-     <div class="container" style="text-align:center">
-		<h3>公告清單</h3>
-		<div class="alert alert-success" id="message" style="position:absolute; z-index:99;">
-			<button type="button" class="close-message" ng-click="hideMessage()">x</button>
-			<strong>{{messageTitle}}</strong>
-			{{messageContent}}
-		</div>
-	</div>
-    
-    <div ng-include="'/announce/_list.html'"></div>
-</div>
+    <div ng-app="announceList" ng-controller="announceListController" class="container-fluid">
+        <div ng-include="'../header.html'"></div>
+
+        <div class="container" style="text-align:center">
+            <h3>{{str_announceList}}</h3>
+            <div class="alert alert-success" id="message" style="position:absolute; z-index:99;">
+                <button type="button" class="close-message" ng-click="hideMessage()">x</button>
+                <strong>{{messageTitle}}</strong>
+                {{message}}
+            </div>
+        </div>
+        
+        <div ng-include="'/announce/_list.html'"></div>
+    </div>
 
 </body>
 </html>

@@ -14,7 +14,7 @@ announceEdit.controller('announceEditController', function ($rootScope, $scope, 
         }).success(function(response) {
             $scope.goingAnnounce.number = pAnnounce.number;
             $scope.goingAnnounce.content = response.content;
-            $scope.goingAnnounce.publisher = response.publisher;
+            $scope.goingAnnounce.category = response.category;
             $scope.goingAnnounce.title = response.title;
         }).error(function(data, status) {
             console.log('Error ' + status + '. ' + data);
@@ -29,18 +29,20 @@ announceEdit.controller('announceEditController', function ($rootScope, $scope, 
 			url: '/announce/edit',
 			method: 'POST',
 			data: JSON.stringify(
-                {number: $scope.goingAnnounce.number, 
-                 title:  $scope.goingAnnounce.title, 
-                 content:$scope.goingAnnounce.content, 
-                 token:  $localStorage.token
+                {number:  $scope.goingAnnounce.number, 
+                 title:   $scope.goingAnnounce.title, 
+                 content: $scope.goingAnnounce.content, 
+                 category:$scope.goingAnnounce.category, 
+				 token:   $localStorage.token
             }),
 			headers: {'Content-Type': 'application/json'}
 		}).success(function(response){
-			console.log('response is:', response);
+			console.log('Update announces success response is:', response);
 //            $rootScope.messageTitle = response.messageTitle;
             $rootScope.message = response.messageContent;
             $("#message").alert();
             $("#message").fadeTo(5000, 500).slideUp(500, function() {});
+            $rootScope.$broadcast('refresh-announce-list');
 			
 		}).error(function(data, status){
 //			$scope.messageTitle = 'Error';

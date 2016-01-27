@@ -1,6 +1,16 @@
 loginPage = angular.module('loginPage', ['ngStorage']);
 loginPage.controller('loginController', function ($rootScope, $scope, $http, $window, $localStorage) {
     
+	if(typeof $scope.language == 'undefined'){
+		if(typeof $localStorage.language == 'undefined'){
+			$localStorage.language = 'English';
+			$scope.language = 'English';
+		}
+		else $scope.language = $localStorage.language;
+	}
+		
+	window.translate($scope, $localStorage.language, 'login.html');
+	
     $("#message").hide();
     
     $scope.hideMessage = function() {
@@ -26,6 +36,8 @@ loginPage.controller('loginController', function ($rootScope, $scope, $http, $wi
             } else {
                 $scope.message = null;
                 $localStorage.token = response.token;
+                if(typeof response.language != 'undefined')
+					$localStorage.language = response.language;
                 $window.location = '/main.html';
             }
             
@@ -41,4 +53,10 @@ loginPage.controller('loginController', function ($rootScope, $scope, $http, $wi
     $scope.applyNewAccount = function() {
         $window.location = '/account/create.html';
     };
+
+	$scope.translate = function(language){
+		$localStorage.language = language;
+		window.translate($scope, language, 'login.html');
+	}
+	
 });
